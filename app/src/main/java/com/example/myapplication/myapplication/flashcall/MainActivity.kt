@@ -1,35 +1,53 @@
 package com.example.myapplication.myapplication.flashcall
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.viewModels
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import co.hyperverge.hyperkyc.HyperKyc
+import co.hyperverge.hyperkyc.data.models.HyperKycConfig
+import co.hyperverge.hyperkyc.data.models.result.HyperKycResult
+import co.hyperverge.hyperkyc.data.models.result.HyperKycStatus
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Screens.EditProfileScreen
 import com.example.myapplication.myapplication.flashcall.Screens.HomeScreen
+import com.example.myapplication.myapplication.flashcall.Screens.ProfileScreen
 import com.example.myapplication.myapplication.flashcall.Screens.RegistrationScreen
 import com.example.myapplication.myapplication.flashcall.Screens.SignUpOTP
 import com.example.myapplication.myapplication.flashcall.Screens.SignUpScreen
+import com.example.myapplication.myapplication.flashcall.Screens.WalletScreen
 import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
+import com.example.myapplication.myapplication.flashcall.ViewModel.RegistrationViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.SplashViewModel
 import com.example.myapplication.myapplication.flashcall.ui.theme.FlashCallTheme
+import com.example.myapplication.myapplication.flashcall.utils.rememberImeState
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -47,7 +65,21 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             FlashCallTheme {
-                AppNavigation()
+
+                val imeState = rememberImeState()
+                val scrollState = rememberScrollState()
+
+                LaunchedEffect(key1 = imeState.value) {
+                    if (imeState.value){
+                        scrollState.animateScrollTo(scrollState.maxValue, tween(300))
+                    }
+                }
+
+
+                    AppNavigation()
+
+
+
             }
         }
     }
@@ -56,30 +88,45 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppNavigation() {
 
+
+
     val navController = rememberNavController()
     var viewModel = hiltViewModel<AuthenticationViewModel>()
-    
+    var registrationViewModel = hiltViewModel<RegistrationViewModel>()
+
     NavHost(navController = navController, startDestination = ScreenRoutes.SignUpScreen.route) {
 
         composable(route= ScreenRoutes.SignUpScreen.route) {
             SignUpScreen(navController = navController, viewModel = viewModel)
         }
 
-        composable(route= ScreenRoutes.SignUpOTP.route) {
+        composable(route= ScreenRoutes.SignUpOTP.route,
+        ) {
             SignUpOTP(navController = navController, viewModel = viewModel)
         }
 
         composable(route= ScreenRoutes.RegistrationScreen.route) {
-            RegistrationScreen(navController = navController)
+            RegistrationScreen(navController = navController, registrationViewModel = registrationViewModel, viewModel)
         }
 
         composable(route = ScreenRoutes.HomeScreen.route){
-            HomeScreen(navController = navController)
+            HomeScreen(navController = navController,registrationViewModel)
         }
 
         composable(route = ScreenRoutes.EditScreen.route){
             EditProfileScreen(navController = navController)
         }
+
+        composable(route = ScreenRoutes.ProfileScreen.route){
+            ProfileScreen(navController = navController)
+        }
+        composable(route = ScreenRoutes.WalletScreen.route) {
+            WalletScreen(navController)
+        }
+        composable(route = ScreenRoutes.ProfileScreen.route) {
+            ProfileScreen(navController)
+        }
+
     }
 }
 

@@ -1,5 +1,7 @@
 package com.example.myapplication.myapplication.flashcall.Screens
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,6 +20,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role.Companion.Button
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -36,9 +40,10 @@ import androidx.navigation.NavController
 import com.composeuisuite.ohteepee.OhTeePeeInput
 import com.composeuisuite.ohteepee.configuration.OhTeePeeCellConfiguration
 import com.composeuisuite.ohteepee.configuration.OhTeePeeConfigurations
-import com.example.myapplication.myapplication.flashcall.Components.OtpInput
-import com.example.myapplication.myapplication.flashcall.Components.OtpView
+//import com.example.myapplication.myapplication.flashcall.Components.OtpInput
+//import com.example.myapplication.myapplication.flashcall.Components.OtpView
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
+import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
 import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
 import com.example.myapplication.myapplication.flashcall.ui.theme.Background
 import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
@@ -48,6 +53,9 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.PrimaryText
 import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryText
 import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
 
+
+var resendToken : String? = null
+var verificationToken : String? = null
 @Composable
 fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) {
 
@@ -68,7 +76,7 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
             Spacer(modifier = Modifier.height(15.dp))
             SubTitleText()
             Spacer(modifier = Modifier.height(30.dp))
-            BottomOTPBar(navController)
+            BottomOTPBar(navController,viewModel)
 
 
         }
@@ -77,9 +85,21 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
 }
 
 @Composable
-fun BottomOTPBar(navController: NavController){
+fun BottomOTPBar(navController: NavController,viewModel: AuthenticationViewModel){
 
 //    var otp by remember { mutableStateOf("") }
+
+    var otpValue : String by remember {
+        mutableStateOf("")
+    }
+
+    var phone = viewModel.phoneNumber.value
+
+
+
+    val resendOTPState by viewModel.resendOTPState.collectAsState()
+    val sendOTPState by viewModel.sendOTPState.collectAsState()
+    val verifyOTPState by viewModel.verifyOTPState.collectAsState()
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -104,6 +124,7 @@ fun BottomOTPBar(navController: NavController){
                     .padding(16.dp),
             ){
 
+
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(
                     text = "Enter verification code",
@@ -119,11 +140,10 @@ fun BottomOTPBar(navController: NavController){
                 Spacer(modifier = Modifier.height(15.dp))
 
                 Row(modifier = Modifier.fillMaxWidth(),
-
                     horizontalArrangement = Arrangement.Center)
                 {
                     Text(
-                        text = "We sent a 6-digit code to +917008150349.",
+                        text = "We sent a 6-digit code to $phone .",
                         color = PrimaryText,
                         style = TextStyle(
                             fontFamily = arimoFontFamily,
@@ -146,7 +166,33 @@ fun BottomOTPBar(navController: NavController){
                     )
                 }
 
+                var context = LocalContext.current
 
+                when(resendOTPState){
+                    is APIResponse.Success->{
+                        val response = (resendOTPState as APIResponse.Success).data
+                        resendToken = response.token
+                    }
+
+                    APIResponse.Empty -> Log.e("ERROR","ERROR CODE")
+                    is APIResponse.Error -> {
+                        Toast.makeText(context,"Something Went Wrong", Toast.LENGTH_SHORT).show()
+                    }
+                    APIResponse.Loading -> Log.e("ERROR","ERROR CODE")
+                }
+
+                when(sendOTPState){
+                    is APIResponse.Success->{
+                        val sendData = (sendOTPState as APIResponse.Success).data
+                        verificationToken = sendData.token
+                    }
+
+                    APIResponse.Empty -> Log.e("ERROR","ERROR CODE")
+                    is APIResponse.Error -> {
+                        Toast.makeText(context,"Something Went Wrong", Toast.LENGTH_SHORT).show()
+                    }
+                    APIResponse.Loading -> Log.e("ERROR","ERROR CODE")
+                }
 
                 Spacer(modifier = Modifier.height(20.dp))
                 Row(
@@ -154,9 +200,7 @@ fun BottomOTPBar(navController: NavController){
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    var otpValue : String by remember {
-                        mutableStateOf("")
-                    }
+
 
                     val defaultCellConfig = OhTeePeeCellConfiguration.withDefaults(
                         borderColor = OTPBorder,
@@ -175,6 +219,14 @@ fun BottomOTPBar(navController: NavController){
                         onValueChange = {
                                 newValue, isValid->
                             otpValue = newValue
+
+//                            if(otpValue.length == 6)
+//                                viewModel.verifyOTP(phone,otpValue,verificationToken,navController)
+//                            when(otpValue.length){
+//
+//                                6-> viewModel.verifyOTP(phone,otpValue,verificationToken,navController)
+//                            }
+
                         },
                         configurations = OhTeePeeConfigurations.withDefaults(
                             cellsCount = 6,
@@ -191,10 +243,15 @@ fun BottomOTPBar(navController: NavController){
                         ),
                     )
                 }
+
                 Spacer(modifier = Modifier.height(20.dp))
                 Text(
                     text = "Resend OTP",
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .clickable {
+                                   viewModel.resendOTP(phone)
+                        },
                     color = PrimaryText,
                     style = TextStyle(
                         fontFamily = arimoFontFamily,
@@ -203,9 +260,22 @@ fun BottomOTPBar(navController: NavController){
                     )
                 )
 
+//                if(otpValue.length == 6)
+//                {
+//                    if(resendToken != null)
+//                        viewModel.verifyOTP(phone,otpValue,resendToken,navController)
+//                    else
+//                        viewModel.verifyOTP(phone,otpValue,verificationToken,navController)
+//                }
+
                 Button(
                     onClick = {
-                        navController.navigate(ScreenRoutes.RegistrationScreen.route) },
+
+                        if(resendToken != null)
+                            viewModel.verifyOTP(phone,otpValue,resendToken,navController)
+                        else
+                            viewModel.verifyOTP(phone,otpValue,verificationToken,navController)
+                              },
                     modifier = Modifier
                         .align(CenterHorizontally)
                         .padding(top = 5.dp, end = 1.dp),

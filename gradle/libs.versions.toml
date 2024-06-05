@@ -46,11 +46,12 @@ core-splashscreen = { group = "androidx.core", name = "core-splashscreen", versi
 hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hilt-navaigation-compose" }
 dagger-hilt = { group = "com.google.dagger", name = "hilt-android", version.ref = "dagger-hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "dagger-hilt" }
-ohteepee = { group = "com.github.composeuisuite", name= "ohteepee", version.ref = "ohTeePeeVersion"}
+
 
 coroutine-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 coroutine-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
 compose-runtime-lifecycle = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "compose-runtime-lifecycle" }
+ohteepee = { group = "com.github.composeuisuite", name= "ohteepee", version.ref = "ohTeePeeVersion"}
 
 #converter-gson = {group = "com.squareup.retrofit2", name = "converter-gson", version-ref = "converter-gson"}
 

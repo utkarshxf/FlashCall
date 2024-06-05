@@ -4,12 +4,15 @@ import com.example.myapplication.myapplication.flashcall.Data.ResendOTP
 import com.example.myapplication.myapplication.flashcall.Data.SendOTP
 import com.example.myapplication.myapplication.flashcall.Data.VerifyOTP
 import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.CreateUser
+import com.example.myapplication.myapplication.flashcall.Data.model.CreateUserResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.Request
 import com.example.myapplication.myapplication.flashcall.Data.model.ResendOTPResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.ResendRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.SendOTPResponseX
 import com.example.myapplication.myapplication.flashcall.Data.model.VerifyOTPResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.VerifyRequest
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
@@ -26,7 +29,7 @@ interface APIService {
     suspend fun sendOTP(
         @Url url:String,
         @Body request: Request
-    ): SendOTPResponseX
+    ): Response<SendOTPResponseX>
 
 
     @POST
@@ -40,5 +43,11 @@ interface APIService {
         @Url url:String,
         @Body resendOTP: VerifyRequest
     ): VerifyOTPResponse
+
+    @POST
+    suspend fun createUSER(
+        @Url url:String,
+        @Body createUser: CreateUser
+    ): CreateUserResponse
 
 }

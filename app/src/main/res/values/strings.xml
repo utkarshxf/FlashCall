@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">FlashCall</string>
+    <string name="title_activity_kyc">KycActivity</string>
 </resources>

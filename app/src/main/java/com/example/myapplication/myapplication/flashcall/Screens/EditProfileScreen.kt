@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -51,6 +52,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -147,7 +149,7 @@ fun EditProfileScreen(navController: NavController) {
                     }
 
 
-                    Text(text = "Enter your profile",
+                    Text(text = "Edit your profile",
                         modifier = Modifier.padding(start = 18.dp),
                         style = TextStyle(
                             color = colorResource(id = R.color.black),
@@ -215,6 +217,9 @@ fun EditProfileScreen(navController: NavController) {
                         shape = RoundedCornerShape(10.dp),
                         value = edit_profile_name,
                         onValueChange = {edit_profile_name = it},
+                        keyboardOptions = KeyboardOptions(
+                            imeAction = ImeAction.Next
+                        ),
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(color = Color.White, shape = RoundedCornerShape(10.dp))

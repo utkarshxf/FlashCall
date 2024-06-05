@@ -22,6 +22,7 @@ val BorderColor2 = Color(0xffe6e4eb)
 val BottomBackground = Color(0xfff8f8f8)
 val SwitchColor = Color(0xffa7a8a1)
 val SecondaryBackGround = Color(0xffd7d7d7)
+val ProfileBackground = Color(0xfff8f8f8)
 
 val ThemeColorGray = Color(0xffa5a5a5)
 val ThemeColorDarkBlue = Color(0xff223367)

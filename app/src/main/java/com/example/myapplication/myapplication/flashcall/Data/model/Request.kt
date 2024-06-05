@@ -20,3 +20,37 @@ data class VerifyRequest(
     @SerializedName("token")
     val token : String
 )
+
+data class CreateUser(
+
+    @SerializedName("username")
+    val username : String,
+    @SerializedName("phone")
+    val phone : String,
+    @SerializedName("fullName")
+    val fullName : String,
+    @SerializedName("firstName")
+    val firstName : String,
+    @SerializedName("lastName")
+    val lastName : String,
+    @SerializedName("photo")
+    val photo : String,
+    @SerializedName("profession")
+    val profession : String,
+    @SerializedName("themeSelected")
+    val themeSelected : String,
+    @SerializedName("videoRate")
+    val videoRate : String,
+    @SerializedName("audioRate")
+    val audioRate : String,
+    @SerializedName("chatRate")
+    val chatRate : String,
+    @SerializedName("gender")
+    val gender : String,
+    @SerializedName("dob")
+    val dob : String,
+    @SerializedName("bio")
+    val bio : String,
+    @SerializedName("kyc_status")
+    val kyc_status : String
+)

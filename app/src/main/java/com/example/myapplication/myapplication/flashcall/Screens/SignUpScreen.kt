@@ -1,6 +1,7 @@
 package com.example.myapplication.myapplication.flashcall.Screens
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -73,8 +74,13 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryText
 import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavHostController
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
+import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
 
+var sendtoken : String? = ""
 @Composable
 fun SignUpScreen(navController: NavController,viewModel: AuthenticationViewModel) {
 
@@ -139,59 +145,6 @@ fun SubTitleText()
     )
 }
 
-
-
-
-//@Composable
-//fun imageSlider(images:Int){
-//
-//    Image(painter = painterResource(id = images),
-//        contentDescription = null,
-//         contentScale = ContentScale.Crop,
-//        modifier = Modifier
-//            .width(200.dp)
-//            .height(200.dp)
-//            .clip(RoundedCornerShape(16.dp))
-//        )
-//
-//}
-//
-//@Composable
-//fun imageIndicator(active:Boolean)
-//{
-//    val color = if (active) Color.White else Color.Gray
-//
-//    val size = if (active) 10.dp else 10.dp
-//
-//
-//}
-//
-//@OptIn(ExperimentalFoundationApi::class)
-//@Composable
-//fun ImageSliderWithIndicator(images: List<Int>, pagerState: MutableState<Int>) {
-//
-//    val currentIndex = remember {
-//        mutableStateOf(0) }
-//
-//    LaunchedEffect(Unit) {
-//
-//        while(true)
-//        {
-//            delay(3000)
-//            currentIndex.value = (currentIndex.value + 1) % images.size
-//        }
-//
-//    }
-//
-//    Column(modifier = Modifier.fillMaxSize()) {
-//
-//        HorizontalPager(state = pagerState) {
-//
-//        }
-//
-//    }
-//
-//}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -347,9 +300,12 @@ fun IndicatorDots(isSelected: Boolean, modifier: Modifier) {
 @Composable
 fun BottomSignUpBar(navController: NavController, viewModel: AuthenticationViewModel) {
 
+    val context = LocalContext.current
     var phoneNumber by remember {
         mutableStateOf("")
     }
+
+    val sendOTPState by viewModel.sendOTPState.collectAsState()
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -476,14 +432,25 @@ fun BottomSignUpBar(navController: NavController, viewModel: AuthenticationViewM
                             }
                         )
 
+                        when(sendOTPState){
+                            is APIResponse.Success->{
+                                val response = (sendOTPState as APIResponse.Success).data
+                                 sendtoken = response.token
+                            }
+
+                            APIResponse.Empty -> Log.e("ERROR","ERROR CODE")
+                            is APIResponse.Error -> {
+                                Toast.makeText(context,"Something Went Wrong", Toast.LENGTH_SHORT).show()
+                            }
+                            APIResponse.Loading -> Log.e("ERROR","ERROR CODE")
+                        }
+
                         Box(contentAlignment = Alignment.CenterEnd) {
                             Button(
                                 onClick = {
                                     viewModel.signUP(
-                                        phone = phoneNumber,
-                                        navController
+                                        phoneNumber = phoneNumber,navController, sendtoken
                                     )
-
                                 },
                                 modifier = Modifier
                                     .padding(top = 5.dp, end = 1.dp),
@@ -500,17 +467,10 @@ fun BottomSignUpBar(navController: NavController, viewModel: AuthenticationViewM
                                         fontSize = 10.sp
                                     )
                                 )
-
                             }
-
                         }
-
-
-
-
                     }
                 }
-
 
                 Spacer(modifier = Modifier.height(10.dp))
 
@@ -579,13 +539,9 @@ fun BottomSignUpBar(navController: NavController, viewModel: AuthenticationViewM
                         }
                     }
                 }
-
             }
         }
-
-
     }
-    
 }
 
 @Composable
@@ -630,7 +586,8 @@ fun ClickableText() {
                     Log.d("ClickableText", "{$span}")
 
                 }
-        })
+        }
+    )
 }
 
 

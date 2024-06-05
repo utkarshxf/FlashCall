@@ -3,16 +3,16 @@ package com.example.myapplication.myapplication.flashcall.Data.model
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.transform
 
-sealed class APIResponse<T>(
-    val data: T? = null,
-    val message: String? = null
+sealed class APIResponse<out T>(
 ) {
 
-    class Success<T>(data: T) : APIResponse<T>(data)
+    object Empty : APIResponse<Nothing>()
+    object Loading : APIResponse<Nothing>()
 
-    class Error<T>(message: String?, data: T? = null) : APIResponse<T>(data, message)
+    class Success<out T>(val data: T) : APIResponse<T>()
 
-    class Loading<T> : APIResponse<T>()
+    class Error<T>(val message: String?, data: T? = null) : APIResponse<T>()
+
 
 }
 

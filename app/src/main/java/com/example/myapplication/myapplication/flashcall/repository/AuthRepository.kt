@@ -3,6 +3,8 @@ package com.example.myapplication.myapplication.flashcall.repository
 import com.example.myapplication.myapplication.flashcall.Data.SendOTP
 import com.example.myapplication.myapplication.flashcall.Data.VerifyOTP
 import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.CreateUser
+import com.example.myapplication.myapplication.flashcall.Data.model.CreateUserResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.Request
 import com.example.myapplication.myapplication.flashcall.Data.model.ResendOTPResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.ResendRequest
@@ -19,11 +21,15 @@ import javax.inject.Inject
 
 class AuthRepository @Inject constructor(private val apiService: APIService) : IAuthRepo {
 
-    override suspend fun sendOtp(url:String,number: String): Flow<SendOTPResponseX> {
+    override suspend fun sendOtp(url:String,number: String): Flow<SendOTPResponseX?> {
 
         return flow{
             val response = apiService.sendOTP(url, Request(number))
-            emit(response)
+            if(response.isSuccessful){
+                emit(response.body()!!)
+            }else{
+                emit(null)
+            }
         }.flowOn(Dispatchers.IO)
 
 
@@ -47,5 +53,9 @@ class AuthRepository @Inject constructor(private val apiService: APIService) : I
     }
 
 
-}
+
+    }
+
+
+
 

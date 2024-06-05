@@ -96,4 +96,9 @@ dependencies {
 
     implementation("com.maxkeppeler.sheets-compose-dialogs:core:1.3.0")
     implementation ("com.maxkeppeler.sheets-compose-dialogs:calendar:1.3.0")
+
+    implementation ("co.hyperverge:hyperkyc:0.13.0")
+
+    implementation ("androidx.activity:activity-ktx:1.9.0")
+    implementation ("androidx.fragment:fragment-ktx:1.7.1")
 }

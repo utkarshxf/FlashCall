@@ -1,5 +1,6 @@
 package com.example.myapplication.myapplication.flashcall.Screens
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -23,12 +24,14 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchColors
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,8 +47,17 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
+import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
 import com.example.myapplication.myapplication.flashcall.R
+import com.example.myapplication.myapplication.flashcall.ViewModel.RegistrationViewModel
+import com.example.myapplication.myapplication.flashcall.bottomnav.BottomBar
+import com.example.myapplication.myapplication.flashcall.bottomnav.BottomNavGraph
+//import com.example.myapplication.myapplication.flashcall.bottomnav.BottomNavGraph
+import com.example.myapplication.myapplication.flashcall.bottomnav.Screen
+//import com.example.myapplication.myapplication.flashcall.bottomnav.BottomNavGraph
 import com.example.myapplication.myapplication.flashcall.ui.theme.BorderColor2
 import com.example.myapplication.myapplication.flashcall.ui.theme.BottomBackground
 import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
@@ -54,99 +66,141 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.SwitchColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
 import java.time.LocalDate
 
+
+var uid:String? = null
 @Composable
-fun HomeScreen(navController: NavController)
+fun HomeScreen(navController: NavHostController, registrationViewModel: RegistrationViewModel)
 {
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color.Black
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .width(30.dp)
-                .height(50.dp)
-            )
-            {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp, end = 8.dp),
-                    horizontalArrangement = Arrangement.Absolute.Right,
-                ) {
-                    Button(
-                        colors = ButtonDefaults.buttonColors(Color.White),
-                        onClick = { navController.navigate(ScreenRoutes.EditScreen.route) }
-                    ) {
-                        Text(text = "edit profile",
-                            style = TextStyle(
-                                fontFamily = arimoFontFamily,
-                                fontWeight = FontWeight.Black,
-                                fontSize = 13.sp,
-                                color = Color.Black
-                            )
-                        )
-                    }
-                }
-            }
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(100.dp)
-            )
-            {
-                Row(modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Absolute.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                    )
-                {
-                    Image(
-                        painter = painterResource(id = R.drawable.home_image),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .size(90.dp)
-                    )
-                }
+    val createUserState by registrationViewModel.createUserState.collectAsState()
 
-            }
-
-            Text(text = "Nitra Sahgal",
-                color = Color.White,
-                style = TextStyle(
-                    fontFamily = arimoFontFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
-                ),
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(text = "Sahgal55@consultant",
-                color = Color.White,
-                style = TextStyle(
-                    fontFamily = arimoFontFamily,
-                    fontWeight = FontWeight.Black,
-                    fontSize = 16.sp,
-                ),
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-
-            HomeScreenBottom()
-
-
+    when(createUserState)
+    {
+        is APIResponse.Success->{
+            val response = (createUserState as APIResponse.Success).data
+            uid = response._id
+            Log.e("UserId", uid.toString())
         }
+
+        APIResponse.Empty -> Log.e("EmptyError", "empty")
+        is APIResponse.Error -> {
+            Log.e("Error", "Error Failed")
+        }
+        APIResponse.Loading -> Log.e("Loading", "Loading")
     }
 
 
 
-}
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color.Black
+    ) {
+
+        Scaffold (
+            bottomBar = { BottomBar(navController = navController) }
+        ){
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(it)
+                    .background(Color.Black)
+            ) {
+
+                //BottomNavGraph(navController = navController, registrationViewModel = registrationViewModel)
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .width(30.dp)
+                    .height(50.dp)
+                )
+                {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp, end = 8.dp),
+                        horizontalArrangement = Arrangement.Absolute.Right,
+                    ) {
+                        Button(
+                            colors = ButtonDefaults.buttonColors(Color.White),
+                            onClick = { navController.navigate(ScreenRoutes.EditScreen.route) }
+                        ) {
+                            Text(text = "edit profile",
+                                style = TextStyle(
+                                    fontFamily = arimoFontFamily,
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 13.sp,
+                                    color = Color.Black
+                                )
+                            )
+                        }
+                    }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp)
+                )
+                {
+                    Row(modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Absolute.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                    )
+                    {
+                        Image(
+                            painter = painterResource(id = R.drawable.home_image),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .size(90.dp)
+                        )
+                    }
+
+                }
+
+                Text(text = "Nitra Sahgal",
+                    color = Color.White,
+                    style = TextStyle(
+                        fontFamily = arimoFontFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 24.sp,
+                    ),
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(text = "Sahgal55@consultant",
+                    color = Color.White,
+                    style = TextStyle(
+                        fontFamily = arimoFontFamily,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 16.sp,
+                    ),
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                HomeScreenBottom()
+
+
+
+
+            }
+        }
+
+
+        }
+
+    }
+
+
+
+
+
+
+
+
 
 @Composable
 fun HomeScreenBottom()
@@ -191,6 +245,7 @@ fun HomeScreenBottom()
                 Spacer(modifier = Modifier.height(10.dp))
 
                 ServicesSection()
+
 
             }
         }

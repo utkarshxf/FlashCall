@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
@@ -64,13 +65,17 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.R
+import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
+import com.example.myapplication.myapplication.flashcall.ViewModel.RegistrationViewModel
 import com.example.myapplication.myapplication.flashcall.ui.theme.BorderColor2
 import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.PrimaryBackGround
@@ -88,7 +93,7 @@ import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegistrationScreen(navController: NavController)
+fun RegistrationScreen(navController: NavController, registrationViewModel: RegistrationViewModel, authenticationViewModel: AuthenticationViewModel)
 {
 
     var buttonColor by remember { mutableStateOf(Color.White) }
@@ -100,7 +105,7 @@ fun RegistrationScreen(navController: NavController)
         mutableStateOf(false)
     }
 
-//    CalendarDialog(state = calendarState, selection = CalendarSelection.Date{})
+    val phoneNumber = authenticationViewModel.phoneNumber.value
 
     var genderMale by remember { mutableStateOf(false) }
     var genderFemale by remember { mutableStateOf(false) }
@@ -212,7 +217,7 @@ fun RegistrationScreen(navController: NavController)
                 }
 
                 Spacer(modifier = Modifier.height(25.dp))
-                
+
                 Text(text = "Name*",
                     textAlign = TextAlign.Start,
                     style = TextStyle(
@@ -229,6 +234,10 @@ fun RegistrationScreen(navController: NavController)
                     shape = RoundedCornerShape(10.dp),
                     value = name,
                     onValueChange = {name = it},
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Next
+                    ),
+                    maxLines = 1,
                     trailingIcon = {
                                    Icon(
                                        painter = painterResource(id = R.drawable.profile_icon_register),
@@ -274,6 +283,10 @@ fun RegistrationScreen(navController: NavController)
                     shape = RoundedCornerShape(10.dp),
                     value = userId,
                     onValueChange = {userId = it},
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Done
+                    ),
+                    maxLines = 1,
                     trailingIcon = {
                         Icon(
                             painter = painterResource(id = R.drawable.id_icon_register),
@@ -439,7 +452,7 @@ fun RegistrationScreen(navController: NavController)
                 val formattedDate by remember {
                     derivedStateOf {
                         DateTimeFormatter
-                            .ofPattern("dd MM yyyy")
+                            .ofPattern("dd-MM-yyyy")
                             .format(currentDate)
                     }
                 }
@@ -448,70 +461,43 @@ fun RegistrationScreen(navController: NavController)
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                OutlinedTextField(
-                    shape = RoundedCornerShape(10.dp),
-                    value = dateOfBirth,
-                    onValueChange = {dateOfBirth = it},
-                    trailingIcon = {
-                        Icon(
-                            painter = painterResource(id = R.drawable.calendar_icon_register),
-                            contentDescription = null
-                        )
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(color = Color.White)
-                        .border(1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp))
-                        .clickable {
-                            dateDialogState.show()
-                        },
-                    placeholder = {
-                        Text(
-                            text="dd/mm/yyyy",
-                            color = SecondaryText,
-                            style = TextStyle(
-                                fontFamily = arimoFontFamily,
-                                fontWeight = FontWeight.Bold,
-                            )
-                        )
-                    },
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = Color.Transparent,
-                        unfocusedBorderColor = Color.Transparent,
-                        cursorColor = MainColor
-                    )
-                )
-
-
-
-
-                OutlinedButton(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = Color.White,
-                        contentColor = SecondaryText,
-
-                    ),
-                    shape = RoundedCornerShape(10.dp),
-                    onClick = {
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(55.dp)
+                    .border(2.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp))
+                    .clickable {
                         dateDialogState.show()
-                        dateState = !dateState
                     }
-                ) {
+                ){
                     Row(
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.White),
+                        verticalAlignment = Alignment.CenterVertically,
+
                     ){
                         Text(
-                            text = if(dateState)"dd/mm/yyyy" else currentDate.toString(),
+                            modifier = Modifier.padding(16.dp),
+                            text = formattedDate,
                             color = SecondaryText,
                             style = TextStyle(
                                 fontFamily = arimoFontFamily,
                                 fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
                             )
                         )
+
+                        Spacer(modifier = Modifier)
+
+                        Image(painter = painterResource(id = R.drawable.calendar_icon_register),
+                            modifier = Modifier
+                                .padding(start = 190.dp)
+                                .size(24.dp),
+                            contentDescription = null)
+
                         Spacer(modifier = Modifier.weight(2f))
-                        Image(painter = painterResource(id = R.drawable.calendar_icon_register), contentDescription =null)
                     }
+
                 }
 
                 MaterialDialog(
@@ -535,13 +521,39 @@ fun RegistrationScreen(navController: NavController)
 
                 Spacer(modifier = Modifier.height(60.dp))
 
+//                Text(text = R.color.splash.toString())
+
                 Button(
                     shape = RoundedCornerShape(10.dp),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(60.dp),
                     colors = ButtonDefaults.buttonColors(MainColor),
-                    onClick = { navController.navigate(ScreenRoutes.HomeScreen.route) }
+                    onClick = {
+
+                        registrationViewModel.createUser(
+                            "",
+                            "",
+                            name,
+                            "",
+                            "",
+                            "",
+                            "Astrologer",
+                            "#50A65C",
+                            "25",
+                            "25",
+                            "25",
+                            selectedGender,
+                            formattedDate,
+                            "",
+                            "Incomplete",
+                            navController
+                        )
+
+//                        navController.navigate(ScreenRoutes.HomeScreen.route)
+
+                    }
+
                 )
                 {
                     Text(text = "NEXT",
