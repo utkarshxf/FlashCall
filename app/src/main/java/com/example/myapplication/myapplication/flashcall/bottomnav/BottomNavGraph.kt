@@ -1,6 +1,7 @@
 package com.example.myapplication.myapplication.flashcall.bottomnav
 
 import androidx.compose.runtime.Composable
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -13,12 +14,13 @@ import com.example.myapplication.myapplication.flashcall.Screens.WalletScreen
 import com.example.myapplication.myapplication.flashcall.ViewModel.RegistrationViewModel
 
 @Composable
-fun BottomNavGraph(navController: NavHostController, registrationViewModel: RegistrationViewModel) {
+fun BottomNavGraph(homeNavController: NavHostController, navController: NavController) {
 
-    NavHost(navController = navController, startDestination = ScreenRoutes.HomeScreen.route) {
+    var registrationViewModel = hiltViewModel<RegistrationViewModel>()
+    NavHost(navController = homeNavController, startDestination = ScreenRoutes.HomeScreen.route) {
 
         composable(route = ScreenRoutes.HomeScreen.route) {
-            HomeScreen(navController, registrationViewModel)
+            HomeScreen(homeNavController, registrationViewModel)
         }
         composable(route = ScreenRoutes.WalletScreen.route) {
             WalletScreen(navController)

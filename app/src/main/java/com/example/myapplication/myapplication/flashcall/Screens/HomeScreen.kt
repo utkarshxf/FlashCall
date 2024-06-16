@@ -1,5 +1,8 @@
 package com.example.myapplication.myapplication.flashcall.Screens
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -40,12 +43,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -54,7 +59,7 @@ import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
 import com.example.myapplication.myapplication.flashcall.R
 import com.example.myapplication.myapplication.flashcall.ViewModel.RegistrationViewModel
 import com.example.myapplication.myapplication.flashcall.bottomnav.BottomBar
-import com.example.myapplication.myapplication.flashcall.bottomnav.BottomNavGraph
+//import com.example.myapplication.myapplication.flashcall.bottomnav.BottomNavGraph
 //import com.example.myapplication.myapplication.flashcall.bottomnav.BottomNavGraph
 import com.example.myapplication.myapplication.flashcall.bottomnav.Screen
 //import com.example.myapplication.myapplication.flashcall.bottomnav.BottomNavGraph
@@ -69,7 +74,7 @@ import java.time.LocalDate
 
 var uid:String? = null
 @Composable
-fun HomeScreen(navController: NavHostController, registrationViewModel: RegistrationViewModel)
+fun HomeScreen(navController: NavController, registrationViewModel: RegistrationViewModel)
 {
 
     val createUserState by registrationViewModel.createUserState.collectAsState()
@@ -89,16 +94,14 @@ fun HomeScreen(navController: NavHostController, registrationViewModel: Registra
         APIResponse.Loading -> Log.e("Loading", "Loading")
     }
 
-
-
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color.Black
     ) {
 
-        Scaffold (
-            bottomBar = { BottomBar(navController = navController) }
-        ){
+        Scaffold(
+//            bottomBar = { BottomBar(navController = navController) }
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -107,10 +110,11 @@ fun HomeScreen(navController: NavHostController, registrationViewModel: Registra
             ) {
 
                 //BottomNavGraph(navController = navController, registrationViewModel = registrationViewModel)
-                Box(modifier = Modifier
-                    .fillMaxWidth()
-                    .width(30.dp)
-                    .height(50.dp)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .width(30.dp)
+                        .height(50.dp)
                 )
                 {
                     Row(
@@ -123,7 +127,8 @@ fun HomeScreen(navController: NavHostController, registrationViewModel: Registra
                             colors = ButtonDefaults.buttonColors(Color.White),
                             onClick = { navController.navigate(ScreenRoutes.EditScreen.route) }
                         ) {
-                            Text(text = "edit profile",
+                            Text(
+                                text = "edit profile",
                                 style = TextStyle(
                                     fontFamily = arimoFontFamily,
                                     fontWeight = FontWeight.Black,
@@ -141,7 +146,8 @@ fun HomeScreen(navController: NavHostController, registrationViewModel: Registra
                         .height(100.dp)
                 )
                 {
-                    Row(modifier = Modifier.fillMaxWidth(),
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Absolute.Center,
                         verticalAlignment = Alignment.CenterVertically,
                     )
@@ -157,7 +163,8 @@ fun HomeScreen(navController: NavHostController, registrationViewModel: Registra
 
                 }
 
-                Text(text = "Nitra Sahgal",
+                Text(
+                    text = "Nitra Sahgal",
                     color = Color.White,
                     style = TextStyle(
                         fontFamily = arimoFontFamily,
@@ -169,7 +176,8 @@ fun HomeScreen(navController: NavHostController, registrationViewModel: Registra
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Text(text = "Sahgal55@consultant",
+                Text(
+                    text = "Sahgal55@consultant",
                     color = Color.White,
                     style = TextStyle(
                         fontFamily = arimoFontFamily,
@@ -184,15 +192,12 @@ fun HomeScreen(navController: NavHostController, registrationViewModel: Registra
                 HomeScreenBottom()
 
 
-
-
             }
         }
 
-
-        }
-
     }
+
+}
 
 
 
@@ -255,6 +260,7 @@ fun HomeScreenBottom()
 @Composable
 fun CopyBar()
 {
+    var context = LocalContext.current
     Row(
         modifier = Modifier
             .width(300.dp)
@@ -290,7 +296,14 @@ fun CopyBar()
                 )
 
                 Image(painter = painterResource(id = R.drawable.copy_icon),
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .clickable {
+                                   copyToClipboard(
+                                       context = context,
+                                       "https://www.flashcall.me/nitra-sahgal-55-consultant"
+                                   )
+                        },
                     contentDescription = null)
 
 
@@ -460,16 +473,27 @@ fun ServicesSection()
             Spacer(modifier = Modifier.height(5.dp))
 
             HorizontalDivider(thickness = 1.dp, modifier = Modifier.padding(start = 10.dp, end = 10.dp))
+            
+            var isDialog by remember {
+                mutableStateOf(false)
+            }
+            
+            Dialog(onDismissRequest = { /*TODO*/ }) {
+                
+            }
 
 
             Column(modifier = Modifier
                 .fillMaxSize()
-                .padding(10.dp))
+                .padding(10.dp)
+                .clickable {
+                    isDialog = true
+                })
             {
 
                 Row(
-                    modifier = Modifier.height(50.dp)
-
+                    modifier = Modifier
+                        .height(50.dp)
                 ){
                     Column(modifier = Modifier.fillMaxHeight())
                     {
@@ -634,15 +658,17 @@ fun ServicesSection()
                 }
 
             }
+            
+            if(isDialog)
+                Dialog(onDismissRequest = { }) {
+
+                }
         }
     }
 }
 
 @Composable
-fun CustomToggleButton(
-    selected:Boolean,
-    onChangeValue:(Boolean)->Unit
-) {
+fun CustomToggleButton(selected:Boolean, onChangeValue:(Boolean)->Unit) {
     Card(
         modifier = Modifier.width(50.dp),
         elevation = CardDefaults.cardElevation(0.dp),
@@ -661,12 +687,8 @@ fun CustomToggleButton(
         }
     }
 }
-
-
 @Composable
-fun CustomCheck(
-    modifier: Modifier
-) {
+fun CustomCheck(modifier: Modifier) {
 
     Card(
         modifier = modifier.size(20.dp),
@@ -678,7 +700,20 @@ fun CustomCheck(
 
 }
 
-data class ToggleableInfo(
-    val isChecked:Boolean
-)
+
+fun copyToClipboard(
+    context : Context,
+    copyText : String,
+
+){
+    val clipBoard = context.getSystemService(
+        Context.CLIPBOARD_SERVICE
+    ) as ClipboardManager
+
+    val clip = ClipData.newPlainText(
+        "Copied Text",
+        copyText
+    )
+    clipBoard.setPrimaryClip(clip)
+}
 

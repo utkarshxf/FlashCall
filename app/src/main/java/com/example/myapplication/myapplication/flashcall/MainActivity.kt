@@ -21,6 +21,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,19 +38,26 @@ import co.hyperverge.hyperkyc.data.models.HyperKycConfig
 import co.hyperverge.hyperkyc.data.models.result.HyperKycResult
 import co.hyperverge.hyperkyc.data.models.result.HyperKycStatus
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
+import com.example.myapplication.myapplication.flashcall.Data.VideoCallRoute
 import com.example.myapplication.myapplication.flashcall.Screens.EditProfileScreen
 import com.example.myapplication.myapplication.flashcall.Screens.HomeScreen
+import com.example.myapplication.myapplication.flashcall.Screens.IncomingCallScreen
+import com.example.myapplication.myapplication.flashcall.Screens.MainScreen
 import com.example.myapplication.myapplication.flashcall.Screens.ProfileScreen
 import com.example.myapplication.myapplication.flashcall.Screens.RegistrationScreen
 import com.example.myapplication.myapplication.flashcall.Screens.SignUpOTP
 import com.example.myapplication.myapplication.flashcall.Screens.SignUpScreen
+import com.example.myapplication.myapplication.flashcall.Screens.VideoCall
 import com.example.myapplication.myapplication.flashcall.Screens.WalletScreen
 import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.RegistrationViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.SplashViewModel
+import com.example.myapplication.myapplication.flashcall.ViewModel.VideoCallViewModel
+import com.example.myapplication.myapplication.flashcall.navigation.RootNavGraph
 import com.example.myapplication.myapplication.flashcall.ui.theme.FlashCallTheme
 import com.example.myapplication.myapplication.flashcall.utils.rememberImeState
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -77,6 +86,7 @@ class MainActivity : ComponentActivity() {
 
 
                     AppNavigation()
+                RootNavGraph()
 
 
 
@@ -93,9 +103,26 @@ fun AppNavigation() {
     val navController = rememberNavController()
     var viewModel = hiltViewModel<AuthenticationViewModel>()
     var registrationViewModel = hiltViewModel<RegistrationViewModel>()
+    var videoViewModel = hiltViewModel<VideoCallViewModel>()
 
-    NavHost(navController = navController, startDestination = ScreenRoutes.SignUpScreen.route) {
+    LaunchedEffect(
+        key1 = Unit
+    ) {
 
+        videoViewModel.videoCall.collectLatest {
+            if (it != null) {
+                navController.navigate(ScreenRoutes.IncomingCallScreen.route)
+            }
+        }
+    }
+
+    val inComingCall by videoViewModel.videoCall.collectAsState()
+
+    NavHost(navController = navController, startDestination = ScreenRoutes.MainScreen.route) {
+
+        composable(route= ScreenRoutes.MainScreen.route) {
+            MainScreen(navController = navController)
+        }
         composable(route= ScreenRoutes.SignUpScreen.route) {
             SignUpScreen(navController = navController, viewModel = viewModel)
         }
@@ -123,8 +150,13 @@ fun AppNavigation() {
         composable(route = ScreenRoutes.WalletScreen.route) {
             WalletScreen(navController)
         }
-        composable(route = ScreenRoutes.ProfileScreen.route) {
-            ProfileScreen(navController)
+
+        composable(route = VideoCallRoute.VideoCall.route) {
+            VideoCall(videoCall = true, viewModel = videoViewModel, navController = navController)
+        }
+
+        composable(route = ScreenRoutes.IncomingCallScreen.route){
+            IncomingCallScreen(call = inComingCall!!, navController = navController)
         }
 
     }

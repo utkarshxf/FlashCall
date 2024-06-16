@@ -2,6 +2,9 @@ package com.example.myapplication.myapplication.flashcall.di
 
 import com.example.myapplication.myapplication.flashcall.Data.network.APIService
 import com.example.myapplication.myapplication.flashcall.repository.AuthRepository
+import com.example.myapplication.myapplication.flashcall.repository.ChatRepository
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import com.google.gson.Gson
 import com.squareup.moshi.Moshi
 import dagger.Module
@@ -48,6 +51,21 @@ object APIModule {
     fun providesAuthRepository(apiService: APIService) : AuthRepository {
         return AuthRepository(apiService)
     }
+
+    @Provides
+    @Singleton
+    fun providesFirebaseFirestore() : FirebaseFirestore = FirebaseFirestore.getInstance()
+
+    @Provides
+    @Singleton
+    fun provideFirebaseStorage() : FirebaseStorage = FirebaseStorage.getInstance()
+
+    @Provides
+    @Singleton
+    fun provideChatRepository(
+        firestore: FirebaseFirestore,
+        storage: FirebaseStorage,
+    ) : ChatRepository = ChatRepository(firestore, storage)
 
 
 

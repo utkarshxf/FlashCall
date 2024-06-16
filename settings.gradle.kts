@@ -18,8 +18,6 @@ dependencyResolutionManagement {
         mavenCentral()
         maven {
             url = uri("https://jitpack.io")
-//            url = uri("https://s3.ap-south-1.amazonaws.com/hvsdk/android/releases")
-
         }
         maven {
             url = uri("https://s3.ap-south-1.amazonaws.com/hvsdk/android/releases")
