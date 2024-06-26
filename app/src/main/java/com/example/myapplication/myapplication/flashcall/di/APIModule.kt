@@ -1,6 +1,15 @@
 package com.example.myapplication.myapplication.flashcall.di
 
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.preferencesDataStoreFile
 import com.example.myapplication.myapplication.flashcall.Data.network.APIService
+import com.example.myapplication.myapplication.flashcall.preferenceStore.PreferenceStore
+import com.example.myapplication.myapplication.flashcall.preferenceStore.userPref
 import com.example.myapplication.myapplication.flashcall.repository.AuthRepository
 import com.example.myapplication.myapplication.flashcall.repository.ChatRepository
 import com.google.firebase.firestore.FirebaseFirestore
@@ -10,6 +19,7 @@ import com.squareup.moshi.Moshi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -68,5 +78,20 @@ object APIModule {
     ) : ChatRepository = ChatRepository(firestore, storage)
 
 
+    @Provides
+    @Singleton
+    fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
+        return PreferenceDataStoreFactory.create(
+            corruptionHandler = ReplaceFileCorruptionHandler(
+                produceNewData = { emptyPreferences() }
+            ), produceFile = {
+                context.preferencesDataStoreFile("user_data")
+            }
+        )
+    }
+
+    @Provides
+    fun providesUserPref(dataStore: DataStore<Preferences>)
+            : userPref = PreferenceStore(dataStore)
 
 }

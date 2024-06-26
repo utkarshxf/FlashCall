@@ -17,18 +17,24 @@ import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.ResendOTPResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.SendOTPResponseX
 import com.example.myapplication.myapplication.flashcall.Data.model.VerifyOTPResponse
+import com.example.myapplication.myapplication.flashcall.preferenceStore.userPref
 import com.example.myapplication.myapplication.flashcall.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.fold
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AuthenticationViewModel @Inject constructor( private val authenticationRepository: AuthRepository) : ViewModel() {
+class AuthenticationViewModel @Inject constructor(
+    private val authenticationRepository: AuthRepository,
+    private val userPref: userPref
+) : ViewModel() {
 
     var inProcess = mutableStateOf(false)
     val eventMutableState = mutableStateOf<Events<String>?>(null)
@@ -117,7 +123,7 @@ class AuthenticationViewModel @Inject constructor( private val authenticationRep
                         "https://flashcall.vercel.app/api/v1/verify-otp", phone, otp, token)
                         .collect {
                             _verifyOTPState.value = APIResponse.Success(it)
-                            navController.navigate(ScreenRoutes.RegistrationScreen.route)
+                            navController.navigate(ScreenRoutes.MainScreen.route)
                         }
                 }
             }
@@ -139,6 +145,19 @@ class AuthenticationViewModel @Inject constructor( private val authenticationRep
         eventMutableState.value = Events(message)
         inProcess.value = false
 
+    }
+
+    val userToken = userPref.getToken().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(),
+        initialValue = ""
+    )
+
+
+    fun saveToken(token: String) {
+        viewModelScope.launch {
+            userPref.saveToken(token)
+        }
     }
 
 }
