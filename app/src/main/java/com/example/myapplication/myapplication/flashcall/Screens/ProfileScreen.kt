@@ -1,6 +1,8 @@
 package com.example.myapplication.myapplication.flashcall.Screens
 
+import android.app.Activity
 import android.content.Intent
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -44,6 +46,7 @@ import androidx.navigation.NavHostController
 import co.hyperverge.hyperkyc.HyperKyc
 import co.hyperverge.hyperkyc.data.models.HyperKycConfig
 import co.hyperverge.hyperkyc.data.models.result.HyperKycResult
+import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.R
 //import com.example.myapplication.myapplication.flashcall.hyperKycLauncher
 import com.example.myapplication.myapplication.flashcall.kyc_package.KycActivity
@@ -54,7 +57,9 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryText
 import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
 
 @Composable
-fun ProfileScreen(navController: NavController)
+fun ProfileScreen(navController: NavController,
+                  hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>
+)
 {
 
     Surface(
@@ -151,8 +156,16 @@ fun ProfileScreen(navController: NavController)
                 .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
                 .clickable {
 //                    hyperKycLauncher.launch(config)
-                    val intent = Intent(context, KycActivity::class.java)
-                        context.startActivity(intent)
+//                    val intent = Intent(context, KycActivity::class.java)
+//                        context.startActivity(intent)
+
+                    var config = HyperKycConfig(
+                        appId = "muzdob",
+                        appKey = "2ns9u1evoeugbrydykl7",
+                        workflowId = "workflow_9KW4mUl",
+                        transactionId = "TestTransact6",
+                    )
+                    hyperKycLauncher.launch(config)
 
                 }
             ){
@@ -236,6 +249,9 @@ fun ProfileScreen(navController: NavController)
                 .height(60.dp)
                 .clip(RoundedCornerShape(10.dp))
                 .background(Color.White)
+                .clickable {
+                    navController.navigate(ScreenRoutes.PaymentSettings.route)
+                }
                 .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
             ){
                 Row(
@@ -313,12 +329,16 @@ fun ProfileScreen(navController: NavController)
 
             Spacer(modifier = Modifier.height(15.dp))
 
+            val activity = (LocalContext.current as? Activity)
             Box(modifier = Modifier
                 .fillMaxWidth()
                 .height(60.dp)
                 .clip(RoundedCornerShape(10.dp))
                 .background(Color.White)
                 .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
+                .clickable {
+                    activity?.finish()
+                }
             ){
                 Row(
                     modifier = Modifier
@@ -330,6 +350,7 @@ fun ProfileScreen(navController: NavController)
                         painter = painterResource(id = R.drawable.logout_icon),
                         contentDescription = null
                     )
+
 
 
                     Text(text = "Log Out",

@@ -114,4 +114,6 @@ dependencies {
     implementation(libs.stream.video.mock)
     implementation(libs.accompanist.permissions)
     implementation(libs.preference.datastore)
+
+//    implementation("com.google.accompanist:accompanist-insets-ui.0.24.7-alpha")
 }

@@ -9,8 +9,10 @@ import com.example.myapplication.myapplication.flashcall.Data.model.Request
 import com.example.myapplication.myapplication.flashcall.Data.model.ResendOTPResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.ResendRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.SendOTPResponseX
+import com.example.myapplication.myapplication.flashcall.Data.model.ValidateRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.VerifyOTPResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.VerifyRequest
+import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.ValidateResponse
 import com.example.myapplication.myapplication.flashcall.Data.network.APIService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -52,9 +54,18 @@ class AuthRepository @Inject constructor(private val apiService: APIService) : I
         }.flowOn(Dispatchers.IO)
     }
 
+    override suspend fun validateUser(url:String, token: String): Flow<ValidateResponse>{
 
-
+        return flow {
+            val response = apiService.validateUser(url, ValidateRequest(token))
+            emit(response)
+        }.flowOn(Dispatchers.IO)
     }
+
+
+
+
+}
 
 
 

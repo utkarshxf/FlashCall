@@ -41,7 +41,7 @@ class BaseClass : Application() {
     fun create(context: Context) {
 
         //Constant Data Object
-        val userId = "66681d96436f89b49d8b498b"
+        val userId = "664c90ae43f0af8f1b3d5803"
         val notify: ((Call) -> Notification) = {
             Log.d("Call", "Call$it")
             Notification.Builder(context).build()

@@ -54,3 +54,9 @@ data class CreateUser(
     @SerializedName("kyc_status")
     val kyc_status : String
 )
+
+
+data class ValidateRequest(
+    @SerializedName("token")
+    val token : String
+)

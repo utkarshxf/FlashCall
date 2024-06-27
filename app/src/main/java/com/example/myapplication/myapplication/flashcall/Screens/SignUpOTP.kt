@@ -260,14 +260,6 @@ fun BottomOTPBar(navController: NavController,viewModel: AuthenticationViewModel
                     )
                 )
 
-//                if(otpValue.length == 6)
-//                {
-//                    if(resendToken != null)
-//                        viewModel.verifyOTP(phone,otpValue,resendToken,navController)
-//                    else
-//                        viewModel.verifyOTP(phone,otpValue,verificationToken,navController)
-//                }
-
                 Button(
                     onClick = {
 
@@ -312,6 +304,7 @@ fun BottomOTPBar(navController: NavController,viewModel: AuthenticationViewModel
                                 color = SecondaryText
                             )
                         )
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
@@ -326,6 +319,7 @@ fun BottomOTPBar(navController: NavController,viewModel: AuthenticationViewModel
                                     color = Color.Black
                                 )
                             )
+
                             Text(text = " and ",
                                 modifier = Modifier.clickable {  },
                                 style = TextStyle(

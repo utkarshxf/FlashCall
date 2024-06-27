@@ -1,9 +1,15 @@
 package com.example.myapplication.myapplication.flashcall.Screens
 
+import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -11,6 +17,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+//import androidx.compose.foundation.layout.FlowColumnScopeInstance.align
+//import androidx.compose.foundation.layout.FlowColumnScopeInstance.align
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -20,8 +28,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -47,16 +57,26 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.core.content.ContextCompat.startActivity
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
+import coil.compose.AsyncImagePainter
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
+import coil.request.ImageResult
+import coil.size.Size
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
 import com.example.myapplication.myapplication.flashcall.R
+import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.RegistrationViewModel
 import com.example.myapplication.myapplication.flashcall.bottomnav.BottomBar
 //import com.example.myapplication.myapplication.flashcall.bottomnav.BottomNavGraph
@@ -69,22 +89,45 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.PrimaryBackGround
 import com.example.myapplication.myapplication.flashcall.ui.theme.SwitchColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
+import com.example.myapplication.myapplication.flashcall.utils.ShareComplete
+import kotlinx.coroutines.flow.collectLatest
 import java.time.LocalDate
 
 
-var uid:String? = null
+var creatorUid:String = ""
+var token : String = ""
+var creatorUserName : String = ""
 @Composable
-fun HomeScreen(navController: NavController, registrationViewModel: RegistrationViewModel)
+fun HomeScreen(navController: NavController, registrationViewModel: RegistrationViewModel = hiltViewModel(), authenticationViewModel: AuthenticationViewModel)
 {
 
-    val createUserState by registrationViewModel.createUserState.collectAsState()
+    var uid by remember {
+        mutableStateOf("")
+    }
+    var name by remember {
+        mutableStateOf("")
+    }
+    var userId by remember {
+        mutableStateOf("")
+    }
+    var profilePic by remember {
+        mutableStateOf("")
+    }
 
-    when(createUserState)
-    {
+    val createUserState1 by registrationViewModel.createUserState.collectAsState()
+    Log.d("CreatedUserData", createUserState1.toString())
+    Log.d("CreateUserResponse", "$createUserState1")
+    when(createUserState1) {
         is APIResponse.Success->{
-            val response = (createUserState as APIResponse.Success).data
+
+            val response = (createUserState1 as APIResponse.Success).data
+            Log.d("UserResponse", response.toString())
             uid = response._id
-            Log.e("UserId", uid.toString())
+            name = response.fullName
+            userId = response.username
+            profilePic = response.photo
+            Log.d("UserId", uid.toString())
+
         }
 
         APIResponse.Empty -> Log.e("EmptyError", "empty")
@@ -94,12 +137,40 @@ fun HomeScreen(navController: NavController, registrationViewModel: Registration
         APIResponse.Loading -> Log.e("Loading", "Loading")
     }
 
+    creatorUid = uid
+    creatorUserName = userId
+
+//    val createUserState by registrationViewModel.createUserState.collectAsState()
+//    Log.d("CreateUserStateHome", "$createUserState")
+//    when(createUserState)
+//    {
+//        is APIResponse.Success->{
+//            val response = (createUserState as APIResponse.Success).data
+//            Log.d("UserResponse", response.toString())
+//            uid = response._id
+//            name = response.fullName
+//            userId = response.username
+//            Log.d("UserId", uid.toString())
+//        }
+//
+//        APIResponse.Empty -> Log.e("EmptyError", "empty")
+//        is APIResponse.Error -> {
+//            Log.e("Error", "Error Failed")
+//        }
+//        APIResponse.Loading -> Log.e("Loading", "Loading")
+//    }
+
+
+
+    val scrollState = rememberScrollState()
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color.Black
     ) {
 
         Scaffold(
+            modifier = Modifier.fillMaxSize()
 //            bottomBar = { BottomBar(navController = navController) }
         ) {
             Column(
@@ -107,6 +178,7 @@ fun HomeScreen(navController: NavController, registrationViewModel: Registration
                     .fillMaxSize()
                     .padding(it)
                     .background(Color.Black)
+                    .verticalScroll(scrollState)
             ) {
 
                 //BottomNavGraph(navController = navController, registrationViewModel = registrationViewModel)
@@ -143,81 +215,81 @@ fun HomeScreen(navController: NavController, registrationViewModel: Registration
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(100.dp)
-                )
-                {
+                        .height(140.dp)
+                ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Absolute.Center,
                         verticalAlignment = Alignment.CenterVertically,
                     )
                     {
-                        Image(
-                            painter = painterResource(id = R.drawable.home_image),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .size(90.dp)
-                        )
+//                        Image(
+//                            painter = painterResource(id = R.drawable.home_image),
+//                            contentDescription = null,
+//                            modifier = Modifier
+//                                .clip(CircleShape)
+//                                .size(90.dp)
+//                        )
+
+                        Log.d("ProfileImageofUser", "$profilePic")
+                        ImageFromUrl(imageUrl = profilePic!!)
                     }
 
                 }
 
-                Text(
-                    text = "Nitra Sahgal",
-                    color = Color.White,
-                    style = TextStyle(
-                        fontFamily = arimoFontFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 24.sp,
-                    ),
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
+
+                    Text(
+                        text = name,
+                        color = Color.White,
+                        style = TextStyle(
+                            fontFamily = arimoFontFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 24.sp,
+                        ),
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Text(
-                    text = "Sahgal55@consultant",
-                    color = Color.White,
-                    style = TextStyle(
-                        fontFamily = arimoFontFamily,
-                        fontWeight = FontWeight.Black,
-                        fontSize = 16.sp,
-                    ),
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
+                    Text(
+                        text = userId,
+                        color = Color.White,
+                        style = TextStyle(
+                            fontFamily = arimoFontFamily,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 16.sp,
+                        ),
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-                HomeScreenBottom()
-
-
+                Box(modifier = Modifier.fillMaxSize()){
+                    HomeScreenBottom(navController)
+                }
             }
         }
-
     }
-
 }
 
 
-
-
-
-
-
-
-
 @Composable
-fun HomeScreenBottom()
+fun HomeScreenBottom(homeNavController: NavController)
 {
+    var showShareDialog by remember { mutableStateOf(true) }
+
 
     Surface(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .fillMaxHeight(),
         shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .fillMaxHeight()
                 .background(
                     PrimaryBackGround,
                     shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
@@ -226,30 +298,35 @@ fun HomeScreenBottom()
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .fillMaxHeight()
                     .padding(10.dp)
             ) {
                 Row(modifier = Modifier.fillMaxWidth()) {
 
                     CopyBar()
+                    if (showShareDialog) {
+                        ShareTextButton(
+                            textToShare = "https://www.flashcall.me/nitra-sahgal-55-consultant",
+                            homeNavController = homeNavController
+                        )
+                    }
 
-                    Image(painter = painterResource(id = R.drawable.share_icon),
-                        modifier = Modifier
-                            .padding(start = 2.dp, top = 2.dp)
-                            .size(42.dp)
-                            .clickable {
 
-                            },
-                        contentDescription = null
-                    )
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 WalletBar()
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 ServicesSection()
+
+                Spacer(modifier = Modifier.height(40.dp))
+
+                DemoText()
+
+                Spacer(modifier = Modifier.height(60.dp))
 
 
             }
@@ -260,6 +337,10 @@ fun HomeScreenBottom()
 @Composable
 fun CopyBar()
 {
+    var copyText by remember {
+        mutableStateOf("https://www.flashcall.vercel.app/expert/$creatorUserName/$creatorUid")
+    }
+
     var context = LocalContext.current
     Row(
         modifier = Modifier
@@ -280,7 +361,7 @@ fun CopyBar()
                     modifier = Modifier.padding(16.dp),
                     contentDescription = null)
 
-                Text(text = "https://www.flashcall.me/nitra-sahgal-55-consultant",
+                Text(text = copyText,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
@@ -299,16 +380,13 @@ fun CopyBar()
                     modifier = Modifier
                         .padding(16.dp)
                         .clickable {
-                                   copyToClipboard(
-                                       context = context,
-                                       "https://www.flashcall.me/nitra-sahgal-55-consultant"
-                                   )
+                            copyToClipboard(
+                                context = context,
+                                copyText
+                            )
                         },
                     contentDescription = null)
-
-
             }
-
         }
     }
 }
@@ -398,15 +476,15 @@ fun ServicesSection()
     }
 
     var audioService by remember {
-        mutableStateOf(false)
+        mutableStateOf(true)
     }
 
     var videoService by remember {
-        mutableStateOf(false)
+        mutableStateOf(true)
     }
 
     var chatService by remember {
-        mutableStateOf(false)
+        mutableStateOf(true)
     }
 
     var audioPrice by remember {
@@ -531,6 +609,10 @@ fun ServicesSection()
                         checked = videoService,
                         onCheckedChange =
                         {
+                            if(serviceSelected)
+                            {
+                                videoService = it
+                            }
                             videoService = it
                         },
                         colors = SwitchDefaults.colors(
@@ -656,7 +738,6 @@ fun ServicesSection()
                             .padding(bottom = 15.dp), enabled = serviceSelected
                     )
                 }
-
             }
             
             if(isDialog)
@@ -665,6 +746,11 @@ fun ServicesSection()
                 }
         }
     }
+}
+
+@Composable
+fun TutorialSlide() {
+
 }
 
 @Composable
@@ -687,6 +773,7 @@ fun CustomToggleButton(selected:Boolean, onChangeValue:(Boolean)->Unit) {
         }
     }
 }
+
 @Composable
 fun CustomCheck(modifier: Modifier) {
 
@@ -703,8 +790,7 @@ fun CustomCheck(modifier: Modifier) {
 
 fun copyToClipboard(
     context : Context,
-    copyText : String,
-
+    copyText : String
 ){
     val clipBoard = context.getSystemService(
         Context.CLIPBOARD_SERVICE
@@ -717,3 +803,128 @@ fun copyToClipboard(
     clipBoard.setPrimaryClip(clip)
 }
 
+@Composable
+fun ImageFromUrl(imageUrl : String) {
+
+    val model = ImageRequest
+        .Builder(LocalContext.current)
+        .data(imageUrl)
+        .build()
+
+    AsyncImage(
+        modifier = Modifier.clip(CircleShape),
+        model = model,
+        contentDescription = null
+    )
+
+    val imageState = rememberAsyncImagePainter(model = model).state
+
+    if(imageState is AsyncImagePainter.State.Success)
+    {
+        Image(
+            painter = imageState.painter,
+            contentDescription = null,
+            modifier = Modifier
+                .clip(CircleShape)
+                .size(120.dp)
+        )
+    }
+
+}
+
+@Composable
+fun shareLink(url : String) {
+    val context = LocalContext.current
+
+    val sendIntent : Intent = Intent().apply {
+        action = Intent.ACTION_SEND
+        putExtra(Intent.EXTRA_TEXT, url)
+        type = "text/plain"
+    }
+
+    val shareIntent = Intent.createChooser(sendIntent, null)
+    context.startActivity(shareIntent)
+}
+
+@Composable
+fun ShareTextButton(textToShare: String,homeNavController: NavController) {
+    val context = LocalContext.current
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {result->
+        if(result.resultCode == Activity.RESULT_OK)
+        {
+
+        }
+
+    }
+
+    var shareText by remember {
+        mutableStateOf("https://www.flashcall.vercel.app/expert/$creatorUserName/$creatorUid")
+    }
+    Image(painter = painterResource(id = R.drawable.share_icon),
+        modifier = Modifier
+            .padding(start = 2.dp, top = 2.dp)
+            .size(42.dp)
+            .clickable {
+                val sendIntent: Intent = Intent().apply {
+                    action = Intent.ACTION_SEND
+                    putExtra(
+                        Intent.EXTRA_TEXT,
+                        "$shareText"
+                    )
+                    type = "text/plain"
+                }
+
+
+                val shareIntent = Intent.createChooser(sendIntent, null)
+                launcher.launch(shareIntent)
+            },
+        contentDescription = null
+    )
+}
+
+@Composable
+fun DemoText()
+{
+    Box(modifier = Modifier.fillMaxWidth()){
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ){
+            Column(){
+                Text(text = "If you are Interested in Learning how to create an ",
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    style = TextStyle(
+//                        textDecoration = TextDecoration.Underline,
+                        color = Color.Black,
+//                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
+                    ))
+                Text(text = "account on Flashcall and how it works.",
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    style = TextStyle(
+//                        textDecoration = TextDecoration.Underline,
+                    color = Color.Black,
+//                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp
+                ))
+                Text(
+                    text = "please click here",
+
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .clickable {
+
+                        },
+                    style = TextStyle(
+                        textDecoration = TextDecoration.Underline,
+                        color = MainColor,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
+                    )
+                )
+            }
+        }
+    }
+}

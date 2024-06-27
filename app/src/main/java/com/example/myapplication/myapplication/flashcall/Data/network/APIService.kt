@@ -10,8 +10,10 @@ import com.example.myapplication.myapplication.flashcall.Data.model.Request
 import com.example.myapplication.myapplication.flashcall.Data.model.ResendOTPResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.ResendRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.SendOTPResponseX
+import com.example.myapplication.myapplication.flashcall.Data.model.ValidateRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.VerifyOTPResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.VerifyRequest
+import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.ValidateResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.Field
@@ -49,5 +51,11 @@ interface APIService {
         @Url url:String,
         @Body createUser: CreateUser
     ): CreateUserResponse
+
+    @POST
+    suspend fun validateUser(
+        @Url url:String,
+        @Body validateUser: ValidateRequest
+    ) : ValidateResponse
 
 }

@@ -1,13 +1,16 @@
 package com.example.myapplication.myapplication.flashcall.Screens
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -33,28 +36,40 @@ fun IncomingCallScreen(
             RingingCallContent(
                 call = call,
                 controlsContent = {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(0.7f).size(52.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.Bottom
-                    ) {
-                        AcceptCallAction(
-                            onCallAction = {
+                    Box(modifier = Modifier.fillMaxWidth()
+                        .padding(32.dp)
+                        .align(Alignment.BottomCenter)){
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(0.7f)
+                                .align(Alignment.Center)
+                                .size(52.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            AcceptCallAction(
+                                modifier = Modifier.size(52.dp),
+                                bgColor = Color.Green,
+                                onCallAction = {
 //                                          videoCallViewModel.joinCall()
-                                navController.navigate(VideoCallRoute.VideoCall.route)
-                            }
-                        )
-                        LeaveCallAction(
-                            onCallAction = {
-                                navController.navigate(ScreenRoutes.HomeScreen.route)
-                            }
-                        )
+                                    navController.navigate(VideoCallRoute.VideoCall.route)
+                                }
+                            )
+                            LeaveCallAction(
+                                modifier = Modifier.size(52.dp),
+                                onCallAction = {
+                                    navController.navigate(ScreenRoutes.MainScreen.route)
+                                }
+                            )
+                        }
                     }
-
                 },
-                onAcceptedContent = { navController.navigate(VideoCallRoute.VideoCall.route) },
+                onAcceptedContent = {
+                    navController.navigate(VideoCallRoute.VideoCall.route) },
+                onNoAnswerContent = {
+                    navController.navigate(ScreenRoutes.MainScreen.route)
+                }
             )
         }
     }
-
 }

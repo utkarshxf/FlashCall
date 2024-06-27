@@ -1,6 +1,8 @@
 package com.example.myapplication.myapplication.flashcall.Screens
 
+import android.content.Context
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -49,6 +51,7 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -73,6 +76,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
+import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
 import com.example.myapplication.myapplication.flashcall.R
 import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.RegistrationViewModel
@@ -81,6 +85,8 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.PrimaryBackGround
 import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryText
 import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.UploadTask
 import com.maxkeppeker.sheets.core.models.base.UseCaseState
 import com.maxkeppeler.sheets.calendar.CalendarDialog
 import com.maxkeppeler.sheets.calendar.models.CalendarSelection
@@ -90,11 +96,21 @@ import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-
+var uriImg : Uri? = null
+var imageUrl : String? = null
+var imageUploadCounter = false
+var userToken : String = ""
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegistrationScreen(navController: NavController, registrationViewModel: RegistrationViewModel, authenticationViewModel: AuthenticationViewModel)
 {
+    var buttonColor1 by remember {
+        mutableStateOf(
+            Color.White
+        )
+    }
+
+    val context = LocalContext.current
 
     var buttonColor by remember { mutableStateOf(Color.White) }
 
@@ -129,6 +145,21 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
 
     val scrollState = rememberScrollState()
 
+
+    val autheticationState by authenticationViewModel.verifyOTPState.collectAsState()
+
+    when(autheticationState){
+        APIResponse.Empty -> {Log.e("Error", "Error Failed")}
+        is APIResponse.Error -> Log.e("Error", "Error Failed")
+        APIResponse.Loading -> Log.e("Error", "Error Failed")
+        is APIResponse.Success ->{
+            val response = (autheticationState as APIResponse.Success).data
+                userToken = response.token.toString()
+            Log.d("UserTokenAPI", "$token")
+        }
+    }
+
+
     Surface(
         modifier = Modifier
             .fillMaxSize()
@@ -155,7 +186,8 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                     .padding(8.dp)
             ) {
 
-                Text(text = "Enter your details",
+                Text(
+                    text = "Enter your details",
                     style = TextStyle(
                         color = colorResource(id = R.color.black),
                         fontSize = 24.sp,
@@ -169,21 +201,23 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                 }
 
                 val painter = rememberAsyncImagePainter(
-                    imageUri.value.ifEmpty {R.drawable.profile_picture_holder}
+                    imageUri.value.ifEmpty { R.drawable.profile_picture_holder }
                 )
 
                 val launcher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.GetContent()
-                ){ uri: Uri? ->
+                ) { uri: Uri? ->
 
                     uri?.let {
+                        uriImg = it
                         imageUri.value = it.toString()
                     }
                 }
 
-                Box(modifier = Modifier
-                    .fillMaxWidth()
-                    .height(90.dp)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(90.dp)
                 )
                 {
                     Column(
@@ -201,7 +235,7 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                         )
                     }
 
-                    Box(modifier = Modifier.padding(start = 200.dp,top = 70.dp))
+                    Box(modifier = Modifier.padding(start = 200.dp, top = 70.dp))
                     {
                         Image(
                             painter = painterResource(id = R.drawable.edit_icon),
@@ -218,7 +252,8 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
 
                 Spacer(modifier = Modifier.height(25.dp))
 
-                Text(text = "Name*",
+                Text(
+                    text = "Name*",
                     textAlign = TextAlign.Start,
                     style = TextStyle(
                         fontFamily = arimoFontFamily,
@@ -233,16 +268,16 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                 OutlinedTextField(
                     shape = RoundedCornerShape(10.dp),
                     value = name,
-                    onValueChange = {name = it},
+                    onValueChange = { name = it },
                     keyboardOptions = KeyboardOptions(
                         imeAction = ImeAction.Next
                     ),
                     maxLines = 1,
                     trailingIcon = {
-                                   Icon(
-                                       painter = painterResource(id = R.drawable.profile_icon_register),
-                                       contentDescription = null
-                                   )
+                        Icon(
+                            painter = painterResource(id = R.drawable.profile_icon_register),
+                            contentDescription = null
+                        )
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -250,7 +285,7 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                         .border(1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp)),
                     placeholder = {
                         Text(
-                            text="Your Name",
+                            text = "Your Name",
                             color = SecondaryText,
                             style = TextStyle(
                                 fontFamily = arimoFontFamily,
@@ -267,7 +302,8 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
 
                 Spacer(modifier = Modifier.height(15.dp))
 
-                Text(text = "Create your ID*",
+                Text(
+                    text = "Create your ID*",
                     textAlign = TextAlign.Start,
                     style = TextStyle(
                         fontFamily = arimoFontFamily,
@@ -282,7 +318,7 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                 OutlinedTextField(
                     shape = RoundedCornerShape(10.dp),
                     value = userId,
-                    onValueChange = {userId = it},
+                    onValueChange = { userId = it },
                     keyboardOptions = KeyboardOptions(
                         imeAction = ImeAction.Done
                     ),
@@ -299,7 +335,7 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                         .border(1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp)),
                     placeholder = {
                         Text(
-                            text="Your UserId",
+                            text = "Your UserId",
                             color = SecondaryText,
                             style = TextStyle(
                                 fontFamily = arimoFontFamily,
@@ -315,7 +351,8 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Text(text = "Ex : Nitra123@Consultant",
+                Text(
+                    text = "Ex : Nitra123@Consultant",
                     textAlign = TextAlign.Start,
                     style = TextStyle(
                         fontFamily = arimoFontFamily,
@@ -329,7 +366,8 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                 Spacer(modifier = Modifier.height(15.dp))
 
 
-                Text(text = "Select your Gender*",
+                Text(
+                    text = "Select your Gender*",
                     textAlign = TextAlign.Start,
                     style = TextStyle(
                         fontFamily = arimoFontFamily,
@@ -362,16 +400,15 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                         Text(text = "Male",
                             modifier = Modifier
                                 .clickable {
-                                genderMale = !genderMale
-                                selectedGender="Male"
+                                    genderMale = !genderMale
+                                    selectedGender = "Male"
                                     genderFemale = false
                                     genderOthers = false
-                            }
-                                ,
+                                },
                             style = TextStyle(
                                 fontFamily = arimoFontFamily,
-                                fontWeight = if(genderMale) FontWeight.Bold else FontWeight.Black,
-                                fontSize = if(genderMale) 16.sp else 14.sp
+                                fontWeight = if (genderMale) FontWeight.Bold else FontWeight.Black,
+                                fontSize = if (genderMale) 16.sp else 14.sp
                             )
                         )
 
@@ -390,17 +427,18 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                         contentAlignment = Alignment.Center
                     )
                     {
-                        Text(text = "Female",
+                        Text(
+                            text = "Female",
                             modifier = Modifier.clickable {
                                 genderFemale = !genderFemale
-                                selectedGender="Female"
+                                selectedGender = "Female"
                                 genderOthers = false
                                 genderMale = false
                             },
                             style = TextStyle(
                                 fontFamily = arimoFontFamily,
-                                fontWeight = if(genderFemale) FontWeight.Bold else FontWeight.Black,
-                                fontSize = if(genderFemale) 16.sp else 14.sp
+                                fontWeight = if (genderFemale) FontWeight.Bold else FontWeight.Black,
+                                fontSize = if (genderFemale) 16.sp else 14.sp
                             )
                         )
 
@@ -419,17 +457,18 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                         contentAlignment = Alignment.Center
                     )
                     {
-                        Text(text = "Others",
+                        Text(
+                            text = "Others",
                             modifier = Modifier.clickable {
                                 genderOthers = !genderOthers
-                                selectedGender="Others"
+                                selectedGender = "Others"
                                 genderMale = false
                                 genderFemale = false
                             },
                             style = TextStyle(
                                 fontFamily = arimoFontFamily,
-                                fontWeight = if(genderOthers) FontWeight.Bold else FontWeight.Black,
-                                fontSize = if(genderOthers) 16.sp else 14.sp
+                                fontWeight = if (genderOthers) FontWeight.Bold else FontWeight.Black,
+                                fontSize = if (genderOthers) 16.sp else 14.sp
                             )
                         )
 
@@ -438,7 +477,8 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
 
                 Spacer(modifier = Modifier.height(15.dp))
 
-                Text(text = "Select your DOB*",
+                Text(
+                    text = "Select your DOB*",
                     textAlign = TextAlign.Start,
                     style = TextStyle(
                         fontFamily = arimoFontFamily,
@@ -468,14 +508,14 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                     .clickable {
                         dateDialogState.show()
                     }
-                ){
+                ) {
                     Row(
                         modifier = Modifier
                             .fillMaxSize()
                             .background(Color.White),
                         verticalAlignment = Alignment.CenterVertically,
 
-                    ){
+                        ) {
                         Text(
                             modifier = Modifier.padding(16.dp),
                             text = formattedDate,
@@ -489,11 +529,13 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
 
                         Spacer(modifier = Modifier)
 
-                        Image(painter = painterResource(id = R.drawable.calendar_icon_register),
+                        Image(
+                            painter = painterResource(id = R.drawable.calendar_icon_register),
                             modifier = Modifier
                                 .padding(start = 190.dp)
                                 .size(24.dp),
-                            contentDescription = null)
+                            contentDescription = null
+                        )
 
                         Spacer(modifier = Modifier.weight(2f))
                     }
@@ -513,15 +555,20 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                         allowedDateValidator = {
                             it.isBefore(LocalDate.now().plusYears(18))
                         }
-                    ){
+                    ) {
                         currentDate = it
                     }
                 }
-
+                val context = LocalContext.current
 
                 Spacer(modifier = Modifier.height(60.dp))
 
 //                Text(text = R.color.splash.toString())
+                if (uriImg != null) {
+                    uriImg.let { uri ->
+                        uploadImageToFirebase(uri, context)
+                    }
+                }
 
                 Button(
                     shape = RoundedCornerShape(10.dp),
@@ -529,15 +576,15 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                         .fillMaxWidth()
                         .height(60.dp),
                     colors = ButtonDefaults.buttonColors(MainColor),
+//                    enabled = imageUploadCounter,
                     onClick = {
-
                         registrationViewModel.createUser(
-                            "",
+                            userId,
                             "",
                             name,
                             "",
                             "",
-                            "",
+                            imageUrl!!,
                             "Astrologer",
                             "#50A65C",
                             "25",
@@ -549,29 +596,24 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                             "Incomplete",
                             navController
                         )
-
-//                        navController.navigate(ScreenRoutes.HomeScreen.route)
-
+                        Toast.makeText(context, "User Created", Toast.LENGTH_SHORT).show()
+                        authenticationViewModel.saveToken(userToken)
                     }
-
-                )
-                {
-                    Text(text = "NEXT",
+                ) {
+                    Text(
+                        text = "NEXT",
                         textAlign = TextAlign.Center,
                         style = TextStyle(
                             fontFamily = arimoFontFamily,
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
-                        ),color = Color.White
+                        ), color = Color.White
                     )
                 }
-
-            }
-
-
             }
         }
     }
+}
 
 @Composable
 fun GenderRadioButton(
@@ -651,6 +693,28 @@ fun gender()
             )
         )
 
+    }
+}
+
+fun uploadImageToFirebase(uri: Uri?, context: Context) {
+
+    val storage = FirebaseStorage.getInstance()
+    val storageRef = storage.reference
+    val imageRef = storageRef.child("images/${uri!!.lastPathSegment}")
+
+    val uploadTask = uri.let {
+        imageRef.putFile(it)
+    }
+
+//    imageUploadCounter = false
+
+    uploadTask.addOnSuccessListener {
+        imageRef.downloadUrl.addOnSuccessListener {
+            imageUrl = it.toString()
+        }
+//        imageUploadCounter = true
+
+    }.addOnFailureListener {
     }
 }
 

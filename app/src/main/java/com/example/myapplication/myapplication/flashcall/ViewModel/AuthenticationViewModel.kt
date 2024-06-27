@@ -123,7 +123,7 @@ class AuthenticationViewModel @Inject constructor(
                         "https://flashcall.vercel.app/api/v1/verify-otp", phone, otp, token)
                         .collect {
                             _verifyOTPState.value = APIResponse.Success(it)
-                            navController.navigate(ScreenRoutes.MainScreen.route)
+                            navController.navigate(ScreenRoutes.RegistrationScreen.route)
                         }
                 }
             }

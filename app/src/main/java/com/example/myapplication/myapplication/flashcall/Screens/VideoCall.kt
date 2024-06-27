@@ -135,7 +135,7 @@ fun VideoCallContent(
                                             modifier = Modifier.size(52.dp),
                                             onCallAction = {
                                                 call.leave()
-                                                navController.navigate(ScreenRoutes.HomeScreen.route)
+                                                navController.navigate(ScreenRoutes.MainScreen.route)
                                             }
                                         )
                                     }
@@ -156,7 +156,10 @@ fun VideoCallContent(
                                     {
                                         LeaveCallAction(
                                             modifier = Modifier.size(52.dp),
-                                            onCallAction = { call.leave() }
+                                            onCallAction = {
+                                                call.leave()
+                                                navController.navigate(ScreenRoutes.MainScreen.route)
+                                            }
                                         )
                                     },
                                     {
