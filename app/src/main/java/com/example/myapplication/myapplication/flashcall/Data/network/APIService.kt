@@ -14,10 +14,12 @@ import com.example.myapplication.myapplication.flashcall.Data.model.ValidateRequ
 import com.example.myapplication.myapplication.flashcall.Data.model.VerifyOTPResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.VerifyRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.ValidateResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.feedback.FeedBackResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
+import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Url
 
@@ -57,5 +59,11 @@ interface APIService {
         @Url url:String,
         @Body validateUser: ValidateRequest
     ) : ValidateResponse
+
+    @GET
+    suspend fun getFeedbacks(
+        @Url url:String
+    ) : List<FeedBackResponse>
+
 
 }
