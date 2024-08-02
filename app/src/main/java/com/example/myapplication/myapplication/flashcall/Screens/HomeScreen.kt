@@ -28,6 +28,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -165,17 +167,17 @@ fun HomeScreen(navController: NavController, registrationViewModel: Registration
     val scrollState = rememberScrollState()
 
     Surface(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.wrapContentSize(),
         color = Color.Black
     ) {
 
         Scaffold(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.wrapContentSize()
 //            bottomBar = { BottomBar(navController = navController) }
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .wrapContentSize()
                     .padding(it)
                     .background(Color.Black)
                     .verticalScroll(scrollState)
@@ -184,7 +186,7 @@ fun HomeScreen(navController: NavController, registrationViewModel: Registration
                 //BottomNavGraph(navController = navController, registrationViewModel = registrationViewModel)
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .fillMaxSize()
                         .width(30.dp)
                         .height(50.dp)
                 )
@@ -303,13 +305,16 @@ fun HomeScreenBottom(homeNavController: NavController)
             ) {
                 Row(modifier = Modifier.fillMaxWidth()) {
 
-                    CopyBar()
-                    if (showShareDialog) {
-                        ShareTextButton(
-                            textToShare = "https://www.flashcall.me/nitra-sahgal-55-consultant",
-                            homeNavController = homeNavController
-                        )
-                    }
+//                    var createdAt = System.currentTimeMillis()
+//                    Text(text = "$createdAt")
+
+                    CopyBar(homeNavController)
+//                    if (showShareDialog) {
+//                        ShareTextButton(
+//                            textToShare = "https://www.flashcall.me/nitra-sahgal-55-consultant",
+//                            homeNavController = homeNavController
+//                        )
+//                    }
 
 
                 }
@@ -335,27 +340,29 @@ fun HomeScreenBottom(homeNavController: NavController)
 }
 
 @Composable
-fun CopyBar()
+fun CopyBar(homeNavController: NavController)
 {
     var copyText by remember {
         mutableStateOf("https://www.flashcall.vercel.app/expert/$creatorUserName/$creatorUid")
     }
+    var showShareDialog by remember { mutableStateOf(true) }
+
 
     var context = LocalContext.current
     Row(
         modifier = Modifier
-            .width(300.dp)
+            .wrapContentWidth()
             .height(50.dp)
             .clip(RoundedCornerShape(24.dp))
     )
     {
         Box(modifier = Modifier
-            .fillMaxSize()
+            .wrapContentSize()
             .background(color = Color.White)
             .border(1.dp, BorderColor2, shape = RoundedCornerShape(24.dp)))
 
         {
-            Row(modifier = Modifier.fillMaxSize())
+            Row(modifier = Modifier.wrapContentSize())
             {
                 Image(painter = painterResource(id = R.drawable.link_icon),
                     modifier = Modifier.padding(16.dp),
@@ -373,7 +380,6 @@ fun CopyBar()
                         fontSize = 14.sp,
                         color = Color.Black
                     )
-
                 )
 
                 Image(painter = painterResource(id = R.drawable.copy_icon),
@@ -386,7 +392,16 @@ fun CopyBar()
                             )
                         },
                     contentDescription = null)
+
+
             }
+        }
+
+        if (showShareDialog) {
+            ShareTextButton(
+                textToShare = "https://www.flashcall.me/nitra-sahgal-55-consultant",
+                homeNavController = homeNavController
+            )
         }
     }
 }
@@ -552,20 +567,20 @@ fun ServicesSection()
 
             HorizontalDivider(thickness = 1.dp, modifier = Modifier.padding(start = 10.dp, end = 10.dp))
             
-            var isDialog by remember {
-                mutableStateOf(false)
-            }
-            
-            Dialog(onDismissRequest = { /*TODO*/ }) {
-                
-            }
+//            var isDialog by remember {
+//                mutableStateOf(false)
+//            }
+//
+//            Dialog(onDismissRequest = { /*TODO*/ }) {
+//
+//            }
 
 
             Column(modifier = Modifier
                 .fillMaxSize()
                 .padding(10.dp)
                 .clickable {
-                    isDialog = true
+//                    isDialog = true
                 })
             {
 
@@ -740,10 +755,11 @@ fun ServicesSection()
                 }
             }
             
-            if(isDialog)
-                Dialog(onDismissRequest = { }) {
+//            if(isDialog)
+//                Dialog(onDismissRequest = { }) {
+//
+//                }
 
-                }
         }
     }
 }

@@ -41,6 +41,6 @@ class CreateUserResponse(
     @SerializedName("updatedAt")
     val updatedAt: String,
     @SerializedName("__v")
-    val __v: String,
+    val __v: String
 )
 

@@ -2,9 +2,17 @@ package com.example.myapplication.myapplication.flashcall.Screens
 
 import android.Manifest
 import android.os.Build
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+//import androidx.compose.foundation.layout.FlowRowScopeInstance.weight
+//import androidx.compose.foundation.layout.ColumnScopeInstance.weight
+//import androidx.compose.foundation.layout.FlowRowScopeInstance.weight
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -12,9 +20,12 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.traceEventEnd
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -35,6 +46,7 @@ import io.getstream.video.android.compose.ui.components.call.controls.actions.Le
 import io.getstream.video.android.compose.ui.components.call.controls.actions.ToggleCameraAction
 import io.getstream.video.android.compose.ui.components.call.controls.actions.ToggleMicrophoneAction
 import io.getstream.video.android.compose.ui.components.call.controls.actions.ToggleSpeakerphoneAction
+import io.getstream.video.android.compose.ui.components.call.renderer.ParticipantVideoRenderer
 import io.getstream.video.android.core.Call
 
 @Composable
@@ -105,42 +117,50 @@ fun VideoCallContent(
             ){
                 CallContent(
                     call = call,
+                    enableInPictureInPicture = true,
                     controlsContent = {
                         if(videoCall) {
-                            ControlActions(
-                                call = call,
-                                actions =listOf(
-                                    {
-                                        ToggleCameraAction(
-                                            modifier = Modifier.size(52.dp),
-                                            isCameraEnabled = isCameraEnabled,
-                                            onCallAction = { call.camera.setEnabled(it.isEnabled) }
-                                        )
-                                    },
-                                    {
-                                        ToggleMicrophoneAction(
-                                            modifier = Modifier.size(52.dp),
-                                            isMicrophoneEnabled = isMicrophoneEnabled,
-                                            onCallAction = { call.microphone.setEnabled(it.isEnabled) }
-                                        )
-                                    },
-                                    {
-                                        FlipCameraAction(
-                                            modifier = Modifier.size(52.dp),
-                                            onCallAction = { call.camera.flip() }
-                                        )
-                                    },
-                                    {
-                                        LeaveCallAction(
-                                            modifier = Modifier.size(52.dp),
-                                            onCallAction = {
-                                                call.leave()
-                                                navController.navigate(ScreenRoutes.MainScreen.route)
-                                            }
-                                        )
-                                    }
+
+                            Box(modifier = Modifier.fillMaxWidth(),
+                                ) {
+                                ControlActions(
+                                    call = call,
+                                    actions = listOf(
+                                        {
+                                        Row(
+                                            modifier = Modifier.width(350.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            ToggleCameraAction(
+                                                modifier = Modifier.size(52.dp).padding(start = 10.dp),
+                                                isCameraEnabled = isCameraEnabled,
+                                                onCallAction = { call.camera.setEnabled(it.isEnabled) }
+                                            )
+
+                                            ToggleMicrophoneAction(
+                                                modifier = Modifier.size(52.dp).padding(horizontal = 20.dp),
+                                                isMicrophoneEnabled = isMicrophoneEnabled,
+                                                onCallAction = { call.microphone.setEnabled(it.isEnabled) }
+                                            )
+
+                                            FlipCameraAction(
+                                                modifier = Modifier.size(52.dp).padding(horizontal = 20.dp),
+                                                onCallAction = { call.camera.flip() }
+                                            )
+
+                                            LeaveCallAction(
+                                                modifier = Modifier.size(52.dp),
+                                                onCallAction = {
+                                                    call.leave()
+                                                    navController.navigate(ScreenRoutes.MainScreen.route)
+                                                }
+                                            )
+
+                                        }
+                                        }
+                                    )
                                 )
-                            )
+                            }
                         } else
                         {
                             ControlActions(

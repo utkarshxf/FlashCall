@@ -21,7 +21,11 @@ import javax.inject.Inject
 @HiltViewModel
 class RegistrationViewModel @Inject constructor(private val repository: CreateRepository) : ViewModel() {
 
+    //sucess
+    //APIResponseState = Sucess->CreateUserResponse Data
     private val _createUserState = MutableStateFlow<APIResponse<CreateUserResponse>>(APIResponse.Empty)
+
+    //
     val createUserState : StateFlow<APIResponse<CreateUserResponse>> = _createUserState
 
     fun createUser(
@@ -43,20 +47,16 @@ class RegistrationViewModel @Inject constructor(private val repository: CreateRe
         navController: NavController
     ){
 
-
         viewModelScope.launch {
-
             _createUserState.value = APIResponse.Loading
-
             try{
-
                 repository.createUser("https://flashcall.vercel.app/api/v1/creator/createUser",
-                    "123@156",
-                    "999937",
+                    username,
+                    "0678349",
                     fullName,
                     firstName,
                     lastName,
-                    "https://cdn.britannica.com/72/223172-131-C3F72804/astrology-horoscope-circle.jpg",
+                    photo,
                     profession,
                     themeSelected,
                     videoRate,
@@ -69,7 +69,9 @@ class RegistrationViewModel @Inject constructor(private val repository: CreateRe
                 ).collect {
                     _createUserState.value = APIResponse.Success(it)
                     Log.d("User", "UserCreated")
-                    navController.navigate(ScreenRoutes.HomeScreen.route)
+                    Log.d("UserResponseValue1", "${_createUserState.value}")
+                    Log.d("UserResponseValue","${createUserState.value}")
+                    navController.navigate(ScreenRoutes.MainScreen.route)
                 }
             }catch (e: Exception){
                 Log.d("error", "UserCreatedNot")

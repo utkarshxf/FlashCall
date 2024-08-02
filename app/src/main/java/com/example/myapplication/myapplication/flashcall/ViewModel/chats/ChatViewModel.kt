@@ -1,22 +1,18 @@
 package com.example.myapplication.myapplication.flashcall.ViewModel.chats
 
-import android.app.Activity
 import android.app.Application
 import android.content.pm.PackageManager
 import android.media.MediaRecorder
-import android.Manifest
 import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
-import com.example.myapplication.myapplication.flashcall.Data.AudioPlayerState
+import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.audio.AudioPlayerState
 import com.example.myapplication.myapplication.flashcall.Data.MessageType
 import com.example.myapplication.myapplication.flashcall.Data.model.Resource
 import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.MessageDataClass
@@ -58,8 +54,25 @@ class ChatViewModel @Inject constructor(
     private val _selectedMediaUri = MutableStateFlow<Uri?>(null)
     val selectedMediaUri: StateFlow<Uri?> = _selectedMediaUri.asStateFlow()
 
+//    private val _audioPlayerStates = mutableStateMapOf<String?, AudioPlayerState?>()
+//    val audioPlayerStates: Map<String?, AudioPlayerState?> = _audioPlayerStates
+
+    // Audio Playback States
     private val _audioPlayerStates = mutableStateMapOf<String?, AudioPlayerState?>()
     val audioPlayerStates: Map<String?, AudioPlayerState?> = _audioPlayerStates
+
+    // helper function to format time
+    private fun formatTime(timeInMillis: Long): String {
+        val totalSeconds = timeInMillis / 1000
+        val minutes = totalSeconds / 60
+        val seconds = totalSeconds % 60
+        return String.format("%02d:%02d", minutes, seconds)
+    }
+
+    // Add new state for current playing audio message duration
+    private val _currentPlayingAudioMessageDuration = MutableStateFlow<String?>(null)
+    val currentPlayingAudioMessageDuration: StateFlow<String?> = _currentPlayingAudioMessageDuration.asStateFlow()
+
 
 
 
@@ -80,7 +93,7 @@ class ChatViewModel @Inject constructor(
 
         viewModelScope.launch {
 
-            getMessageUseCase("6JfenuvcVQvfZkdUldUR").collectLatest { result ->
+            getMessageUseCase("UjWVl0SO0cZVAgLn4kXs").collectLatest { result ->
                 _messages.value = result
 
                 if(result is Resource.Success) {
@@ -121,7 +134,7 @@ class ChatViewModel @Inject constructor(
 
             try{
                 if(messageContent.isNotBlank() || messageType == MessageType.IMAGE){
-                    sendMessageUseCase("6JfenuvcVQvfZkdUldUR", messageContent, messageType, "6687f55f290500fb85b7ace0")
+                    sendMessageUseCase("UjWVl0SO0cZVAgLn4kXs", messageContent, messageType, "6687f55f290500fb85b7ace0")
                     _messageText.value = ""
                     _selectedMediaUri.value = null
                 }

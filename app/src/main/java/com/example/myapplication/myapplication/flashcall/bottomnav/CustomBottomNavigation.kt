@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+//import androidx.compose.foundation.layout.BoxScopeInstance.align
+//import androidx.compose.foundation.layout.FlowColumnScopeInstance.align
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -141,7 +143,8 @@ fun BottomBar(navController: NavController) {
 
     Box(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxWidth(0.98f)
+            .padding(start = 10.dp)
             .background(Color.Black, RoundedCornerShape(30.dp))
             .clip(RoundedCornerShape(30.dp))
     ) {

@@ -111,9 +111,12 @@ dependencies {
 
     implementation(libs.sealedx.core)
     kapt(libs.sealedx.processor)
-    implementation(libs.stream.video.mock)
     implementation(libs.accompanist.permissions)
     implementation(libs.preference.datastore)
+
+    implementation("androidx.media3:media3-exoplayer:1.3.1")
+    implementation("androidx.media3:media3-ui:1.3.1")
+    implementation("androidx.compose.material:material-icons-extended:1.3.0-beta04")
 
 //    implementation("com.google.accompanist:accompanist-insets-ui.0.24.7-alpha")
 }

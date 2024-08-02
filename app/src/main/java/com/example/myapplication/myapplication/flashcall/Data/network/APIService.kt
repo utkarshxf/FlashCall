@@ -15,6 +15,8 @@ import com.example.myapplication.myapplication.flashcall.Data.model.VerifyOTPRes
 import com.example.myapplication.myapplication.flashcall.Data.model.VerifyRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.ValidateResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.feedback.FeedBackResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.wallet.Transaction
+import com.example.myapplication.myapplication.flashcall.Data.model.wallet.TransactionResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.Field
@@ -64,6 +66,11 @@ interface APIService {
     suspend fun getFeedbacks(
         @Url url:String
     ) : List<FeedBackResponse>
+
+    @GET
+    suspend fun getTransactions(
+        @Url url:String
+    ) : TransactionResponse
 
 
 }

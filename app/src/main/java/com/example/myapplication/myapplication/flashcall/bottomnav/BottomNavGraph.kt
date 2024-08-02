@@ -15,9 +15,10 @@ import com.example.myapplication.myapplication.flashcall.Screens.ProfileScreen
 import com.example.myapplication.myapplication.flashcall.Screens.wallet.WalletScreen
 import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.RegistrationViewModel
+import com.example.myapplication.myapplication.flashcall.ViewModel.wallet.WalletViewModel
 
 @Composable
-fun BottomNavGraph(homeNavController: NavHostController, navController: NavController,hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>, registrationViewModel: RegistrationViewModel = hiltViewModel(), authenticationViewModel: AuthenticationViewModel = hiltViewModel()) {
+fun BottomNavGraph(homeNavController: NavHostController, navController: NavController,hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>, registrationViewModel: RegistrationViewModel = hiltViewModel(), authenticationViewModel: AuthenticationViewModel = hiltViewModel(), walletViewModel: WalletViewModel = hiltViewModel()) {
 
 //    var registrationViewModel = hiltViewModel<RegistrationViewModel>()
 
@@ -26,7 +27,7 @@ fun BottomNavGraph(homeNavController: NavHostController, navController: NavContr
             HomeScreen(homeNavController, registrationViewModel, authenticationViewModel = authenticationViewModel)
         }
         composable(route = ScreenRoutes.WalletScreen.route) {
-            WalletScreen(navController)
+            WalletScreen(navController, walletViewModel)
         }
         composable(route = ScreenRoutes.ProfileScreen.route) {
             ProfileScreen(navController, hyperKycLauncher = hyperKycLauncher)

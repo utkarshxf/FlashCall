@@ -1,9 +1,12 @@
 package com.example.myapplication.myapplication.flashcall.Screens.chats
 
-import ReceiverMessageCard
-import SenderMessageCard
-import android.net.Uri
 import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.media.MediaRecorder
+import android.net.Uri
+import android.os.Build
+import android.os.Environment
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -22,8 +25,6 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.consumeWindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -42,7 +43,8 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -50,14 +52,14 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import com.example.myapplication.myapplication.flashcall.R
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -72,26 +74,23 @@ import androidx.compose.ui.draw.rotate
 //import androidx.compose.ui.R
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ModifierInfo
-import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import coil.compose.AsyncImage
-import com.example.myapplication.myapplication.flashcall.Data.AudioPlayerState
-import com.example.myapplication.myapplication.flashcall.Data.AudioRecorderState
+import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.audio.AudioRecorderState
 import com.example.myapplication.myapplication.flashcall.Data.MessageType
 import com.example.myapplication.myapplication.flashcall.Data.model.Resource
 import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.MessageDataClass
+import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.audio.AudioPlayerState
 import com.example.myapplication.myapplication.flashcall.Screens.uriImg
 import com.example.myapplication.myapplication.flashcall.ViewModel.chats.ChatViewModel
 import com.example.myapplication.myapplication.flashcall.ui.theme.ChatBackground
@@ -99,7 +98,8 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryText
 import com.example.myapplication.myapplication.flashcall.ui.theme.TimerBackground
 import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
-import com.google.firebase.Timestamp
+import java.io.File
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -255,7 +255,7 @@ fun ChatRoomScreen(
                                
                                items(messageList){
                                    Log.d("MessageItemChat", "ChatRoomScreen: ${it.text}")
-                                   MessageItem(message = it, creatorId = "6687f55f290500fb85b7ace0",chatViewModel::markMessageAsSeen)
+                                   MessageItem(message = it, creatorId = "6687f55f290500fb85b7ace0",chatViewModel::markMessageAsSeen,viewModel = chatViewModel)
                                }
                            }
 
@@ -412,9 +412,11 @@ fun ChatRoomScreen(
 fun MessageItem(
     message : MessageDataClass,
     creatorId : String,
-    onMessageSeen : (MessageDataClass) -> Unit
+    onMessageSeen : (MessageDataClass) -> Unit,
+    viewModel: ChatViewModel
 ){
 
+    var recordedAudioUri by remember { mutableStateOf<Uri?>(null) }
     val isOwnMessage = message.senderId == creatorId
     val formattedTime = message.createdAt?.let {
         SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(it))
@@ -490,6 +492,9 @@ fun MessageItem(
                 }
             }
         }
+        if(message.audio != null){
+            AudioMessageItem(message = message, viewModel = viewModel)
+        }
         if(message.img != null)
         {
             Card(
@@ -538,8 +543,6 @@ fun MessageItem(
                 }
             }
         }
-
-
 
         LaunchedEffect(message) {
             if (!isOwnMessage && !message.seen!!) {
@@ -760,45 +763,139 @@ fun AudioRecorderButton(
 //    }
 //}
 
+@Composable
+fun AudioMessageItem(message: MessageDataClass, viewModel: ChatViewModel) {
+    val audioPlayerState = viewModel.audioPlayerStates[message.senderId] ?: AudioPlayerState(
+        ExoPlayer.Builder(LocalContext.current).build()
+    )
+    var isPlaying by remember { mutableStateOf(audioPlayerState.isPlaying) }
+
+    LaunchedEffect(message.senderId) { // Initialize player with the audio URI
+        audioPlayerState.player.setMediaItem(MediaItem.fromUri(message.audio!!))
+        audioPlayerState.player.prepare()
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        // Play/Pause Button
+        IconButton(onClick = {
+            viewModel.playAudio(message, !isPlaying)
+            isPlaying = !isPlaying
+        }) {
+            Icon(
+                imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                contentDescription = if (isPlaying) "Pause" else "Play",
+                tint = Color.White
+            )
+        }
+
+        // Audio Visualizer or Progress Bar (Replace with your implementation)
+        // You can use the audioPlayerState.player to get playback position and duration
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(48.dp)
+                .background(Color.LightGray, RoundedCornerShape(8.dp))
+        ) {
+            // Implement audio visualizer or progress bar here
+        }
+    }
+}
+
 //@Composable
-//fun AudioMessageItem(message: MessageDataClass, viewModel: ChatViewModel) {
-//    val audioPlayerState = viewModel.audioPlayerStates[message.senderId] ?: AudioPlayerState(
-//        ExoPlayer.Builder(LocalContext.current).build()
-//    )
-//    var isPlaying by remember { mutableStateOf(audioPlayerState.isPlaying) }
+//fun AudioRecorder(onStopRecording: (Uri) -> Unit) {
+//    val context = LocalContext.current
+//    var isRecording by remember { mutableStateOf(false) }
+//    var recorder: MediaRecorder? by remember { mutableStateOf(null) }
 //
-//    LaunchedEffect(message.senderId) { // Initialize player with the audio URI
-//        audioPlayerState.player.setMediaItem(MediaItem.fromUri(message.audio!!))
-//        audioPlayerState.player.prepare()
+//    DisposableEffect(Unit) {
+//        onDispose {
+//            recorder?.release()
+//            recorder = null
+//        }
 //    }
 //
-//    Row(
+//    Column(
 //        modifier = Modifier
 //            .fillMaxWidth()
-//            .padding(8.dp),
-//        horizontalArrangement = Arrangement.spacedBy(8.dp)
+//            .padding(16.dp),
+//        horizontalAlignment = Alignment.CenterHorizontally
 //    ) {
-//        // Play/Pause Button
-//        IconButton(onClick = {
-//            viewModel.onPlayPause(message, !isPlaying)
-//            isPlaying = !isPlaying
-//        }) {
-//            Icon(
-//                imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-//                contentDescription = if (isPlaying) "Pause" else "Play",
-//                tint = Color.White
-//            )
-//        }
+//        Row(verticalAlignment = Alignment.CenterVertically) {
+//            Button(onClick = {
+//                if (!isRecording) {
+//                    if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+//                        // Request permission if not granted
+//                        // ... (Use ActivityResultLauncher or other permission handling mechanism)
+//                        return@Button // Don't proceed if permission isn't granted yet
+//                    }
 //
-//        // Audio Visualizer or Progress Bar (Replace with your implementation)
-//        // You can use the audioPlayerState.player to get playback position and duration
-//        Box(
-//            modifier = Modifier
-//                .weight(1f)
-//                .height(48.dp)
-//                .background(Color.LightGray, RoundedCornerShape(8.dp))
-//        ) {
-//            // Implement audio visualizer or progress bar here
+//                    // Start recording
+//                    recorder = MediaRecorder().apply {
+//                        setAudioSource(MediaRecorder.AudioSource.MIC)
+//                        setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
+//                        setOutputFile(getAudioFilePath(context))
+//                        setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
+//
+//                        try {
+//                            prepare()
+//                            start()
+//                            isRecording = true
+//                        } catch (e: IOException) {
+//                            Log.e("AudioRecorder", "Prepare or start recording failed: ${e.message}")
+//                        }
+//                    }
+//                } else {
+//                    // Stop recording
+//                    recorder?.stop()
+//                    recorder?.release()
+//                    recorder = null
+//                    isRecording = false
+//
+//                    // Notify the ChatScreen with the recorded audio URI
+//                    onStopRecording(Uri.fromFile(File(getAudioFilePath(context))))
+//                }
+//            }) {
+//                Text(if (isRecording) "Stop Recording" else "Start Recording")
+//            }
+//            Spacer(modifier = Modifier.width(16.dp))
+//            // ... (Optionally add a visual indicator like a recording animation or timer)
+//        }
+//        if (isRecording) {
+//            // You can add a progress bar or visualizer here while recording
+//            LinearProgressIndicator(
+//                modifier = Modifier.fillMaxWidth()
+//            )
 //        }
 //    }
 //}
+//
+//private fun getAudioFilePath(context: Context): String {
+//    // ... your existing implementation for getAudioFilePath ...
+//    val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+//    val fileName = "audio_record_$timestamp.mp3" // You can use other formats like .aac, .wav, etc.
+//
+//    // Get a suitable directory for storing audio files
+//    val directory = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+//        // On Android 10 (Q) and above, use scoped storage
+//        context.getExternalFilesDir(Environment.DIRECTORY_MUSIC)
+//    } else {
+//        // On older Android versions, use external storage
+//        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
+//    }
+//
+//    // Create the directory if it doesn't exist
+//    if (directory != null) {
+//        if (!directory.exists()) {
+//            directory.mkdirs()
+//        }
+//    }
+//
+//    // Create the full file path
+//    return File(directory, fileName).absolutePath
+//}
+

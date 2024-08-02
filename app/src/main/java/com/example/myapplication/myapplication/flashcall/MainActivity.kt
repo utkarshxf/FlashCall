@@ -22,9 +22,10 @@ import co.hyperverge.hyperkyc.data.models.HyperKycConfig
 import co.hyperverge.hyperkyc.data.models.result.HyperKycStatus
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Data.VideoCallRoute
+import com.example.myapplication.myapplication.flashcall.Data.model.Resource
 import com.example.myapplication.myapplication.flashcall.Screens.EditProfileScreen
 import com.example.myapplication.myapplication.flashcall.Screens.HomeScreen
-import com.example.myapplication.myapplication.flashcall.Screens.HomeScreenDemo
+//import com.example.myapplication.myapplication.flashcall.Screens.HomeScreenDemo
 import com.example.myapplication.myapplication.flashcall.Screens.IncomingCallScreen
 import com.example.myapplication.myapplication.flashcall.Screens.MainScreen
 import com.example.myapplication.myapplication.flashcall.Screens.ProfileScreen
@@ -32,6 +33,9 @@ import com.example.myapplication.myapplication.flashcall.Screens.RegistrationScr
 import com.example.myapplication.myapplication.flashcall.Screens.SignUpOTP
 import com.example.myapplication.myapplication.flashcall.Screens.SignUpScreen
 import com.example.myapplication.myapplication.flashcall.Screens.VideoCall
+import com.example.myapplication.myapplication.flashcall.Screens.chats.ChatRequestNotification
+import com.example.myapplication.myapplication.flashcall.Screens.chats.ChatRoomScreen
+import com.example.myapplication.myapplication.flashcall.Screens.feedback.FeedbackScreen
 import com.example.myapplication.myapplication.flashcall.Screens.profileOptions.PaymentSettings
 import com.example.myapplication.myapplication.flashcall.Screens.wallet.WalletScreen
 import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
@@ -39,10 +43,13 @@ import com.example.myapplication.myapplication.flashcall.ViewModel.RegistrationV
 import com.example.myapplication.myapplication.flashcall.ViewModel.SplashViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.VideoCallViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.chats.ChatRequestViewModel
+import com.example.myapplication.myapplication.flashcall.ViewModel.chats.ChatViewModel
+import com.example.myapplication.myapplication.flashcall.ViewModel.wallet.WalletViewModel
 //import com.example.myapplication.myapplication.flashcall.navigation.RootNavGraph
 import com.example.myapplication.myapplication.flashcall.ui.theme.FlashCallTheme
 import com.example.myapplication.myapplication.flashcall.utils.rememberImeState
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 
 @AndroidEntryPoint
@@ -142,6 +149,8 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
     var videoViewModel = hiltViewModel<VideoCallViewModel>()
     var chatRequestViewModel = hiltViewModel<ChatRequestViewModel>()
     var splashViewModel = hiltViewModel<SplashViewModel>()
+    var chatViewModel = hiltViewModel<ChatViewModel>()
+    var walletViewModel = hiltViewModel<WalletViewModel>()
 
     LaunchedEffect(
         key1 = Unit
@@ -170,35 +179,19 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
 //    }
 
 
-//    LaunchedEffect(
-//        key1 = Unit
-//    ) {
-//        chatRequestViewModel.pendingChatRequest.collectLatest {result->
-//            when(result) {
-//                is Resource.Error -> {
-//                    Log.d("ChatRequestError", "Error: ${result.message}")
-//                }
-//                is Resource.Loading -> {
-//                    Log.d("ChatRequestLoading", "Loading: ${result.message}")
-//                }
-//                is Resource.Success -> {
-//                    navController.navigate(ScreenRoutes.ChatRequestNotification.route)
-//                    chatRequestViewModel.clearPendingChatRequest()
-//                }
-//            }
-//        }
-//    }
+
+
 
     val inComingCall by videoViewModel.videoCall.collectAsState()
 
-    NavHost(navController = navController, startDestination = ScreenRoutes.ProfileScreen.route) {
+    NavHost(navController = navController, startDestination = ScreenRoutes.WalletScreen.route) {
 
         composable(route= ScreenRoutes.SignUpScreen.route) {
             SignUpScreen(navController = navController, viewModel = viewModel)
         }
         
         composable(ScreenRoutes.HomeScreenDemo.route){
-            HomeScreenDemo(navController = navController)
+//            HomeScreenDemo(navController = navController)
         }
 
         composable(route= ScreenRoutes.SignUpOTP.route,
@@ -223,7 +216,7 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
         }
 
         composable(route = ScreenRoutes.WalletScreen.route) {
-            WalletScreen(navController)
+            WalletScreen(navController, walletViewModel)
         }
 
         composable(route = VideoCallRoute.VideoCall.route) {
@@ -236,14 +229,40 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
 
         composable(route= ScreenRoutes.MainScreen.route) {
             MainScreen(navController = navController,hyperKycLauncher,registrationViewModel)
+//            LaunchedEffect(
+//                key1 = Unit
+//            ) {
+//                delay(5000)
+//                chatRequestViewModel.pendingChatRequest.collectLatest {result->
+//                    when(result) {
+//                        is Resource.Error -> {
+//                            Log.d("ChatRequestError", "Error: ${result.message}")
+//                        }
+//                        is Resource.Loading -> {
+//                            Log.d("ChatRequestLoading", "Loading: ${result.message}")
+//                        }
+//                        is Resource.Success -> {
+//                            navController.navigate(ScreenRoutes.ChatRequestNotification.route)
+//                            chatRequestViewModel.clearPendingChatRequest()
+//                        }
+//                    }
+//                }
+//            }
         }
 
         composable(route = ScreenRoutes.ChatRequestNotification.route) {
-//            ChatRequestNotification()
+            ChatRequestNotification()
         }
         
         composable(route = ScreenRoutes.PaymentSettings.route) {
             PaymentSettings(navController = navController)
+        }
+        composable(route = ScreenRoutes.ChatRoomScreen.route){
+            ChatRoomScreen()
+        }
+
+        composable(route = ScreenRoutes.FeedbackScreen.route){
+            FeedbackScreen(navController = navController)
         }
 
     }
