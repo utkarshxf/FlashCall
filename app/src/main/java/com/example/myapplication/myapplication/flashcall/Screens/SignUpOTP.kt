@@ -1,4 +1,4 @@
-package com.example.myapplication.myapplication.flashcall.Screens
+    package com.example.myapplication.myapplication.flashcall.Screens
 
 import android.util.Log
 import android.widget.Toast
@@ -195,6 +195,57 @@ fun BottomOTPBar(navController: NavController,viewModel: AuthenticationViewModel
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
+//                Row(
+//                    modifier = Modifier.fillMaxWidth(),
+//                    verticalAlignment = Alignment.CenterVertically,
+//                    horizontalArrangement = Arrangement.Center
+//                ) {
+//
+//
+//                    val defaultCellConfig = OhTeePeeCellConfiguration.withDefaults(
+//                        borderColor = OTPBorder,
+//                        borderWidth = 1.dp,
+//                        shape = RoundedCornerShape(16.dp),
+//                        backgroundColor = OTPBackground,
+//                        textStyle = TextStyle(
+//                            color = Color.Black,
+//                            fontSize = 16.sp,
+//                            fontFamily = arimoFontFamily,
+//                            fontWeight = FontWeight.Bold
+//                        )
+//                    )
+//                    OhTeePeeInput(
+//                        value = otpValue,
+//                        onValueChange = {
+//                                newValue, isValid->
+//                            otpValue = newValue
+//
+////                            if(otpValue.length == 6)
+////                                viewModel.verifyOTP(phone,otpValue,verificationToken,navController)
+////                            when(otpValue.length){
+////
+////                                6-> viewModel.verifyOTP(phone,otpValue,verificationToken,navController)
+////                            }
+//
+//                        },
+//                        configurations = OhTeePeeConfigurations.withDefaults(
+//                            cellsCount = 6,
+//                            activeCellConfig = defaultCellConfig.copy(
+//                                borderColor = OTPBorder,
+//                                borderWidth = 3.dp
+//                            ),
+//                            emptyCellConfig = defaultCellConfig,
+//                            cellModifier = Modifier
+//                                .padding(horizontal = 4.dp)
+//                                .width(46.dp)
+//                                .height(50.dp),
+//                            elevation = 4.dp
+//                        ),
+//                    )
+//                }
+//                Spacer(modifier = Modifier.height(20.dp))
+
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -203,7 +254,7 @@ fun BottomOTPBar(navController: NavController,viewModel: AuthenticationViewModel
 
 
                     val defaultCellConfig = OhTeePeeCellConfiguration.withDefaults(
-                        borderColor = OTPBorder,
+                        borderColor = Color.Red,
                         borderWidth = 1.dp,
                         shape = RoundedCornerShape(16.dp),
                         backgroundColor = OTPBackground,
@@ -231,7 +282,7 @@ fun BottomOTPBar(navController: NavController,viewModel: AuthenticationViewModel
                         configurations = OhTeePeeConfigurations.withDefaults(
                             cellsCount = 6,
                             activeCellConfig = defaultCellConfig.copy(
-                                borderColor = OTPBorder,
+                                borderColor = Color.Red,
                                 borderWidth = 3.dp
                             ),
                             emptyCellConfig = defaultCellConfig,
@@ -243,6 +294,8 @@ fun BottomOTPBar(navController: NavController,viewModel: AuthenticationViewModel
                         ),
                     )
                 }
+                Spacer(modifier = Modifier.height(20.dp))
+                Text(text = "This code is invalid. Please check the code & try again",color = Color.Red, fontSize = 14.sp, modifier = Modifier.padding(start = 10.dp))
 
                 Spacer(modifier = Modifier.height(20.dp))
                 Text(
@@ -250,7 +303,7 @@ fun BottomOTPBar(navController: NavController,viewModel: AuthenticationViewModel
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .clickable {
-                                   viewModel.resendOTP(phone)
+                            viewModel.resendOTP(phone)
                         },
                     color = PrimaryText,
                     style = TextStyle(

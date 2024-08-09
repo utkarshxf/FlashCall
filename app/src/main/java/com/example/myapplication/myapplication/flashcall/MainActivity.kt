@@ -184,7 +184,7 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
 
     val inComingCall by videoViewModel.videoCall.collectAsState()
 
-    NavHost(navController = navController, startDestination = ScreenRoutes.WalletScreen.route) {
+    NavHost(navController = navController, startDestination = ScreenRoutes.SignUpOTP.route) {
 
         composable(route= ScreenRoutes.SignUpScreen.route) {
             SignUpScreen(navController = navController, viewModel = viewModel)

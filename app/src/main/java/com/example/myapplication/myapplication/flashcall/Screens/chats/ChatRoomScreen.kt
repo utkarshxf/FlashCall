@@ -353,19 +353,19 @@ fun ChatRoomScreen(
                        }
                    )
 
-//                   AudioRecorderButton(
-//                       onRecordingStarted = { chatViewModel::startRecording },
-//                       onRecordingCanceled = { chatViewModel.cancelRecording() },
-//                       onSendClick = {
-//                           chatViewModel.sendMessage(messageText,MessageType.TEXT)
-//                           messageText = ""
-//                                     },
-//                       onStopRecording = {
-//                                         chatViewModel::stopRecording
-//                       },
-//                       isRecording = chatViewModel.isRecording.value,
-//                       viewModel = chatViewModel
-//                   )
+                   AudioRecorderButton(
+                       onRecordingStarted = { chatViewModel::startRecording },
+                       onRecordingCanceled = { chatViewModel.cancelRecording() },
+                       onSendClick = {
+                           chatViewModel.sendMessage(messageText,MessageType.TEXT)
+                           messageText = ""
+                                     },
+                       onStopRecording = {
+                                         chatViewModel::stopRecording
+                       },
+                       isRecording = chatViewModel.isRecording.collectAsState().value,
+                       viewModel = chatViewModel
+                   )
 
                    val recordingState by chatViewModel.isRecording.collectAsState()
 

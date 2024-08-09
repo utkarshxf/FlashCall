@@ -1,5 +1,7 @@
 package com.example.myapplication.myapplication.flashcall.ViewModel
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.ui.platform.LocalContext
@@ -13,13 +15,18 @@ import com.example.myapplication.myapplication.flashcall.Data.model.CreateUserRe
 import com.example.myapplication.myapplication.flashcall.Data.model.VerifyOTPResponse
 import com.example.myapplication.myapplication.flashcall.repository.CreateRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class RegistrationViewModel @Inject constructor(private val repository: CreateRepository) : ViewModel() {
+class RegistrationViewModel @Inject constructor(private val repository: CreateRepository,
+    @ApplicationContext private val context: Context
+) : ViewModel() {
+    private val sharedPreferences: SharedPreferences =
+        context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
 
     //sucess
     //APIResponseState = Sucess->CreateUserResponse Data
@@ -71,6 +78,8 @@ class RegistrationViewModel @Inject constructor(private val repository: CreateRe
                     Log.d("User", "UserCreated")
                     Log.d("UserResponseValue1", "${_createUserState.value}")
                     Log.d("UserResponseValue","${createUserState.value}")
+
+                    storeResponseInPreferences(it)
                     navController.navigate(ScreenRoutes.MainScreen.route)
                 }
             }catch (e: Exception){
@@ -79,4 +88,28 @@ class RegistrationViewModel @Inject constructor(private val repository: CreateRe
             }
         }
     }
+    private fun storeResponseInPreferences(response: CreateUserResponse) {
+        sharedPreferences.edit().apply {
+            putString("username", response.username)
+            putString("phone", response.phone)
+            putString("fullName", response.fullName)
+            putString("firstName", response.firstName)
+            putString("lastName", response.lastName)
+            putString("photo", response.photo)
+            putString("profession", response.profession)
+            putString("themeSelected", response.themeSelected)
+            putString("videoRate", response.videoRate)
+            putString("audioRate", response.audioRate)
+            putString("chatRate", response.chatRate)
+            putString("gender", response.gender)
+            putString("dob", response.dob)
+            putString("bio", response.bio)
+            putString("_id", response._id)
+            putString("createdAt", response.createdAt)
+            putString("updatedAt", response.updatedAt)
+            putString("__v", response.__v)
+            apply()
+        }
+    }
 }
+
