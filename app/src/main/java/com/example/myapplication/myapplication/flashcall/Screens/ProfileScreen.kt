@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -57,10 +59,11 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryText
 import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
 
 @Composable
-fun ProfileScreen(navController: NavController,
-                  hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>
-)
-{
+fun ProfileScreen(
+    navController: NavController,
+    hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>
+) {
+    val isKyc = false
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -70,19 +73,25 @@ fun ProfileScreen(navController: NavController,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
-        ){
+        ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(180.dp)
-            ){
+            ) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                ){
-
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.KeyboardArrowLeft, contentDescription = "Back", tint = Color.Black, modifier = Modifier.size(28.dp))
+                ) {
+                    IconButton(onClick = {
+//                        navController.popBackStack()
+                    }) {
+                        Icon(
+                            Icons.Default.KeyboardArrowLeft,
+                            contentDescription = "Back",
+                            tint = Color.Black,
+                            modifier = Modifier.size(28.dp)
+                        )
                     }
 
                     Row(
@@ -90,7 +99,6 @@ fun ProfileScreen(navController: NavController,
                             .fillMaxWidth()
                             .padding(8.dp),
                     ) {
-
                         Image(
                             painter = painterResource(id = R.drawable.home_image),
                             contentDescription = null,
@@ -101,7 +109,8 @@ fun ProfileScreen(navController: NavController,
                         )
 
                         Column {
-                            Text(text = "Nitra Sahgal",
+                            Text(
+                                text = "Nitra Sahgal",
                                 color = Color.Black,
                                 style = TextStyle(
                                     fontFamily = arimoFontFamily,
@@ -111,7 +120,8 @@ fun ProfileScreen(navController: NavController,
                                 modifier = Modifier.padding(top = 50.dp)
                             )
 
-                            Text(text = "Astrologer",
+                            Text(
+                                text = "Astrologer",
                                 style = TextStyle(
                                     fontFamily = arimoFontFamily,
                                     fontWeight = FontWeight.Black,
@@ -120,12 +130,7 @@ fun ProfileScreen(navController: NavController,
                                 color = SecondaryText
                             )
                         }
-
-
-
                     }
-
-
                 }
             }
 
@@ -138,245 +143,271 @@ fun ProfileScreen(navController: NavController,
 
             Spacer(modifier = Modifier.height(30.dp))
 
-            var config = HyperKycConfig(
+            val config = HyperKycConfig(
                 appId = "muzdob",
                 appKey = "2ns9u1evoeugbrydykl7",
                 workflowId = "workflow_9KW4mUl",
-                transactionId = "TestTransact1",
+                transactionId = "TestTransact1"
             )
 
-            val applicationContext = LocalContext.current.applicationContext
-            val context = LocalContext.current
-
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .height(60.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(Color.White)
-                .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
-                .clickable {
-//                    hyperKycLauncher.launch(config)
-//                    val intent = Intent(context, KycActivity::class.java)
-//                        context.startActivity(intent)
-
-                    var config = HyperKycConfig(
-                        appId = "muzdob",
-                        appKey = "2ns9u1evoeugbrydykl7",
-                        workflowId = "workflow_9KW4mUl",
-                        transactionId = "TestTransact6",
-                    )
-                    hyperKycLauncher.launch(config)
-
-                }
-            ){
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(20.dp)
-                ){
-
-                    Image(
-                        painter = painterResource(id = R.drawable.kyc_icon),
-                        contentDescription = null
-                    )
-
-
-                    Text(text = "KYC",
-                        modifier = Modifier.padding(start = 10.dp),
-                        style = TextStyle(
-                            fontFamily = arimoFontFamily,
-                            fontWeight = FontWeight.Black,
-                            fontSize = 18.sp,
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(if (isKyc) 75.dp else 60.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Color.White)
+                    .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
+                    .clickable {
+                        val updatedConfig = HyperKycConfig(
+                            appId = "muzdob",
+                            appKey = "2ns9u1evoeugbrydykl7",
+                            workflowId = "workflow_9KW4mUl",
+                            transactionId = "TestTransact6"
                         )
+                        hyperKycLauncher.launch(updatedConfig)
+                    }
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(20.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.kyc_icon),
+                            contentDescription = null
+                        )
+
+                        Text(
+                            text = "KYC",
+                            modifier = Modifier.padding(start = 10.dp),
+                            style = TextStyle(
+                                fontFamily = arimoFontFamily,
+                                fontWeight = FontWeight.Black,
+                                fontSize = 18.sp
+                            )
+                        )
+
+                        Spacer(modifier = Modifier.weight(1f))
+                        if (isKyc) {
+                            Image(
+                                painter = painterResource(id = R.drawable.exclamation1),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .height(26.dp)
+                                    .width(26.dp)
+                            )
+
+                        }
+
+                        Icon(
+                            Icons.Default.KeyboardArrowRight,
+                            contentDescription = "Next",
+                            tint = Color.Black,
+                            modifier = Modifier.size(36.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+
+                    }
+                if (isKyc) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Please complete your KYC",
+                        color = Color.Red,
+                        modifier = Modifier
+                            .padding(start = 45.dp,top = 50.dp)
+                            .fillMaxWidth()
                     )
-
-                    Spacer(modifier = Modifier.weight(1f))
-
-                    Icon(
-                        Icons.Default.KeyboardArrowRight, contentDescription = "Back",
-                        tint = Color.Black,
-                        modifier = Modifier.size(36.dp)
-                    )
-
                 }
             }
 
+            // Additional Boxes for Support, Payment Settings, etc.
+
             Spacer(modifier = Modifier.height(15.dp))
 
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .height(60.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(Color.White)
-                .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
-            ){
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Color.White)
+                    .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
+            ) {
                 Row(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(20.dp)
-                ){
-
+                ) {
                     Image(
                         painter = painterResource(id = R.drawable.support_icon),
                         contentDescription = null
                     )
 
-
-                    Text(text = "Support",
+                    Text(
+                        text = "Support",
                         modifier = Modifier.padding(start = 10.dp),
                         style = TextStyle(
                             fontFamily = arimoFontFamily,
                             fontWeight = FontWeight.Black,
-                            fontSize = 18.sp,
+                            fontSize = 18.sp
                         )
                     )
 
                     Spacer(modifier = Modifier.weight(1f))
 
                     Icon(
-                        Icons.Default.KeyboardArrowRight, contentDescription = "Back",
+                        Icons.Default.KeyboardArrowRight,
+                        contentDescription = "Next",
                         tint = Color.Black,
                         modifier = Modifier.size(36.dp)
                     )
-
                 }
             }
 
             Spacer(modifier = Modifier.height(15.dp))
 
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .height(60.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(Color.White)
-                .clickable {
-                    navController.navigate(ScreenRoutes.PaymentSettings.route)
-                }
-                .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
-            ){
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Color.White)
+                    .clickable {
+                        navController.navigate(ScreenRoutes.PaymentSettings.route)
+                    }
+                    .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
+            ) {
                 Row(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(20.dp)
-                ){
-
+                ) {
                     Image(
                         painter = painterResource(id = R.drawable.payment_icon),
                         contentDescription = null
                     )
 
-
-                    Text(text = "Payment Settings",
+                    Text(
+                        text = "Payment Settings",
                         modifier = Modifier.padding(start = 10.dp),
                         style = TextStyle(
                             fontFamily = arimoFontFamily,
                             fontWeight = FontWeight.Black,
-                            fontSize = 18.sp,
+                            fontSize = 18.sp
                         )
                     )
 
                     Spacer(modifier = Modifier.weight(1f))
 
                     Icon(
-                        Icons.Default.KeyboardArrowRight, contentDescription = "Back",
+                        Icons.Default.KeyboardArrowRight,
+                        contentDescription = "Next",
                         tint = Color.Black,
                         modifier = Modifier.size(36.dp)
                     )
-
                 }
             }
 
             Spacer(modifier = Modifier.height(15.dp))
 
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .height(60.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(Color.White)
-                .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
-            ){
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Color.White)
+                    .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
+            ) {
                 Row(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(20.dp)
-                ){
-
+                ) {
                     Image(
                         painter = painterResource(id = R.drawable.terms_icon),
                         contentDescription = null
                     )
 
-
-                    Text(text = "Terms & Conditions",
+                    Text(
+                        text = "Terms & Conditions",
                         modifier = Modifier.padding(start = 10.dp),
                         style = TextStyle(
                             fontFamily = arimoFontFamily,
                             fontWeight = FontWeight.Black,
-                            fontSize = 18.sp,
+                            fontSize = 18.sp
                         )
                     )
 
                     Spacer(modifier = Modifier.weight(1f))
 
                     Icon(
-                        Icons.Default.KeyboardArrowRight, contentDescription = "Back",
+                        Icons.Default.KeyboardArrowRight,
+                        contentDescription = "Next",
                         tint = Color.Black,
                         modifier = Modifier.size(36.dp)
                     )
-
                 }
             }
 
             Spacer(modifier = Modifier.height(15.dp))
 
             val activity = (LocalContext.current as? Activity)
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .height(60.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(Color.White)
-                .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
-                .clickable {
-                    activity?.finish()
-                }
-            ){
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Color.White)
+                    .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
+                    .clickable {
+                        activity?.finish()
+                    }
+            ) {
                 Row(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(20.dp)
-                ){
-
+                ) {
                     Image(
                         painter = painterResource(id = R.drawable.logout_icon),
                         contentDescription = null
                     )
 
-
-
-                    Text(text = "Log Out",
+                    Text(
+                        text = "Log Out",
                         modifier = Modifier.padding(start = 10.dp),
                         style = TextStyle(
                             fontFamily = arimoFontFamily,
                             fontWeight = FontWeight.Black,
-                            fontSize = 18.sp,
+                            fontSize = 18.sp
                         )
                     )
 
                     Spacer(modifier = Modifier.weight(1f))
 
                     Icon(
-                        Icons.Default.KeyboardArrowRight, contentDescription = "Back",
+                        Icons.Default.KeyboardArrowRight,
+                        contentDescription = "Next",
                         tint = Color.Black,
                         modifier = Modifier.size(36.dp)
                     )
-
                 }
             }
-
-
-
-
-
         }
     }
 }
+
+//@Preview
+//@Composable
+//fun ProfileScreenPreview(){
+//    ProfileScreen()
+//}
+
+

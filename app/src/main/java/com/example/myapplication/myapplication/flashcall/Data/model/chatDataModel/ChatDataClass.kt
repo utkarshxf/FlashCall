@@ -8,7 +8,7 @@ data class ChatDataClass(
     @SerializedName("clientId")
     val clientId : String?=null,
     @SerializedName("createdAt")
-    val createdAt : Long?=null,
+    val createdAt : Timestamp?=null,
     @SerializedName("messages")
     val messages : List<MessageDataClass>?=null,
     @SerializedName("status")

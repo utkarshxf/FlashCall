@@ -23,18 +23,26 @@ import co.hyperverge.hyperkyc.data.models.result.HyperKycStatus
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Data.VideoCallRoute
 import com.example.myapplication.myapplication.flashcall.Data.model.Resource
+import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.ChatState
 import com.example.myapplication.myapplication.flashcall.Screens.EditProfileScreen
 import com.example.myapplication.myapplication.flashcall.Screens.HomeScreen
+import com.example.myapplication.myapplication.flashcall.Screens.InCallScreen
+import com.example.myapplication.myapplication.flashcall.Screens.IncomingAudioCallScreen
 //import com.example.myapplication.myapplication.flashcall.Screens.HomeScreenDemo
 import com.example.myapplication.myapplication.flashcall.Screens.IncomingCallScreen
+import com.example.myapplication.myapplication.flashcall.Screens.IncomingChatScreen
+import com.example.myapplication.myapplication.flashcall.Screens.KYCScreen
+import com.example.myapplication.myapplication.flashcall.Screens.LoginDoneScreen
 import com.example.myapplication.myapplication.flashcall.Screens.MainScreen
 import com.example.myapplication.myapplication.flashcall.Screens.ProfileScreen
 import com.example.myapplication.myapplication.flashcall.Screens.RegistrationScreen
+import com.example.myapplication.myapplication.flashcall.Screens.SelectSpecialityScreen
 import com.example.myapplication.myapplication.flashcall.Screens.SignUpOTP
 import com.example.myapplication.myapplication.flashcall.Screens.SignUpScreen
 import com.example.myapplication.myapplication.flashcall.Screens.VideoCall
-import com.example.myapplication.myapplication.flashcall.Screens.chats.ChatRequestNotification
+import com.example.myapplication.myapplication.flashcall.Screens.chats.ChatRequestScreen
 import com.example.myapplication.myapplication.flashcall.Screens.chats.ChatRoomScreen
+
 import com.example.myapplication.myapplication.flashcall.Screens.feedback.FeedbackScreen
 import com.example.myapplication.myapplication.flashcall.Screens.profileOptions.PaymentSettings
 import com.example.myapplication.myapplication.flashcall.Screens.wallet.WalletScreen
@@ -44,6 +52,7 @@ import com.example.myapplication.myapplication.flashcall.ViewModel.SplashViewMod
 import com.example.myapplication.myapplication.flashcall.ViewModel.VideoCallViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.chats.ChatRequestViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.chats.ChatViewModel
+import com.example.myapplication.myapplication.flashcall.ViewModel.chats.ChattingFCMViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.wallet.WalletViewModel
 //import com.example.myapplication.myapplication.flashcall.navigation.RootNavGraph
 import com.example.myapplication.myapplication.flashcall.ui.theme.FlashCallTheme
@@ -57,8 +66,11 @@ class MainActivity : ComponentActivity() {
 
     private val viewModel by viewModels<SplashViewModel>()
     private val authenticationViewModel by viewModels<AuthenticationViewModel>()
+    private val chatRequestViewModel by viewModels<ChatRequestViewModel>()
+//    private val chattingFCMViewModel: ChattingFCMViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         installSplashScreen().apply {
             setKeepOnScreenCondition {
                 !viewModel.isReady.value
@@ -71,6 +83,7 @@ class MainActivity : ComponentActivity() {
             workflowId = "workflow_9KW4mUl",
             transactionId = "TestTransact8",
         )
+//        val state = chattingFCMViewModel.state
         val hyperKycLauncher: ActivityResultLauncher<HyperKycConfig> = registerForActivityResult(HyperKyc.Contract()) { result ->
 
             // handle result post workflow finish/exit
@@ -112,10 +125,11 @@ class MainActivity : ComponentActivity() {
             Log.e("HyperKyc", "Status: ${result.transactionId}")
         }
 
-        super.onCreate(savedInstanceState)
+
 
 //        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         setContent {
+
             FlashCallTheme {
 
                 val imeState = rememberImeState()
@@ -135,12 +149,12 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+
     }
 }
 
 @Composable
 fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
-
 
 
     val navController = rememberNavController()
@@ -151,6 +165,7 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
     var splashViewModel = hiltViewModel<SplashViewModel>()
     var chatViewModel = hiltViewModel<ChatViewModel>()
     var walletViewModel = hiltViewModel<WalletViewModel>()
+    var chattingFCMViewModel = hiltViewModel<ChattingFCMViewModel>()
 
     LaunchedEffect(
         key1 = Unit
@@ -183,8 +198,9 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
 
 
     val inComingCall by videoViewModel.videoCall.collectAsState()
+    val state = chattingFCMViewModel.state
 
-    NavHost(navController = navController, startDestination = ScreenRoutes.SignUpOTP.route) {
+    NavHost(navController = navController, startDestination = ScreenRoutes.RegistrationScreen.route) {
 
         composable(route= ScreenRoutes.SignUpScreen.route) {
             SignUpScreen(navController = navController, viewModel = viewModel)
@@ -220,6 +236,7 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
         }
 
         composable(route = VideoCallRoute.VideoCall.route) {
+
             VideoCall(videoCall = true, viewModel = videoViewModel, navController = navController)
         }
 
@@ -251,7 +268,11 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
         }
 
         composable(route = ScreenRoutes.ChatRequestNotification.route) {
-            ChatRequestNotification()
+            ChatRequestScreen(
+                token = state.remoteToken,
+                onTokenChange = chattingFCMViewModel::onRemoteTokenChange ,
+                onSubmit = chattingFCMViewModel::onSubmitChange
+            )
         }
         
         composable(route = ScreenRoutes.PaymentSettings.route) {
@@ -264,6 +285,30 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
         composable(route = ScreenRoutes.FeedbackScreen.route){
             FeedbackScreen(navController = navController)
         }
+        composable(route = ScreenRoutes.SelectSpeciality.route){
+            SelectSpecialityScreen(navController = navController)
+        }
+        composable(route = ScreenRoutes.LoginDoneScreen.route){
+            LoginDoneScreen()
+        }
+        composable(route = ScreenRoutes.IncomingAudioCallScreen.route){
+            IncomingAudioCallScreen(callerName = "Prakhar", navController = navController )
+            
+        }
+        composable(route = ScreenRoutes.InCallScreen.route){
+            InCallScreen(callerName = "Prakhar Bhatnagar", timeLeft = "10:02", callDuration = "15:15", navController = navController )
+
+        }
+        composable(route = ScreenRoutes.InComingChatScreen.route){
+            IncomingChatScreen(navController = navController)
+
+        }
+        composable(route = ScreenRoutes.KycScreen.route){
+            KYCScreen()
+
+        }
+
+
 
     }
 }

@@ -1,6 +1,7 @@
 package com.example.myapplication.myapplication.flashcall.ViewModel.chats
 
 import android.app.Application
+import android.content.Context
 import android.content.pm.PackageManager
 import android.media.MediaRecorder
 import android.net.Uri
@@ -21,9 +22,11 @@ import com.example.myapplication.myapplication.flashcall.Data.model.chatDataMode
 import com.example.myapplication.myapplication.flashcall.domain.GetMessageUseCase
 import com.example.myapplication.myapplication.flashcall.domain.MarkMessageAsSeenUseCase
 import com.example.myapplication.myapplication.flashcall.domain.SendMessageUseCase
+import com.example.myapplication.myapplication.flashcall.repository.ChatRepository
 import dagger.hilt.android.internal.Contexts.getApplication
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,6 +39,7 @@ import javax.inject.Inject
 class ChatViewModel @Inject constructor(
     getMessageUseCase: GetMessageUseCase,
     private val sendMessageUseCase: SendMessageUseCase,
+    private val chatRepository: ChatRepository,
     private val markMessageAsSeenUseCase: MarkMessageAsSeenUseCase,
     private val context: Application,
     savedStateHandle: SavedStateHandle
@@ -89,11 +93,20 @@ class ChatViewModel @Inject constructor(
     private var currentRecordedFile: File? = null
 
 
+
     init {
 
         viewModelScope.launch {
+            var chatId = getChatIdFromPreferences()
+            while (chatId == null) {
+                delay(1000)  // Small delay to wait for preferences to be populated
+                chatId = getChatIdFromPreferences()
+                Log.d("ChatViewModelMessageList", "chatId $chatId")
 
-            getMessageUseCase("UjWVl0SO0cZVAgLn4kXs").collectLatest { result ->
+            }
+            Log.d("ChatViewModelMessageList", "chatId $chatId")
+
+            getMessageUseCase(chatId).collectLatest { result ->
                 _messages.value = result
 
                 if(result is Resource.Success) {
@@ -109,6 +122,10 @@ class ChatViewModel @Inject constructor(
 
     fun onMessageTextChange(text: String) {
         _messageText.value = text
+    }
+    fun getChatIdFromPreferences(): String? {
+        val sharedPreferences = context.getSharedPreferences("ChatPrefs", Context.MODE_PRIVATE)
+        return sharedPreferences.getString("chatId", null)
     }
 
     fun onSelectMedia(uri: Uri, messageType: MessageType) {
@@ -134,7 +151,14 @@ class ChatViewModel @Inject constructor(
 
             try{
                 if(messageContent.isNotBlank() || messageType == MessageType.IMAGE){
-                    sendMessageUseCase("UjWVl0SO0cZVAgLn4kXs", messageContent, messageType, "6687f55f290500fb85b7ace0")
+                    var chatId = getChatIdFromPreferences()
+                    while (chatId == null) {
+                        delay(1000)  // Small delay to wait for preferences to be populated
+                        chatId = getChatIdFromPreferences()
+                    }
+                    Log.d("Inside message created", "Got the error first")
+                    sendMessageUseCase(chatId, messageContent, messageType, "6687f55f290500fb85b7ace0")
+                    Log.d("Inside message created", "Got the error")
                     _messageText.value = ""
                     _selectedMediaUri.value = null
                 }

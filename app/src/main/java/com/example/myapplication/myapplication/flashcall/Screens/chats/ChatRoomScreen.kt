@@ -92,12 +92,14 @@ import com.example.myapplication.myapplication.flashcall.Data.model.Resource
 import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.MessageDataClass
 import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.audio.AudioPlayerState
 import com.example.myapplication.myapplication.flashcall.Screens.uriImg
+import com.example.myapplication.myapplication.flashcall.ViewModel.chats.ChatRequestViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.chats.ChatViewModel
 import com.example.myapplication.myapplication.flashcall.ui.theme.ChatBackground
 import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryText
 import com.example.myapplication.myapplication.flashcall.ui.theme.TimerBackground
 import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
+import kotlinx.coroutines.delay
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -106,11 +108,20 @@ import java.util.Locale
 
 @Composable
 fun ChatRoomScreen(
-    chatViewModel: ChatViewModel = hiltViewModel()
+    chatViewModel: ChatViewModel = hiltViewModel(),
+    chatRequestViewModel: ChatRequestViewModel = hiltViewModel()
 ){
 
+
     val messages = chatViewModel.messages.collectAsState().value
-    Log.d("ChatRoomScreen", "ChatRoomScreen: $messages")
+
+//    Log.d("ChatRoomScreen", "ChatRoomScreen: $messages")
+    LaunchedEffect(Unit) {
+        delay(1000)
+        val chatDetails = chatRequestViewModel.incomingChatRequest.value
+        Log.d("ChatDetails", "ChatDetails: $chatDetails")
+    }
+
 
     var messageText by remember {
         mutableStateOf("")
@@ -358,8 +369,7 @@ fun ChatRoomScreen(
                        onRecordingCanceled = { chatViewModel.cancelRecording() },
                        onSendClick = {
                            chatViewModel.sendMessage(messageText,MessageType.TEXT)
-                           messageText = ""
-                                     },
+                           messageText = ""},
                        onStopRecording = {
                                          chatViewModel::stopRecording
                        },
@@ -642,6 +652,7 @@ fun AudioRecorderButton(
     ) {
         IconButton(
             onClick = {
+
                 if (isRecording) {
                     onStopRecording(null)
                 } else {

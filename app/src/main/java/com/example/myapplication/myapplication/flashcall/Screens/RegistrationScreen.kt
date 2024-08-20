@@ -120,6 +120,14 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
     var dateState by remember {
         mutableStateOf(false)
     }
+    if (uriImg != null) {
+        uriImg?.let { uri ->
+            uploadImageToFirebase(uri, context) { url ->
+                imageUrl = url
+                Toast.makeText(context, "Image uploaded successfully", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     val phoneNumber = authenticationViewModel.phoneNumber.value
 
@@ -564,11 +572,11 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                 Spacer(modifier = Modifier.height(60.dp))
 
 //                Text(text = R.color.splash.toString())
-                if (uriImg != null) {
-                    uriImg.let { uri ->
-                        uploadImageToFirebase(uri, context)
-                    }
-                }
+//                if (uriImg != null) {
+//                    uriImg.let { uri ->
+//                        uploadImageToFirebase(uri, context)
+//                    }
+//                }
 
                 Button(
                     shape = RoundedCornerShape(10.dp),
@@ -578,13 +586,14 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                     colors = ButtonDefaults.buttonColors(MainColor),
 //                    enabled = imageUploadCounter,
                     onClick = {
+                        Log.d("Image", "Image: $imageUrl")
                         registrationViewModel.createUser(
                             userId,
-                            "",
+                            "913913",
                             name,
-                            "",
-                            "",
-                            imageUrl!!,
+                            "sc",
+                            "sa",
+                            imageUrl,
                             "Astrologer",
                             "#50A65C",
                             "25",
@@ -592,11 +601,11 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                             "25",
                             selectedGender,
                             formattedDate,
-                            "",
+                            "mdlapd",
                             "Incomplete",
                             navController
                         )
-                        Toast.makeText(context, "User Created", Toast.LENGTH_SHORT).show()
+//                        Toast.makeText(context, "User Created", Toast.LENGTH_SHORT).show()
                         authenticationViewModel.saveToken(userToken)
                     }
                 ) {
@@ -696,8 +705,7 @@ fun gender()
     }
 }
 
-fun uploadImageToFirebase(uri: Uri?, context: Context) {
-
+fun uploadImageToFirebase(uri: Uri?, context: Context, onSuccess: (String) -> Unit) {
     val storage = FirebaseStorage.getInstance()
     val storageRef = storage.reference
     val imageRef = storageRef.child("images/${uri!!.lastPathSegment}")
@@ -706,15 +714,12 @@ fun uploadImageToFirebase(uri: Uri?, context: Context) {
         imageRef.putFile(it)
     }
 
-//    imageUploadCounter = false
-
     uploadTask.addOnSuccessListener {
-        imageRef.downloadUrl.addOnSuccessListener {
-            imageUrl = it.toString()
+        imageRef.downloadUrl.addOnSuccessListener { downloadUrl ->
+            onSuccess(downloadUrl.toString())
         }
-//        imageUploadCounter = true
-
     }.addOnFailureListener {
+        Toast.makeText(context, "Image upload failed", Toast.LENGTH_SHORT).show()
     }
 }
 

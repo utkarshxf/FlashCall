@@ -1,6 +1,7 @@
 package com.example.myapplication.myapplication.flashcall.repository
 
 import android.net.Uri
+import android.util.Log
 import com.example.myapplication.myapplication.flashcall.Data.model.Resource
 import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.ChatDataClass
 import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.ChatRequestDataClass
@@ -61,6 +62,7 @@ class ChatRepository @Inject constructor(
             "messages" to listOf<MessageDataClass>(),
             "status" to "active"
         )
+        Log.d("Firestore", "New Document Created")
 
         firestore.collection("chats").document(chatId).set(chatData)
 
@@ -84,22 +86,73 @@ class ChatRepository @Inject constructor(
 
         var updatedMessage = message
 
-        if(message.img != null){
+        try {
+            // Check if the document exists
+            val document = firestore.collection("chats").document(chatId).get().await()
+            if (!document.exists()) {
+                // If the chat document doesn't exist, create it
+                Log.d("Firestore", "Message sent successfully")
+                createChat(chatId, message.senderId.toString())  // Ensure you pass the correct clientId here
+                createChatRequest(chatId, message.senderId.toString(), message.senderId.toString())
+            }
 
-            val imageUrl = uploadMedia(Uri.parse(message.img), isImage = true)
-            updatedMessage = message.copy(img = imageUrl)
+            // Handle image and audio media upload
+            if (message.img != null) {
+                val imageUrl = uploadMedia(Uri.parse(message.img), isImage = true)
+                updatedMessage = message.copy(img = imageUrl)
+            } else if (message.audio != null) {
+                val audioUrl = uploadMedia(Uri.parse(message.audio), isImage = false)
+                updatedMessage = message.copy(audio = audioUrl)
+            }
+//            logAllDocumentsInCollection("chats")
+            // Send the message
+            firestore.collection("chats")
+                .document(chatId)
+                .update("messages", FieldValue.arrayUnion(updatedMessage)).await()
 
-        } else if (message.audio != null) {
 
-            val audioUrl = uploadMedia(Uri.parse(message.audio), isImage = false)
-            updatedMessage = message.copy(audio = audioUrl)
+
+        } catch (e: Exception) {
+            Log.e("FirestoreError", "Failed to send message: ${e.message}")
         }
-
-        firestore.collection("chats")
-            .document(chatId)
-            .update("messages", FieldValue.arrayUnion(updatedMessage)).await()
-
     }
+    fun createChatRequest(chatId: String, clientId: String, creatorId: String) {
+        val chatRequestData = hashMapOf(
+            "chatId" to chatId,
+            "clientId" to clientId,
+            "creatorId" to creatorId,
+            "status" to "pending",
+            "createdAt" to FieldValue.serverTimestamp()
+        )
+
+        firestore.collection("chatRequests").document(chatId).set(chatRequestData)
+            .addOnSuccessListener {
+                Log.d("Firestore", "Chat request created successfully")
+            }
+            .addOnFailureListener { e ->
+                Log.e("FirestoreError", "Failed to create chat request: ${e.message}")
+            }
+    }
+    suspend fun logAllDocumentsInCollection(collectionName: String) {
+        try {
+            val documentsSnapshot = firestore.collection(collectionName).get().await()
+
+            // Check if there are any documents in the collection
+            if (!documentsSnapshot.isEmpty) {
+                for (document in documentsSnapshot.documents) {
+                    Log.d("FirestoreDocument", "Document ID: ${document.id}")
+                    Log.d("FirestoreDocument", "Document Data: ${document.data}")
+                }
+            } else {
+                Log.d("FirestoreDocument", "No documents found in the collection.")
+            }
+
+        } catch (e: Exception) {
+            Log.e("FirestoreError", "Failed to retrieve documents: ${e.message}")
+        }
+    }
+
+
 
     fun getMessages(chatId: String) :
             Flow<Resource<List<MessageDataClass>>> = callbackFlow<Resource<List<MessageDataClass>>> {

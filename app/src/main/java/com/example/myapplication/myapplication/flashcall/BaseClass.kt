@@ -2,9 +2,13 @@ package com.example.myapplication.myapplication.flashcall
 
 import android.app.Application
 import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
+import android.os.Build
 import android.util.Log
 import com.example.myapplication.myapplication.flashcall.utils.TimestampConverter
+import com.google.firebase.FirebaseApp
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
@@ -22,6 +26,8 @@ class BaseClass : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        createNotificationChannel()
+        FirebaseApp.initializeApp(this)
 
         val gson = GsonBuilder()
             .registerTypeAdapter(Timestamp::class.java, TimestampConverter())
@@ -60,6 +66,22 @@ class BaseClass : Application() {
             ),
             ringNotification = notify,
         ).build()
+    }
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = "Chat Notifications"
+            val descriptionText = "Notifications for chat requests"
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+                description = descriptionText
+            }
+            val notificationManager: NotificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
+    companion object {
+        const val CHANNEL_ID = "CHAT_REQUEST_CHANNEL"
     }
 
 }

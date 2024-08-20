@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
@@ -23,6 +24,8 @@ import io.getstream.video.android.compose.ui.components.call.controls.actions.Ac
 import io.getstream.video.android.compose.ui.components.call.controls.actions.LeaveCallAction
 import io.getstream.video.android.compose.ui.components.call.ringing.RingingCallContent
 import io.getstream.video.android.core.Call
+import io.getstream.video.android.model.User
+import io.getstream.video.android.core.StreamVideo
 
 @Composable
 fun IncomingCallScreen(
@@ -73,3 +76,9 @@ fun IncomingCallScreen(
         }
     }
 }
+
+
+
+
+
+

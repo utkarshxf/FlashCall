@@ -1,116 +1,102 @@
 package com.example.myapplication.myapplication.flashcall.Screens.chats
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.ListItemDefaults.containerColor
-import androidx.compose.material3.ListItemDefaults.contentColor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.myapplication.myapplication.flashcall.ViewModel.chats.ChatRequestViewModel
-import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import com.google.firebase.Firebase
+import com.google.firebase.messaging.messaging
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 @Composable
-fun ChatRequestNotification(
-    viewModel: ChatRequestViewModel = hiltViewModel(),
-//    onAcceptClick: () -> Unit,
-//    onRejectClick: () -> Unit
+fun ChatRequestScreen(
+    token:String,
+    onTokenChange:(String)-> Unit,
+    onSubmit:() -> Unit
 ) {
+    val clipboardManager = LocalClipboardManager.current
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
-    val pendingRequest by viewModel.pendingChatRequest.collectAsState()
-
-    val configuration = LocalConfiguration.current
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black)
-    ){
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ){
-
-
-
-                Text(
-                    text = "Incoming Chat Request",
-                    color = Color.White,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "From: Sujit",
-                    color = Color.White,
-                    fontSize = 18.sp
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(top = 150.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Button(
-                        onClick = {  }, // Pass chatRequest to onAcceptClick
-                        modifier = Modifier
-                            .size(70.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Red,
-                            contentColor = Color.White
-                        ),
-                        shape = CircleShape
-                    ) {
-                        Icon(Icons.Default.Close, contentDescription = "",
-                            modifier = Modifier.size(50.dp))
+    Dialog(onDismissRequest = { /*TODO*/ },
+        properties = DialogProperties(
+            dismissOnBackPress = false,
+            dismissOnClickOutside = false
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(5.dp))
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(16.dp)
+        ) {
+            OutlinedTextField(value = token, onValueChange = onTokenChange,
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = {
+                    Text(text = "Remote user token")
+                },
+                maxLines = 1)
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                OutlinedButton(onClick = {
+                    scope.launch {
+                        try {
+                            val localToken =  Firebase.messaging.token.await()
+                            clipboardManager.setText(AnnotatedString(localToken))
+                            Log.d("ClipBoard", "Token: $localToken")
+                            Toast.makeText(context, "Copied local token", Toast.LENGTH_LONG).show()
+                        } catch (e: Exception) {
+                            Log.e("FCM Token Error", "Failed to fetch FCM token: ${e.message}")
+                            Toast.makeText(context, "Failed to fetch FCM token. Please try again later.", Toast.LENGTH_LONG).show()
+                        }
                     }
-                    Button(
-                        onClick = {  }, // Pass chatRequest to onAcceptClick
-                        modifier = Modifier
-                            .size(70.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Green,
-                            contentColor = Color.White
-                        ),
-                        shape = CircleShape
-                    ) {
-                        Icon(Icons.Default.Check, contentDescription = "",
-                            modifier = Modifier.size(50.dp))
-                    }
+                }) {
+                    Text(text = "Copy Token")
+                    
                 }
+
+
             }
+            Spacer(modifier = Modifier.width(16.dp))
+            Button(onClick = {
+                onSubmit
+            }) {
+                Text(text = "Submit")
+                
+            }
+
         }
 
     }
+}
+
+

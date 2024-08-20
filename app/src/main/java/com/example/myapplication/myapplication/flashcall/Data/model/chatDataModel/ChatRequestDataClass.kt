@@ -13,10 +13,11 @@ data class ChatRequestDataClass(
     @SerializedName("clientId")
     val clientId : String?=null,
     @SerializedName("createdAt")
-    val createdAt : Long?=null,
+    val createdAt : Long? = null,
     @SerializedName("creatorId")
     val creatorId : String?=null,
     @SerializedName("status")
     val status : String?=null,
-    //    val clientName : String
+    @SerializedName("clientName")
+    val clientName : String?=null
 )

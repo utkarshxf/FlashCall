@@ -54,6 +54,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -81,6 +82,7 @@ import com.example.myapplication.myapplication.flashcall.R
 import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.RegistrationViewModel
 import com.example.myapplication.myapplication.flashcall.bottomnav.BottomBar
+import com.example.myapplication.myapplication.flashcall.bottomnav.BottomNavGraph
 //import com.example.myapplication.myapplication.flashcall.bottomnav.BottomNavGraph
 //import com.example.myapplication.myapplication.flashcall.bottomnav.BottomNavGraph
 import com.example.myapplication.myapplication.flashcall.bottomnav.Screen
@@ -183,7 +185,7 @@ fun HomeScreen(navController: NavController, registrationViewModel: Registration
                     .verticalScroll(scrollState)
             ) {
 
-                //BottomNavGraph(navController = navController, registrationViewModel = registrationViewModel)
+//                BottomNavGraph(navController = navController, registrationViewModel = registrationViewModel)
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -191,26 +193,31 @@ fun HomeScreen(navController: NavController, registrationViewModel: Registration
                         .height(50.dp)
                 )
                 {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 16.dp, end = 8.dp),
-                        horizontalArrangement = Arrangement.Absolute.Right,
-                    ) {
-                        Button(
-                            colors = ButtonDefaults.buttonColors(Color.White),
-                            onClick = { navController.navigate(ScreenRoutes.EditScreen.route) }
+                    Column(modifier = Modifier.fillMaxSize()) {
+
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 16.dp, end = 8.dp),
+                            horizontalArrangement = Arrangement.Absolute.Right,
                         ) {
-                            Text(
-                                text = "edit profile",
-                                style = TextStyle(
-                                    fontFamily = arimoFontFamily,
-                                    fontWeight = FontWeight.Black,
-                                    fontSize = 13.sp,
-                                    color = Color.Black
+                            Button(
+                                colors = ButtonDefaults.buttonColors(Color.White),
+                                onClick = { navController.navigate(ScreenRoutes.EditScreen.route) }
+                            ) {
+                                Text(
+                                    text = "edit profile",
+                                    style = TextStyle(
+                                        fontFamily = arimoFontFamily,
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = 13.sp,
+                                        color = Color.Black
+                                    )
                                 )
-                            )
+                            }
                         }
+
                     }
                 }
 
@@ -221,7 +228,7 @@ fun HomeScreen(navController: NavController, registrationViewModel: Registration
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Absolute.Center,
+                        horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically,
                     )
                     {

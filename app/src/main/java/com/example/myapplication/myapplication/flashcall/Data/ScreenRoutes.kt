@@ -21,4 +21,17 @@ sealed class ScreenRoutes(val route: String) {
 
     data object FeedbackScreen : ScreenRoutes("FeedbackScreen")
 
+    data object SelectSpeciality : ScreenRoutes("SelectSpeciality")
+
+
+    data object LoginDoneScreen : ScreenRoutes("LoginDoneScreen")
+
+    data object IncomingAudioCallScreen : ScreenRoutes("IncomingCallScreen")
+
+    data object InCallScreen : ScreenRoutes("InCallScreen")
+
+    data object InComingChatScreen : ScreenRoutes("InComingChatScreen")
+
+    data object KycScreen : ScreenRoutes("KycScreen")
+
 }

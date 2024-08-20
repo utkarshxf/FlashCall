@@ -1,5 +1,6 @@
 package com.example.myapplication.myapplication.flashcall.di
 
+import android.app.Application
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
@@ -93,5 +94,9 @@ object APIModule {
     @Provides
     fun providesUserPref(dataStore: DataStore<Preferences>)
             : userPref = PreferenceStore(dataStore)
+
+    @Provides
+    @Singleton
+    fun provideApplicationContext(@ApplicationContext context: Context): Context = context
 
 }

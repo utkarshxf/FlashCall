@@ -2,6 +2,7 @@ package com.example.myapplication.myapplication.flashcall.ViewModel
 
 import android.util.Log
 import android.util.Log.d
+import android.widget.Toast
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
@@ -20,6 +21,7 @@ import com.example.myapplication.myapplication.flashcall.Data.model.VerifyOTPRes
 import com.example.myapplication.myapplication.flashcall.preferenceStore.userPref
 import com.example.myapplication.myapplication.flashcall.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -28,6 +30,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.fold
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -65,6 +68,7 @@ class AuthenticationViewModel @Inject constructor(
     val phoneNumber : State<String> = _phone
 
 
+
     fun signUP(phoneNumber : String, navController: NavController,sendToke:String?)
     {
 
@@ -78,7 +82,7 @@ class AuthenticationViewModel @Inject constructor(
                    if(it==null)
                    {
                        _sendOTPState.value=APIResponse.Error("Exception Occured")
-//                       Log.e("SignUpError","Exception Occured")
+                       Log.e("SignUpError","Exception Occured")
                    }else{
                        _sendOTPState.value = APIResponse.Success(it)
                        _phone.value = phoneNumber
@@ -119,17 +123,40 @@ class AuthenticationViewModel @Inject constructor(
             viewModelScope.launch {
                 Log.e("token", "verifyOTP: $token")
                 if (token != null) {
-                    authenticationRepository.verifyOtp(
-                        "https://flashcall.vercel.app/api/v1/verify-otp", phone, otp, token)
-                        .collect {
-                            _verifyOTPState.value = APIResponse.Success(it)
-                            navController.navigate(ScreenRoutes.RegistrationScreen.route)
-                        }
+                    try {
+                        authenticationRepository.verifyOtp(
+                            "https://flashcall.vercel.app/api/v1/verify-otp", phone, otp, token
+                        )
+                            .collect {
+                                _verifyOTPState.value = APIResponse.Success(it)
+                                navController.navigate(ScreenRoutes.LoginDoneScreen.route) {
+
+                                    popUpTo(ScreenRoutes.LoginDoneScreen.route) {
+                                        inclusive = true
+                                    }
+                                }
+                                delay(2000)
+                                navController.navigate(ScreenRoutes.RegistrationScreen.route) {
+
+                                    popUpTo(ScreenRoutes.LoginDoneScreen.route) {
+                                        inclusive = true
+                                    }
+                                }
+                            }
+                    }catch (e: HttpException){
+                        Log.e("verifyOTP", "HTTP error code: ${e.code()} - ${e.message()}")
+                        _verifyOTPState.value = APIResponse.Error("Invalid OTP or Bad Request")
+                        Toast.makeText(navController.context, "Invalid OTP. Please try again.", Toast.LENGTH_LONG).show()
+                    }
                 }
             }
-        } catch (e: Exception) {
-            _verifyOTPState.value = APIResponse.Error(e.message ?: "OTP VERIFY ERROR")
+        }  catch (e: Exception) {
+            // Handle other exceptions (e.g., network issues)
+            Log.e("verifyOTP", "Exception: ${e.localizedMessage}")
+            _verifyOTPState.value = APIResponse.Error("An unexpected error occurred. Please try again.")
+            Toast.makeText(navController.context, "An unexpected error occurred. Please try again.", Toast.LENGTH_LONG).show()
         }
+
     }
 
 
