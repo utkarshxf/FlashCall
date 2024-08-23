@@ -4,6 +4,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,8 +30,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.semantics.Role.Companion.Button
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -61,6 +68,7 @@ var verificationToken : String? = null
 @Composable
 fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) {
 
+    var isKeyboardOpen by remember { mutableStateOf(false) }
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Background
@@ -71,14 +79,25 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ){
-
-            ImageSlider()
-            Spacer(modifier = Modifier.height(20.dp))
-            TitleText()
-            Spacer(modifier = Modifier.height(15.dp))
-            SubTitleText()
-            Spacer(modifier = Modifier.height(30.dp))
-            BottomOTPBar(navController,viewModel)
+            if (!isKeyboardOpen) {
+                // Only show image slider and texts when the keyboard is closed
+                ImageSlider()
+                Spacer(modifier = Modifier.height(20.dp))
+                TitleText()
+                Spacer(modifier = Modifier.height(15.dp))
+                SubTitleText()
+                Spacer(modifier = Modifier.height(30.dp))
+            }
+            if(isKeyboardOpen){
+                Spacer(modifier = Modifier.height(50.dp))
+                TitleText()
+                Spacer(modifier = Modifier.height(15.dp))
+                SubTitleText()
+                Spacer(modifier = Modifier.height(30.dp))
+            }
+            BottomOTPBar(navController,viewModel, isKeyboardOpen, onKeyboardToggle = {
+                isKeyboardOpen = it
+            })
 
 
         }
@@ -87,7 +106,8 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
 }
 
     @Composable
-    fun BottomOTPBar(navController: NavController, viewModel: AuthenticationViewModel) {
+    fun BottomOTPBar(navController: NavController, viewModel: AuthenticationViewModel,isKeyboardOpen: Boolean,
+                     onKeyboardToggle: (Boolean) -> Unit) {
         var otpValue by remember { mutableStateOf("") }
         var phone = viewModel.phoneNumber.value
 
@@ -96,9 +116,18 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
         val verifyOTPState by viewModel.verifyOTPState.collectAsState()
 
         val context = LocalContext.current
-
+        val keyboardController = LocalSoftwareKeyboardController.current
+        val focusRequester = remember { FocusRequester() }
+        val focusManager = LocalFocusManager.current
         Surface(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize()
+                .pointerInput(Unit) {
+                    // Detect taps anywhere on the screen
+                    detectTapGestures {
+                        // Clear focus when tapping outside the input field
+                        focusManager.clearFocus()
+                    }
+                },
             shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
             color = Color.White
         ) {
@@ -229,8 +258,18 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
                                     value = otpValue,
                                     onValueChange = { newValue, isValid ->
                                         otpValue = newValue
-                                        if (otpValue.length == 6) {
-//                                    viewModel.verifyOTP(phone, otpValue, resendToken ?: verificationToken, navController)
+                                        if (otpValue.length == 6 && isValid) {
+                                            // Avoid multiple calls by checking that the length is exactly 6
+                                            if (otpValue.length == 6) {
+                                                // Automatically call verifyOTP when otpValue is exactly 6 digits
+                                                keyboardController?.hide()
+                                                if (resendToken != null) {
+                                                    viewModel.verifyOTP(phone, otpValue, resendToken, navController)
+                                                } else {
+                                                    viewModel.verifyOTP(phone, otpValue, verificationToken, navController)
+                                                }
+                                                viewModel.iCreatedUser(phone)
+                                            }
                                         }
                                     },
                                     configurations = OhTeePeeConfigurations.withDefaults(
@@ -243,7 +282,11 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
                                         cellModifier = Modifier
                                             .padding(horizontal = 4.dp)
                                             .width(46.dp)
-                                            .height(50.dp),
+                                            .height(50.dp)
+                                            .focusRequester(focusRequester)
+                                            .onFocusChanged {
+                                                onKeyboardToggle(it.isFocused)
+                                            },
                                         elevation = 4.dp
                                     )
                                 )
@@ -275,8 +318,18 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
                                 value = otpValue,
                                 onValueChange = { newValue, isValid ->
                                     otpValue = newValue
-                                    if (otpValue.length == 6) {
-//                                    viewModel.verifyOTP(phone, otpValue, resendToken ?: verificationToken, navController)
+                                    if (otpValue.length == 6 && isValid) {
+                                        // Avoid multiple calls by checking that the length is exactly 6
+                                        keyboardController?.hide()
+                                        if (otpValue.length == 6) {
+                                            // Automatically call verifyOTP when otpValue is exactly 6 digits
+                                            if (resendToken != null) {
+                                                viewModel.verifyOTP(phone, otpValue, resendToken, navController)
+                                            } else {
+                                                viewModel.verifyOTP(phone, otpValue, verificationToken, navController)
+                                            }
+                                            viewModel.iCreatedUser(phone)
+                                        }
                                     }
                                 },
                                 configurations = OhTeePeeConfigurations.withDefaults(
@@ -289,13 +342,17 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
                                     cellModifier = Modifier
                                         .padding(horizontal = 4.dp)
                                         .width(46.dp)
-                                        .height(50.dp),
+                                        .height(50.dp)
+                                        .focusRequester(focusRequester)
+                                        .onFocusChanged {
+                                            onKeyboardToggle(it.isFocused)
+                                        },
                                     elevation = 4.dp
                                 )
                             )
                         }
                         Spacer(modifier = Modifier.height(20.dp))
-                        
+
                     }
 
                     Text(
@@ -319,6 +376,7 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
                                 viewModel.verifyOTP(phone, otpValue, resendToken, navController)
                             else
                                 viewModel.verifyOTP(phone, otpValue, verificationToken, navController)
+                                viewModel.iCreatedUser(phone)
                         },
                         modifier = Modifier
                             .align(CenterHorizontally)

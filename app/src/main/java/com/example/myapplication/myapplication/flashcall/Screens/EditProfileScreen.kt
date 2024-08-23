@@ -1,6 +1,10 @@
 package com.example.myapplication.myapplication.flashcall.Screens
 
+import android.net.Uri
+import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -38,15 +42,18 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -57,9 +64,14 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
+import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
 import com.example.myapplication.myapplication.flashcall.R
+import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
+import com.example.myapplication.myapplication.flashcall.ViewModel.RegistrationViewModel
 import com.example.myapplication.myapplication.flashcall.ui.theme.BorderColor2
 import com.example.myapplication.myapplication.flashcall.ui.theme.BottomBackground
 import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
@@ -78,17 +90,162 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamil
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditProfileScreen(navController: NavController) {
+fun EditProfileScreen(navController: NavController,registrationViewModel: RegistrationViewModel = hiltViewModel(), authenticationViewModel: AuthenticationViewModel= hiltViewModel()) {
+
+    var uid by remember {
+        mutableStateOf("")
+    }
+    var name by remember {
+        mutableStateOf("")
+    }
+    var username by remember {
+        mutableStateOf("")
+    }
+    var userId by remember {
+        mutableStateOf("")
+    }
+    var phone by remember {
+        mutableStateOf("")
+    }
+    var profession by remember {
+        mutableStateOf("")
+    }
+    var videoRate by remember {
+        mutableStateOf("")
+    }
+    var audioRate by remember {
+        mutableStateOf("")
+    }
+    var chatRate by remember {
+        mutableStateOf("")
+    }
+    var gender by remember {
+        mutableStateOf("")
+    }
+    var themeSelected by remember {
+        mutableStateOf("")
+    }
+    var profilePic by remember {
+        mutableStateOf("")
+    }
+    var dob by remember {
+        mutableStateOf("")
+    }
+    var bio by remember {
+        mutableStateOf("")
+    }
+    val (firstName, lastName) = name.split(" ", limit = 2).let {
+        if (it.size == 2) it else listOf(it[0], "")
+    }
+    Log.d("First Name", "$firstName")
+    val context = LocalContext.current
+    if (uriImg != null) {
+        uriImg?.let { uri ->
+            uploadImageToFirebase(uri, context) { url ->
+                imageUrl = url
+//                Toast.makeText(context, "Image uploaded successfully", Toast.LENGTH_SHORT).show()
+                registrationViewModel.updateUser(
+                    uid,
+                    username,
+                    phone ,
+                    name,
+                    firstName,
+                    lastName,
+                    imageUrl,
+                    profession,
+                    themeSelected,
+                    "25",
+                    "25",
+                    "25",
+                    gender,
+                    dob,
+                    bio,
+                    "incomplete",
+                    navController
+                )
+            }
+        }
+    }
+
+    val createdUserState2 by authenticationViewModel.isCreatedUserState.collectAsState()
+    val createUserState1 by registrationViewModel.createUserState.collectAsState()
+    Log.d("UserCreatedAlready", "$createdUserState2")
+    Log.d("CreatedUserData", createUserState1.toString())
+    Log.d("CreateUserResponse", "$createUserState1")
+
+    val userData = authenticationViewModel.getUserFromPreferences(context)
+    if (userData != null ) {
+        uid = userData._id ?: ""
+        Log.d("uid", "$uid")
+        username = userData.username ?: ""
+        name = userData.fullName ?: ""
+        phone = userData.phone ?: ""
+        userId = userData.username ?: ""
+        gender = userData.gender ?: ""
+        dob = userData.dob ?: ""
+        bio = userData.bio ?: ""
+        Log.d("bio", "$bio")
+        themeSelected = userData.themeSelected ?: ""
+        profession = userData.profession ?: ""
+        profilePic = userData.photo ?: ""
+    }
+
+
+    else{
+        when (createUserState1) {
+            is APIResponse.Success -> {
+
+                val response = (createUserState1 as APIResponse.Success).data
+                Log.d("UserResponse", response.toString())
+                uid = response._id
+                name = response.fullName
+                userId = response.username
+                profilePic = response.photo
+                Log.d("UserId", uid.toString())
+
+            }
+
+            APIResponse.Empty -> Log.e("EmptyError", "empty")
+            is APIResponse.Error -> {
+                Log.e("Error", "Error Failed")
+            }
+
+            APIResponse.Loading -> Log.e("Loading", "Loading")
+        }
+    }
+
+    val imageUri = rememberSaveable {
+        mutableStateOf("")
+    }
+    val painter = rememberAsyncImagePainter(
+        imageUri.value.ifEmpty { R.drawable.profile_picture_holder }
+    )
+
+
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+
+        uri?.let {
+            uriImg = it
+            imageUri.value = it.toString()
+        }
+    }
+
+
 
     var edit_profile_name by remember {
         mutableStateOf("")
     }
 
-    val context = LocalContext.current
-
-    var bio by remember {
+    var edit_profile_bio by remember {
         mutableStateOf("")
     }
+
+
+
+
 
     var colorSelected by remember {
         mutableStateOf(false)
@@ -158,28 +315,113 @@ fun EditProfileScreen(navController: NavController) {
 
                         ), color = Color.White
                     )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    if (profilePic=="") {
+                        Box(modifier = Modifier.padding(start = 8.dp))
+                        {
 
-                    Image(
-                        painter = painterResource(id = R.drawable.home_image),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .clip(CircleShape)
-                            .size(120.dp)
-                    )
+                            Image(
+                                painter = painter,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .padding(8.dp)
+                                    .clip(CircleShape)
+                                    .size(120.dp)
+                            )
+                            Image(
+                                painter = painterResource(id = R.drawable.edit_icon),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .align(Alignment.BottomEnd)
+                                    .clip(CircleShape)
+                                    .clickable {
+                                        launcher.launch("image/*")
+
+                                    }
+                            )
+                        }
+                    }else{
+                        Box(modifier = Modifier.padding(start = 8.dp))
+                        {
+                        ImageFromUrl(imageUrl = profilePic!!)
+
+                            Image(
+                                painter = painterResource(id = R.drawable.edit_icon),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .align(Alignment.BottomEnd)
+                                    .clickable {
+                                        launcher.launch("image/*")
+
+                                    }
+                            )
+                        }
+                    }
                 }
 
                 Box(modifier = Modifier.padding(start = 110.dp,top = 190.dp))
                 {
-                    Image(
-                        painter = painterResource(id = R.drawable.edit_icon),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .clickable {
+                    if (profilePic==""){
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(90.dp)
+                        )
+                        {
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
 
+//                                Image(
+//                                    painter = painter,
+//                                    contentDescription = null,
+//                                    contentScale = ContentScale.Crop,
+//                                    modifier = Modifier
+//                                        .clip(CircleShape)
+//                                        .size(96.dp)
+//                                )
                             }
-                    )
+
+                            Box(modifier = Modifier.padding(start = 200.dp, top = 70.dp))
+                            {
+                                Image(
+                                    painter = painterResource(id = R.drawable.edit_icon),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .clip(CircleShape)
+                                        .clickable {
+                                            launcher.launch("image/*")
+
+                                        }
+                                )
+                            }
+
+                        }
+
+
+                    }
+
+                    else {
+
+
+                        Log.d("ProfileImageofUser", "$profilePic")
+                        Box(modifier = Modifier.padding(start = 200.dp, top = 70.dp))
+                        {
+                            Image(
+                                painter = painterResource(id = R.drawable.edit_icon),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .clickable {
+                                        launcher.launch("image/*")
+
+                                    }
+                            )
+                        }
+                    }
                 }
 
                 }
@@ -226,7 +468,11 @@ fun EditProfileScreen(navController: NavController) {
                             .border(1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp)),
                         placeholder = {
                             Text(
-                                text="Your Name",
+                                text=if(name!=""){
+                                    name
+                                }else{
+                                    "Enter Yor Name"
+                                },
                                 color = SecondaryText,
                                 style = TextStyle(
                                     fontFamily = arimoFontFamily,
@@ -241,6 +487,7 @@ fun EditProfileScreen(navController: NavController) {
                             cursorColor = MainColor
                         )
                     )
+
 
                     Spacer(modifier = Modifier.height(10.dp))
 
@@ -266,7 +513,7 @@ fun EditProfileScreen(navController: NavController) {
                         Column(modifier = Modifier
                             .padding(5.dp)
                             .fillMaxSize()) {
-                            MyTextField(value = bio, onValueChange = {bio=it})
+                            MyTextField(value = edit_profile_bio, onValueChange = {edit_profile_bio=it}, hintText = bio)
                         }
                     }
 
@@ -439,7 +686,9 @@ fun EditProfileScreen(navController: NavController) {
                     {
                         Button(
                             shape = RoundedCornerShape(10.dp),
-                            modifier = Modifier.width(150.dp).height(60.dp),
+                            modifier = Modifier
+                                .width(150.dp)
+                                .height(60.dp),
                             colors = ButtonDefaults.buttonColors(SecondaryBackGround),
                             onClick = {
                                 navController.navigate(ScreenRoutes.HomeScreen.route)
@@ -456,17 +705,39 @@ fun EditProfileScreen(navController: NavController) {
                             )
                         }
 
+
                         Button(
                             shape = RoundedCornerShape(10.dp),
-                            modifier = Modifier.width(150.dp).height(60.dp),
+                            modifier = Modifier
+                                .width(150.dp)
+                                .height(60.dp),
                             colors = ButtonDefaults.buttonColors(MainColor),
                             onClick = {
                                 navController.navigate(ScreenRoutes.HomeScreen.route)
+                                registrationViewModel.updateUser(
+                                    uid,
+                                    username,
+                                    phone ,
+                                    edit_profile_name,
+                                    firstName,
+                                    lastName,
+                                    imageUrl,
+                                    profession,
+                                    themeSelected,
+                                    "25",
+                                    "25",
+                                    "25",
+                                    gender,
+                                    dob,
+                                    edit_profile_bio,
+                                    "incomplete",
+                                    navController
+                                )
                                 Toast.makeText(context, "Profile Updated", Toast.LENGTH_SHORT).show()
                             }
                         )
                         {
-                            Text(text = "NEXT",
+                            Text(text = "UPDATE",
                                 textAlign = TextAlign.Center,
                                 style = TextStyle(
                                     fontFamily = arimoFontFamily,
@@ -488,7 +759,7 @@ fun MyTextField(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
-    hintText : String = "Your Bio"
+    hintText : String
 ){
     val scrollState = rememberScrollState()
     val maxChar = 100

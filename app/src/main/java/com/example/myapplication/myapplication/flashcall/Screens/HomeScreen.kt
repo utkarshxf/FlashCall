@@ -33,33 +33,40 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchColors
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -97,12 +104,12 @@ import com.example.myapplication.myapplication.flashcall.utils.ShareComplete
 import kotlinx.coroutines.flow.collectLatest
 import java.time.LocalDate
 
-
+var uriImg : Uri? = null
 var creatorUid:String = ""
 var token : String = ""
 var creatorUserName : String = ""
 @Composable
-fun HomeScreen(navController: NavController, registrationViewModel: RegistrationViewModel = hiltViewModel(), authenticationViewModel: AuthenticationViewModel)
+fun HomeScreen(navController: NavController, registrationViewModel: RegistrationViewModel = hiltViewModel(), authenticationViewModel: AuthenticationViewModel= hiltViewModel())
 {
 
     var uid by remember {
@@ -111,18 +118,98 @@ fun HomeScreen(navController: NavController, registrationViewModel: Registration
     var name by remember {
         mutableStateOf("")
     }
+    var username by remember {
+        mutableStateOf("")
+    }
     var userId by remember {
+        mutableStateOf("")
+    }
+    var phone by remember {
+        mutableStateOf("")
+    }
+    var profession by remember {
+        mutableStateOf("")
+    }
+    var videoRate by remember {
+        mutableStateOf("")
+    }
+    var audioRate by remember {
+        mutableStateOf("")
+    }
+    var chatRate by remember {
+        mutableStateOf("")
+    }
+    var gender by remember {
+        mutableStateOf("")
+    }
+    var themeSelected by remember {
         mutableStateOf("")
     }
     var profilePic by remember {
         mutableStateOf("")
     }
+    var dob by remember {
+        mutableStateOf("")
+    }
+    var bio by remember {
+        mutableStateOf("")
+    }
+    val (firstName, lastName) = name.split(" ", limit = 2).let {
+        if (it.size == 2) it else listOf(it[0], "")
+    }
+    val context = LocalContext.current
+    if (uriImg != null) {
+        uriImg?.let { uri ->
+            uploadImageToFirebase(uri, context) { url ->
+                imageUrl = url
+//                Toast.makeText(context, "Image uploaded successfully", Toast.LENGTH_SHORT).show()
+                registrationViewModel.updateUser(
+                    uid,
+                    username,
+                    phone ,
+                    name,
+                    firstName,
+                    lastName,
+                    imageUrl,
+                    profession,
+                    themeSelected,
+                    "25",
+                    "25",
+                    "25",
+                    gender,
+                    dob,
+                    bio,
+                    "incomplete",
+                    navController
+                )
+            }
+        }
+    }
 
+    val createdUserState2 by authenticationViewModel.isCreatedUserState.collectAsState()
     val createUserState1 by registrationViewModel.createUserState.collectAsState()
+    Log.d("UserCreatedAlready", "$createdUserState2")
     Log.d("CreatedUserData", createUserState1.toString())
     Log.d("CreateUserResponse", "$createUserState1")
-    when(createUserState1) {
-        is APIResponse.Success->{
+
+    val userData = authenticationViewModel.getUserFromPreferences(context)
+    if (userData != null ) {
+        uid = userData._id ?: ""
+        username = userData.username ?: ""
+        name = userData.fullName ?: ""
+        phone = userData.phone ?: ""
+        userId = userData.username ?: ""
+        gender = userData.gender ?: ""
+        dob = userData.dob ?: ""
+        bio = userData.bio ?: ""
+        themeSelected = userData.themeSelected ?: ""
+        profession = userData.profession ?: ""
+        profilePic = userData.photo ?: ""
+    }
+
+    else{
+    when (createUserState1) {
+        is APIResponse.Success -> {
 
             val response = (createUserState1 as APIResponse.Success).data
             Log.d("UserResponse", response.toString())
@@ -138,8 +225,10 @@ fun HomeScreen(navController: NavController, registrationViewModel: Registration
         is APIResponse.Error -> {
             Log.e("Error", "Error Failed")
         }
+
         APIResponse.Loading -> Log.e("Loading", "Loading")
     }
+}
 
     creatorUid = uid
     creatorUserName = userId
@@ -232,16 +321,69 @@ fun HomeScreen(navController: NavController, registrationViewModel: Registration
                         verticalAlignment = Alignment.CenterVertically,
                     )
                     {
-//                        Image(
-//                            painter = painterResource(id = R.drawable.home_image),
-//                            contentDescription = null,
-//                            modifier = Modifier
-//                                .clip(CircleShape)
-//                                .size(90.dp)
-//                        )
+                        if (profilePic==""){
+                            val imageUri = rememberSaveable {
+                                mutableStateOf("")
+                            }
 
-                        Log.d("ProfileImageofUser", "$profilePic")
-                        ImageFromUrl(imageUrl = profilePic!!)
+                            val painter = rememberAsyncImagePainter(
+                                imageUri.value.ifEmpty { R.drawable.profile_picture_holder }
+                            )
+
+                            val launcher = rememberLauncherForActivityResult(
+                                contract = ActivityResultContracts.GetContent()
+                            ) { uri: Uri? ->
+
+                                uri?.let {
+                                    uriImg = it
+                                    imageUri.value = it.toString()
+                                }
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(90.dp)
+                            )
+                            {
+                                Column(
+                                    modifier = Modifier.fillMaxSize(),
+                                    verticalArrangement = Arrangement.Center,
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Image(
+                                        painter = painter,
+                                        contentDescription = null,
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier
+                                            .clip(CircleShape)
+                                            .size(96.dp)
+                                    )
+                                }
+
+                                Box(modifier = Modifier.padding(start = 200.dp, top = 70.dp))
+                                {
+                                    Image(
+                                        painter = painterResource(id = R.drawable.edit_icon),
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .clip(CircleShape)
+                                            .clickable {
+                                                launcher.launch("image/*")
+
+                                            }
+                                    )
+                                }
+
+                            }
+
+
+                        }
+
+                        else {
+
+                            Log.d("ProfileImageofUser", "$profilePic")
+                            ImageFromUrl(imageUrl = profilePic!!)
+                        }
                     }
 
                 }
@@ -275,7 +417,7 @@ fun HomeScreen(navController: NavController, registrationViewModel: Registration
                 Spacer(modifier = Modifier.height(20.dp))
 
                 Box(modifier = Modifier.fillMaxSize()){
-                    HomeScreenBottom(navController)
+                    HomeScreenBottom(navController, username)
                 }
             }
         }
@@ -284,7 +426,7 @@ fun HomeScreen(navController: NavController, registrationViewModel: Registration
 
 
 @Composable
-fun HomeScreenBottom(homeNavController: NavController)
+fun HomeScreenBottom(homeNavController: NavController, username: String)
 {
     var showShareDialog by remember { mutableStateOf(true) }
 
@@ -315,7 +457,7 @@ fun HomeScreenBottom(homeNavController: NavController)
 //                    var createdAt = System.currentTimeMillis()
 //                    Text(text = "$createdAt")
 
-                    CopyBar(homeNavController)
+                    CopyBar(homeNavController, username = username)
 //                    if (showShareDialog) {
 //                        ShareTextButton(
 //                            textToShare = "https://www.flashcall.me/nitra-sahgal-55-consultant",
@@ -328,7 +470,7 @@ fun HomeScreenBottom(homeNavController: NavController)
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                WalletBar()
+                WalletBar(navController = homeNavController)
 
                 Spacer(modifier = Modifier.height(20.dp))
 
@@ -347,7 +489,7 @@ fun HomeScreenBottom(homeNavController: NavController)
 }
 
 @Composable
-fun CopyBar(homeNavController: NavController)
+fun CopyBar(homeNavController: NavController, username: String)
 {
     var copyText by remember {
         mutableStateOf("https://www.flashcall.vercel.app/expert/$creatorUserName/$creatorUid")
@@ -407,14 +549,15 @@ fun CopyBar(homeNavController: NavController)
         if (showShareDialog) {
             ShareTextButton(
                 textToShare = "https://www.flashcall.me/nitra-sahgal-55-consultant",
-                homeNavController = homeNavController
+                homeNavController = homeNavController,
+                username = username
             )
         }
     }
 }
 
 @Composable
-fun WalletBar()
+fun WalletBar(navController: NavController)
 {
 
 
@@ -475,7 +618,9 @@ fun WalletBar()
                     containerColor = MainColor,
                     contentColor = Color.White
                 ),
-                onClick = {  }
+                onClick = {
+                    navController.navigate(ScreenRoutes.WalletScreen.route)
+                }
             ) {
 
                 Text(text = "View Wallet",
@@ -491,56 +636,40 @@ fun WalletBar()
 }
 
 @Composable
-fun ServicesSection()
-{
-    var serviceSelected by remember {
-        mutableStateOf(false)
-    }
+fun ServicesSection() {
+    var serviceSelected by remember { mutableStateOf(false) }
+    var audioService by remember { mutableStateOf(true) }
+    var videoService by remember { mutableStateOf(true) }
+    var chatService by remember { mutableStateOf(true) }
 
-    var audioService by remember {
-        mutableStateOf(true)
-    }
+    var audioPrice by remember { mutableStateOf("25") }
+    var chatPrice by remember { mutableStateOf("25") }
+    var videoPrice by remember { mutableStateOf("25") }
 
-    var videoService by remember {
-        mutableStateOf(true)
-    }
+    var isDialogOpen by remember { mutableStateOf(false) }
+    var selectedService by remember { mutableStateOf("") }
+    var priceToEdit by remember { mutableStateOf("") }
 
-    var chatService by remember {
-        mutableStateOf(true)
-    }
+    // Dynamic text color based on the service toggle state
+    val textColor = if (serviceSelected) Color.Black else Color.Gray
 
-    var audioPrice by remember {
-        mutableStateOf("")
-    }
-
-    var chatPrice by remember {
-        mutableStateOf("")
-    }
-
-    var videoPrice by remember {
-        mutableStateOf("")
-    }
-
-    Box(modifier = Modifier
-        .fillMaxWidth()
-        .height(240.dp)
-        .background(color = Color.White)
-        .border(1.dp, BorderColor2, shape = RoundedCornerShape(10.dp))
-    ){
-        Column(
-            modifier = Modifier.fillMaxSize()
-        )
-        {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(240.dp)
+            .background(color = Color.White)
+            .border(1.dp, BorderColor2, shape = RoundedCornerShape(10.dp))
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(40.dp)
                     .padding(10.dp)
-            )
-            {
-
-                Text(text = "My Services",
-                    modifier = Modifier.padding(start=5.dp),
+            ) {
+                Text(
+                    text = "My Services",
+                    modifier = Modifier.padding(start = 5.dp),
                     style = TextStyle(
                         fontFamily = arimoFontFamily,
                         fontWeight = FontWeight.SemiBold,
@@ -548,14 +677,10 @@ fun ServicesSection()
                         color = Color.Black
                     )
                 )
-
                 Spacer(modifier = Modifier.weight(1f))
                 Switch(
-                        checked = serviceSelected,
-                    onCheckedChange =
-                    {
-                    serviceSelected = it
-                    },
+                    checked = serviceSelected,
+                    onCheckedChange = { serviceSelected = it },
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = Color.White,
                         checkedTrackColor = MainColor,
@@ -566,210 +691,295 @@ fun ServicesSection()
                         .width(50.dp)
                         .padding(top = 5.dp)
                 )
-
-
             }
 
             Spacer(modifier = Modifier.height(5.dp))
 
             HorizontalDivider(thickness = 1.dp, modifier = Modifier.padding(start = 10.dp, end = 10.dp))
-            
-//            var isDialog by remember {
-//                mutableStateOf(false)
-//            }
-//
-//            Dialog(onDismissRequest = { /*TODO*/ }) {
-//
-//            }
 
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(10.dp)
+            ) {
 
-            Column(modifier = Modifier
-                .fillMaxSize()
-                .padding(10.dp)
-                .clickable {
-//                    isDialog = true
-                })
-            {
-
-                Row(
-                    modifier = Modifier
-                        .height(50.dp)
-                ){
-                    Column(modifier = Modifier.fillMaxHeight())
-                    {
-                        Text(text = "Video Call",
-                            style = TextStyle(
-                                fontFamily = arimoFontFamily,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 20.sp,)
-                        )
-                        Spacer(modifier = Modifier.height(5.dp))
-                        Row()
-                        {
-                            Text(text = "Rs. 25/min",
-                                style = TextStyle(
-                                    fontFamily = arimoFontFamily,
-                                    fontWeight = FontWeight.Black,
-                                    fontSize = 14.sp,)
-                            )
-
-                            Image(
-                                painter = painterResource(id = R.drawable.edit),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .padding(start = 5.dp)
-                                    .size(16.dp)
-                                    .clickable {
-
-                                    }
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.weight(1f))
-                    Switch(
-                        checked = videoService,
-                        onCheckedChange =
-                        {
-                            if(serviceSelected)
-                            {
-                                videoService = it
-                            }
+                // Video Call Service
+                ServiceRow(
+                    serviceName = "Video Call",
+                    servicePrice = videoPrice,
+                    serviceEnabled = videoService,
+                    onEditClick = {
+                        selectedService = "Video"
+                        priceToEdit = videoPrice
+                        isDialogOpen = true
+                    },
+                    onCheckedChange = {
+                        if (serviceSelected) {
                             videoService = it
-                        },
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = MainColor,
-                            uncheckedThumbColor = Color.White,
-                            uncheckedTrackColor = SwitchColor
-                        ),
-                        modifier = Modifier
-                            .width(50.dp)
-                            .padding(bottom = 15.dp), enabled = serviceSelected
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(15.dp))
-
-                Row(
-                    modifier = Modifier.height(50.dp)
-
-                ){
-                    Column(modifier = Modifier.fillMaxHeight())
-                    {
-                        Text(text = "Audio Call",
-                            style = TextStyle(
-                                fontFamily = arimoFontFamily,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 20.sp,)
-                        )
-                        Spacer(modifier = Modifier.height(5.dp))
-                        Row()
-                        {
-                            Text(text = "Rs. 25/min",
-                                style = TextStyle(
-                                    fontFamily = arimoFontFamily,
-                                    fontWeight = FontWeight.Black,
-                                    fontSize = 14.sp,)
-                            )
-
-                            Image(
-                                painter = painterResource(id = R.drawable.edit),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .padding(start = 5.dp)
-                                    .size(16.dp)
-                                    .clickable {
-
-                                    }
-                            )
                         }
-                    }
+                    },
+                    serviceSelected = serviceSelected,
+                    textColor = textColor
+                )
 
-                    Spacer(modifier = Modifier.weight(1f))
-                    Switch(
-                        checked = audioService,
-                        onCheckedChange =
-                        {
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Audio Call Service
+                ServiceRow(
+                    serviceName = "Audio Call",
+                    servicePrice = audioPrice,
+                    serviceEnabled = audioService,
+                    onEditClick = {
+                        selectedService = "Audio"
+                        priceToEdit = audioPrice
+                        isDialogOpen = true
+                    },
+                    onCheckedChange = {
+                        if (serviceSelected) {
                             audioService = it
-                        },
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = MainColor,
-                            uncheckedThumbColor = Color.White,
-                            uncheckedTrackColor = SwitchColor
-                        ),
-                        modifier = Modifier
-                            .width(50.dp)
-                            .padding(bottom = 15.dp), enabled = serviceSelected
-                    )
-                }
+                        }
+                    },
+                    serviceSelected = serviceSelected,
+                    textColor = textColor
+                )
 
-                Spacer(modifier = Modifier.height(15.dp))
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Chat Service
+                ServiceRow(
+                    serviceName = "Chat",
+                    servicePrice = chatPrice,
+                    serviceEnabled = chatService,
+                    onEditClick = {
+                        selectedService = "Chat"
+                        priceToEdit = chatPrice
+                        isDialogOpen = true
+                    },
+                    onCheckedChange = {
+                        if (serviceSelected) {
+                            chatService = it
+                        }
+                    },
+                    serviceSelected = serviceSelected,
+                    textColor = textColor
+                )
+            }
+        }
+    }
+
+    if (isDialogOpen) {
+        EditPriceDialog(
+            videoPrice = videoPrice,
+            audioPrice = audioPrice,
+            chatPrice = chatPrice,
+            onDismiss = { isDialogOpen = false },
+            onConfirm = { newVideoPrice, newAudioPrice, newChatPrice ->
+                videoPrice = newVideoPrice
+                audioPrice = newAudioPrice
+                chatPrice = newChatPrice
+                isDialogOpen = false
+            }
+        )
+    }
+}
+
+@Composable
+fun ServiceRow(
+    serviceName: String,
+    servicePrice: String,
+    serviceEnabled: Boolean,
+    onEditClick: () -> Unit,
+    onCheckedChange: (Boolean) -> Unit,
+    serviceSelected: Boolean,
+    textColor: Color // Dynamic text color based on main toggle state
+) {
+    // Text and icon color should be grey if the service is disabled
+    val rowTextColor = if (serviceEnabled && serviceSelected) textColor else Color.Gray
+    val iconAlpha = if (serviceEnabled && serviceSelected) 1f else 0.5f
+
+    Row(
+        modifier = Modifier.height(50.dp)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxHeight()
+        ) {
+            Text(
+                text = serviceName,
+                modifier = Modifier.clickable(enabled = serviceEnabled && serviceSelected) { onEditClick() },
+                style = TextStyle(
+                    fontFamily = arimoFontFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = rowTextColor // Apply dynamic color
+                )
+            )
+            Spacer(modifier = Modifier.height(5.dp))
+            Row {
+                Text(
+                    text = "Rs. $servicePrice/min",
+                    style = TextStyle(
+                        fontFamily = arimoFontFamily,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 14.sp,
+                        color = rowTextColor // Apply dynamic color
+                    )
+                )
+
+                Image(
+                    painter = painterResource(id = R.drawable.edit),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(start = 5.dp)
+                        .size(16.dp)
+                        .clickable(enabled = serviceEnabled && serviceSelected) { onEditClick() }
+                        .alpha(iconAlpha) // Reduce opacity if disabled
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Switch(
+            checked = serviceEnabled,
+            onCheckedChange = { onCheckedChange(it) },
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = Color.White,
+                checkedTrackColor = MainColor,
+                uncheckedThumbColor = Color.White,
+                uncheckedTrackColor = SwitchColor
+            ),
+            modifier = Modifier
+                .width(50.dp)
+                .padding(bottom = 15.dp),
+            enabled = serviceSelected
+        )
+    }
+}
+
+
+
+@Composable
+fun EditPriceDialog(
+    videoPrice: String,
+    audioPrice: String,
+    chatPrice: String,
+    onDismiss: () -> Unit,
+    onConfirm: (String, String, String) -> Unit
+) {
+    var newVideoPrice by remember { mutableStateOf(videoPrice) }
+    var newAudioPrice by remember { mutableStateOf(audioPrice) }
+    var newChatPrice by remember { mutableStateOf(chatPrice) }
+
+    Dialog(onDismissRequest = { onDismiss() }) {
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = Color.White
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    text = "Price",
+                    style = TextStyle(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    ),
+                    color = Color.Black,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+
+                PriceInputRow(
+                    serviceName = "Video Call",
+                    price = newVideoPrice,
+                    onPriceChange = { newVideoPrice = it }
+                )
+
+                PriceInputRow(
+                    serviceName = "Audio Call",
+                    price = newAudioPrice,
+                    onPriceChange = { newAudioPrice = it }
+                )
+
+                PriceInputRow(
+                    serviceName = "Chat",
+                    price = newChatPrice,
+                    onPriceChange = { newChatPrice = it }
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
 
                 Row(
-                    modifier = Modifier.height(50.dp)
-
-                ){
-                    Column(modifier = Modifier.fillMaxHeight())
-                    {
-                        Text(text = "Chat",
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    TextButton(onClick = onDismiss) {
+                        Text(
+                            text = "Cancel",
                             style = TextStyle(
-                                fontFamily = arimoFontFamily,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 20.sp,)
+                                color = Color.Gray,
+                                fontSize = 16.sp
+                            )
                         )
-                        Spacer(modifier = Modifier.height(5.dp))
-                        Row()
-                        {
-                            Text(text = "Rs. 25/min",
-                                style = TextStyle(
-                                    fontFamily = arimoFontFamily,
-                                    fontWeight = FontWeight.Black,
-                                    fontSize = 14.sp,)
-                            )
-
-                            Image(
-                                painter = painterResource(id = R.drawable.edit),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .padding(start = 5.dp)
-                                    .size(16.dp)
-                                    .clickable {
-
-                                    }
-                            )
-                        }
                     }
 
-                    Spacer(modifier = Modifier.weight(1f))
-                    Switch(
-                        checked = chatService,
-                        onCheckedChange =
-                        {
-                            chatService = it
+                    Button(
+                        onClick = {
+                            onConfirm(newVideoPrice, newAudioPrice, newChatPrice)
                         },
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = MainColor,
-                            uncheckedThumbColor = Color.White,
-                            uncheckedTrackColor = SwitchColor
-                        ),
-                        modifier = Modifier
-                            .width(50.dp)
-                            .padding(bottom = 15.dp), enabled = serviceSelected
-                    )
+                        shape = RoundedCornerShape(50),
+                        colors = ButtonDefaults.buttonColors(
+                             Color(0xFF00A862) // Green color for Save button
+                        )
+                    ) {
+                        Text(
+                            text = "Save",
+                            color = Color.White,
+                            fontSize = 16.sp
+                        )
+                    }
                 }
             }
-            
-//            if(isDialog)
-//                Dialog(onDismissRequest = { }) {
-//
-//                }
-
         }
     }
 }
+
+@Composable
+fun PriceInputRow(
+    serviceName: String,
+    price: String,
+    onPriceChange: (String) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "$serviceName\nper minute",
+            style = TextStyle(
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.Black,
+            )
+        )
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(text = "Rs.")
+            Spacer(modifier = Modifier.width(4.dp))
+            OutlinedTextField(
+                value = price,
+                onValueChange = onPriceChange,
+                modifier = Modifier.width(80.dp),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            )
+        }
+    }
+}
+
 
 @Composable
 fun TutorialSlide() {
@@ -827,33 +1037,21 @@ fun copyToClipboard(
 }
 
 @Composable
-fun ImageFromUrl(imageUrl : String) {
-
-    val model = ImageRequest
-        .Builder(LocalContext.current)
-        .data(imageUrl)
-        .build()
-
+fun ImageFromUrl(imageUrl: String) {
+    // Use the AsyncImage directly for simplicity
     AsyncImage(
-        modifier = Modifier.clip(CircleShape),
-        model = model,
-        contentDescription = null
+        model = ImageRequest.Builder(LocalContext.current)
+            .data(imageUrl)
+            .crossfade(true)
+            .build(),
+        contentDescription = null,
+        modifier = Modifier
+            .size(120.dp)  // Ensure a consistent size
+            .clip(CircleShape),  // Clip to a circle
+        contentScale = ContentScale.Crop  // Crop the image to fit within the circle
     )
-
-    val imageState = rememberAsyncImagePainter(model = model).state
-
-    if(imageState is AsyncImagePainter.State.Success)
-    {
-        Image(
-            painter = imageState.painter,
-            contentDescription = null,
-            modifier = Modifier
-                .clip(CircleShape)
-                .size(120.dp)
-        )
-    }
-
 }
+
 
 @Composable
 fun shareLink(url : String) {
@@ -870,7 +1068,7 @@ fun shareLink(url : String) {
 }
 
 @Composable
-fun ShareTextButton(textToShare: String,homeNavController: NavController) {
+fun ShareTextButton(textToShare: String,homeNavController: NavController, username: String) {
     val context = LocalContext.current
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {result->
         if(result.resultCode == Activity.RESULT_OK)
@@ -881,7 +1079,7 @@ fun ShareTextButton(textToShare: String,homeNavController: NavController) {
     }
 
     var shareText by remember {
-        mutableStateOf("https://www.flashcall.vercel.app/expert/$creatorUserName/$creatorUid")
+        mutableStateOf("https://app.flashcall.me/creator/$username")
     }
     Image(painter = painterResource(id = R.drawable.share_icon),
         modifier = Modifier

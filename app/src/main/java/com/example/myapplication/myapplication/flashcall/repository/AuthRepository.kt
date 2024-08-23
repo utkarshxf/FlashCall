@@ -1,10 +1,12 @@
 package com.example.myapplication.myapplication.flashcall.repository
 
+import android.util.Log
 import com.example.myapplication.myapplication.flashcall.Data.SendOTP
 import com.example.myapplication.myapplication.flashcall.Data.VerifyOTP
 import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.CreateUser
 import com.example.myapplication.myapplication.flashcall.Data.model.CreateUserResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.IsUserCreatedResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.Request
 import com.example.myapplication.myapplication.flashcall.Data.model.ResendOTPResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.ResendRequest
@@ -24,9 +26,12 @@ import javax.inject.Inject
 class AuthRepository @Inject constructor(private val apiService: APIService) : IAuthRepo {
 
     override suspend fun sendOtp(url:String,number: String): Flow<SendOTPResponseX?> {
-
+        Log.e("phone2", "$number $url" )
         return flow{
+            val abc = Request(number)
+            Log.e("phone4", "$number $url $abc"  )
             val response = apiService.sendOTP(url, Request(number))
+            Log.e("phone3", response.toString())
             if(response.isSuccessful){
                 emit(response.body()!!)
             }else{
@@ -61,7 +66,19 @@ class AuthRepository @Inject constructor(private val apiService: APIService) : I
         }.flowOn(Dispatchers.IO)
     }
 
+    override suspend fun isCreatedUser(url:String, phone: String): Flow<IsUserCreatedResponse?> {
 
+        return flow{
+            Log.e("created2", "$phone $url" )
+            val response = apiService.isCreatedUser(url, Request(phone))
+            Log.e("created3", "$phone $url" )
+            if(response.isSuccessful){
+                emit(response.body()!!)
+            }else{
+                emit(null)
+            }
+        }.flowOn(Dispatchers.IO)
+    }
 
 
 }

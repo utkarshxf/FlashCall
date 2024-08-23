@@ -18,10 +18,10 @@ class FeedbackViewModel @Inject constructor(
     private val _feedbacks = MutableStateFlow<List<FeedBackResponse>>(emptyList())
     val feedbacks: StateFlow<List<FeedBackResponse>> = _feedbacks
 
-    suspend fun getFeedbacks() {
+    suspend fun getFeedbacks(uid: String) {
 
         try {
-            feedbackRepo.getFeedbacks("https://flashcall.vercel.app/api/v1/feedback/call/getFeedbacks?creatorId=6687f5eeb51cc5626f5db5ea").collect {
+            feedbackRepo.getFeedbacks("https://flashcall.vercel.app/api/v1/feedback/call/getFeedbacks?creatorId=$uid").collect {
 
 
                 if (it != null) {

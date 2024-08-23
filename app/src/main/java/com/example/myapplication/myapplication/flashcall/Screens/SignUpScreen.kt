@@ -9,6 +9,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -16,10 +17,12 @@ import androidx.compose.foundation.layout.Column
 //import androidx.compose.foundation.layout.FlowColumnScopeInstance.align
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -76,23 +79,33 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamil
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.navigation.NavHostController
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
+import com.google.accompanist.insets.LocalWindowInsets
 
 var sendtoken : String? = ""
+//var keyBoard by remember { mutableStateOf(false) }
 @Composable
-fun SignUpScreen(navController: NavController,viewModel: AuthenticationViewModel) {
-
-    val images = listOf(
-        R.drawable.home_slider_image1,
-        R.drawable.home_slider_image2,
-        R.drawable.home_slider_image3,
-    )
-
-
-
+fun SignUpScreen(navController: NavController, viewModel: AuthenticationViewModel) {
+    // Create a mutable state to track keyboard visibility
+    var isKeyboardOpen by remember { mutableStateOf(false) }
+    val insets = LocalWindowInsets.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    LaunchedEffect(insets) {
+        val keyboardHeight = insets.ime.bottom
+        isKeyboardOpen = keyboardHeight > 0
+//        Log.d("isKeyboard", "$isKeyboardOpen")
+    }
+    Log.d("isKeyboard", "$isKeyboardOpen")
     Surface(
         modifier = Modifier
             .fillMaxSize()
@@ -105,18 +118,27 @@ fun SignUpScreen(navController: NavController,viewModel: AuthenticationViewModel
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-
-            ImageSlider()
-            Spacer(modifier = Modifier.height(20.dp))
-            TitleText()
-            Spacer(modifier = Modifier.height(15.dp))
-            SubTitleText()
-            Spacer(modifier = Modifier.height(30.dp))
-            BottomSignUpBar(navController, viewModel)
-
+            if (!isKeyboardOpen) {
+                // Only show image slider and texts when the keyboard is closed
+                ImageSlider()
+                Spacer(modifier = Modifier.height(20.dp))
+                TitleText()
+                Spacer(modifier = Modifier.height(15.dp))
+                SubTitleText()
+                Spacer(modifier = Modifier.height(30.dp))
+            }
+            if(isKeyboardOpen){
+                Spacer(modifier = Modifier.height(50.dp))
+                TitleText()
+                Spacer(modifier = Modifier.height(15.dp))
+                SubTitleText()
+                Spacer(modifier = Modifier.height(30.dp))
+            }
+            BottomSignUpBar(navController, viewModel, isKeyboardOpen, onKeyboardToggle = {
+                isKeyboardOpen = it
+            })
         }
     }
-    
 }
 
 @Composable
@@ -209,60 +231,7 @@ fun ImageSlider(modifier: Modifier = Modifier) {
 
 }
 
-//fun ImageSlider(modifier: Modifier = Modifier) {
-//
-//    val images = listOf(
-//        R.drawable.home_slider_image1,
-//        R.drawable.home_slider_image2,
-//        R.drawable.home_slider_image3,
-//    )
-//
-//    val pagerState = rememberPagerState(pageCount = { images.size })
-//
-//    LaunchedEffect(Unit) {
-//        while (true) {
-//            delay(3000)
-//            val nextPager = (pagerState.currentPage + 1) % pagerState.pageCount
-//            pagerState.scrollToPage(nextPager)
-//        }
-//    }
-//
-//    Column(
-//        modifier = modifier
-//            .wrapContentSize()
-//            .padding(16.dp),
-//        verticalArrangement = Arrangement.Center,
-//        horizontalAlignment = Alignment.CenterHorizontally
-//    ) {
-//        Box(modifier = Modifier.weight(1f).wrapContentSize()) {
-//            HorizontalPager(
-//                state = pagerState,
-//            ) { currentPage ->
-//                Card(
-//                    modifier = Modifier
-//                        .wrapContentSize()
-//                        .width(200.dp)
-//                        .height(200.dp)
-//                        .padding(horizontal = 16.dp),
-//                    elevation = CardDefaults.cardElevation(5.dp)
-//                ) {
-//                    Image(
-//                        painter = painterResource(id = images[currentPage]),
-//                        contentDescription = null,
-//                        contentScale = ContentScale.Crop,
-//                        modifier = Modifier.fillMaxSize()
-//                    )
-//                }
-//            }
-//        }
-//
-//        PageIndicator(
-//            pageCount = images.size,
-//            currentPage = pagerState.currentPage,
-//            modifier = Modifier.padding(vertical = 8.dp)
-//        )
-//    }
-//}
+
 
 
 @Composable
@@ -287,6 +256,7 @@ fun PageIndicator(pageCount: Int, currentPage: Int, modifier:  Modifier)
 
 }
 
+
 @Composable
 fun IndicatorDots(isSelected: Boolean, modifier: Modifier) {
     val size = animateDpAsState(targetValue = if (isSelected) 12.dp else 10.dp, label = "")
@@ -299,17 +269,32 @@ fun IndicatorDots(isSelected: Boolean, modifier: Modifier) {
 }
 
 @Composable
-fun BottomSignUpBar(navController: NavController, viewModel: AuthenticationViewModel) {
+fun BottomSignUpBar(
+    navController: NavController,
+    viewModel: AuthenticationViewModel,
+    isKeyboardOpen: Boolean,
+    onKeyboardToggle: (Boolean) -> Unit
+) {
 
     val context = LocalContext.current
     var phoneNumber by remember {
         mutableStateOf("")
     }
+    val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
 
     val sendOTPState by viewModel.sendOTPState.collectAsState()
+    Log.d("isKeyboard2", "$isKeyboardOpen")
 
     Surface(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize()
+            .pointerInput(Unit) {
+                // Detect taps anywhere on the screen
+                detectTapGestures {
+                    // Clear focus when tapping outside the input field
+                    focusManager.clearFocus()
+                }
+            },
         shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
     ) {
         Box(
@@ -405,7 +390,11 @@ fun BottomSignUpBar(navController: NavController, viewModel: AuthenticationViewM
                             modifier = Modifier
                                 .padding(top = 7.dp)
                                 .fillMaxHeight()
-                                .width(170.dp),
+                                .width(170.dp)
+                                .focusRequester(focusRequester)
+                                .onFocusChanged {
+                                    onKeyboardToggle(it.isFocused)
+                                },
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = Color.Transparent,
                                 unfocusedContainerColor = Color.Transparent,
@@ -433,24 +422,25 @@ fun BottomSignUpBar(navController: NavController, viewModel: AuthenticationViewM
                             }
                         )
 
-                        when(sendOTPState){
-                            is APIResponse.Success->{
+                        when (sendOTPState) {
+                            is APIResponse.Success -> {
                                 val response = (sendOTPState as APIResponse.Success).data
-                                 sendtoken = response.token
+                                sendtoken = response.token
                             }
 
-                            APIResponse.Empty -> Log.e("ERROR","ERROR CODE")
+                            APIResponse.Empty -> Log.e("ERROR", "ERROR CODE")
                             is APIResponse.Error -> {
-                                Toast.makeText(context,"Something Went Wrong", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Something Went Wrong", Toast.LENGTH_SHORT).show()
                             }
-                            APIResponse.Loading -> Log.e("ERROR","ERROR CODE")
+
+                            APIResponse.Loading -> Log.e("ERROR", "ERROR CODE")
                         }
 
                         Box(contentAlignment = Alignment.CenterEnd) {
                             Button(
                                 onClick = {
                                     viewModel.signUP(
-                                        phoneNumber = phoneNumber,navController, sendtoken
+                                        phoneNumber = phoneNumber, navController, sendtoken
                                     )
                                 },
                                 modifier = Modifier
@@ -462,7 +452,6 @@ fun BottomSignUpBar(navController: NavController, viewModel: AuthenticationViewM
                                 )
                             ) {
                                 Text(
-
                                     text = "Get OTP",
                                     style = TextStyle(
                                         fontSize = 10.sp
@@ -486,15 +475,17 @@ fun BottomSignUpBar(navController: NavController, viewModel: AuthenticationViewM
                     )
                 )
 
-                Spacer(modifier = Modifier.height(50.dp))
+                Spacer(modifier = if(isKeyboardOpen) Modifier.height(50.dp) else Modifier.height(10.dp))
 
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Column(modifier = Modifier.fillMaxSize(),
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally) {
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
                         Text(
                             text = "By signing up, you agree to our",
                             style = TextStyle(
@@ -510,7 +501,7 @@ fun BottomSignUpBar(navController: NavController, viewModel: AuthenticationViewM
                             horizontalArrangement = Arrangement.Center
                         ) {
                             Text(text = "Terms of Service",
-                                modifier = Modifier.clickable {  },
+                                modifier = Modifier.clickable { },
                                 style = TextStyle(
                                     fontFamily = arimoFontFamily,
                                     fontWeight = FontWeight.Bold,
@@ -519,7 +510,7 @@ fun BottomSignUpBar(navController: NavController, viewModel: AuthenticationViewM
                                 )
                             )
                             Text(text = " and ",
-                                modifier = Modifier.clickable {  },
+                                modifier = Modifier.clickable { },
                                 style = TextStyle(
                                     fontFamily = arimoFontFamily,
                                     fontWeight = FontWeight.Black,
@@ -529,7 +520,7 @@ fun BottomSignUpBar(navController: NavController, viewModel: AuthenticationViewM
                             )
 
                             Text(text = "Privacy Policy",
-                                modifier = Modifier.clickable {  },
+                                modifier = Modifier.clickable { },
                                 style = TextStyle(
                                     fontFamily = arimoFontFamily,
                                     fontWeight = FontWeight.Bold,
@@ -544,7 +535,6 @@ fun BottomSignUpBar(navController: NavController, viewModel: AuthenticationViewM
         }
     }
 }
-
 @Composable
 fun ClickableText() {
 

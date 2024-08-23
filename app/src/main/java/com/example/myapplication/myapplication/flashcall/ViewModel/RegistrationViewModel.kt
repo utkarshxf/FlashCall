@@ -12,6 +12,7 @@ import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.CreateUser
 import com.example.myapplication.myapplication.flashcall.Data.model.CreateUserResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.UpdateUserResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.VerifyOTPResponse
 import com.example.myapplication.myapplication.flashcall.repository.CreateRepository
 import com.google.firebase.Firebase
@@ -31,7 +32,7 @@ class RegistrationViewModel @Inject constructor(private val repository: CreateRe
                                                 @ApplicationContext private val context: Context
 ) : ViewModel() {
     private val sharedPreferences: SharedPreferences =
-        context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+        context.getSharedPreferences("user_prefs1", Context.MODE_PRIVATE)
 
     //sucess
     //APIResponseState = Sucess->CreateUserResponse Data
@@ -39,6 +40,10 @@ class RegistrationViewModel @Inject constructor(private val repository: CreateRe
 
     //
     val createUserState : StateFlow<APIResponse<CreateUserResponse>> = _createUserState
+
+    private val _updateUserState = MutableStateFlow<APIResponse<UpdateUserResponse>>(APIResponse.Empty)
+
+    val updateUserState : StateFlow<APIResponse<UpdateUserResponse>> = _updateUserState
 
 
     fun createUser(
@@ -111,6 +116,86 @@ class RegistrationViewModel @Inject constructor(private val repository: CreateRe
             }
         }
     }
+    fun updateUser(
+        userId: String,
+        username: String?,
+        phone: String?,
+        fullName: String?,
+        firstName: String?,
+        lastName: String?,
+        photo: String?,
+        profession: String?,
+        themeSelected: String?,
+        videoRate: String?,
+        audioRate: String?,
+        chatRate: String?,
+        gender: String?,
+        dob: String?,
+        bio: String?,
+        kyc_status: String?,
+        navController: NavController
+    ) {
+        viewModelScope.launch {
+            _updateUserState.value = APIResponse.Loading
+            try {
+                // Proceed with user update in the repository
+                Log.e("userIdUpdate", "$userId")
+                Log.e("firstname2", "$firstName")
+                repository.updateUser(
+                    "https://flashcall.vercel.app/api/v1/creator/updateUser", // Replace with actual update endpoint
+                    userId,
+                    fullName ?: "",
+                    firstName ?: "",
+                    lastName ?: "",
+                    username ?: "",
+                    phone ?: "",
+                    photo ?: "",
+                    profession ?: "",
+                    themeSelected ?: "",
+                    videoRate ?: "",
+                    audioRate ?: "",
+                    chatRate ?: "",
+                    gender ?: "",
+                    dob?:"",
+                    bio?:""
+                ).collect { response ->
+                    _updateUserState.value = APIResponse.Success(response)
+                    Log.d("User", "User updated successfully")
+
+                    // Update the SharedPreferences with the new user data
+                    storeUpdateUserResponseInPreferences(response)
+
+//                    navController.navigate(ScreenRoutes.Profile.route) // Navigate to the desired screen after update
+                }
+
+            } catch (e: Exception) {
+                Log.e("error", "User update failed: ${e.message}")
+                _createUserState.value = APIResponse.Error(e.message ?: "User update error")
+            }
+        }
+    }
+
+    private fun storeUpdateUserResponseInPreferences(response: UpdateUserResponse) {
+        sharedPreferences.edit().apply {
+            putString("username", response.updatedUser.username)
+            putString("phone", response.updatedUser.phone)
+            putString("fullName", response.updatedUser.fullName)
+            putString("profession", response.updatedUser.profession)
+            putString("themeSelected", response.updatedUser.themeSelected)
+            putString("photo", response.updatedUser.photo)
+            putString("phone", response.updatedUser.phone)
+            putString("videoRate", response.updatedUser.videoRate)
+            putString("audioRate", response.updatedUser.audioRate)
+            putString("chatRate", response.updatedUser.chatRate)
+            putString("gender", response.updatedUser.gender)
+            putString("dob", response.updatedUser.dob)
+            putString("bio", response.updatedUser.bio)
+
+            // other fields
+            apply()
+        }
+    }
+
 
     private fun storeResponseInPreferences(response: CreateUserResponse) {
         sharedPreferences.edit().apply {
@@ -134,6 +219,9 @@ class RegistrationViewModel @Inject constructor(private val repository: CreateRe
             putString("__v", response.__v)
             apply()
         }
+    }
+    fun getStoredUserData(key: String): String? {
+        return sharedPreferences.getString(key, null)
     }
 }
 

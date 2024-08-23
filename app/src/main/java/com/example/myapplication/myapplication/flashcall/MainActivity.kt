@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
@@ -165,7 +166,19 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
     var splashViewModel = hiltViewModel<SplashViewModel>()
     var chatViewModel = hiltViewModel<ChatViewModel>()
     var walletViewModel = hiltViewModel<WalletViewModel>()
+    var authenticationViewModel = hiltViewModel<AuthenticationViewModel>()
     var chattingFCMViewModel = hiltViewModel<ChattingFCMViewModel>()
+    val context = LocalContext.current
+    LaunchedEffect(key1 = Unit) {
+
+        val token = authenticationViewModel.getTokenFromPreferences(context)
+
+        if (!token.isNullOrEmpty()) {
+            navController.navigate(ScreenRoutes.MainScreen.route) {
+                popUpTo(0) { inclusive = true } // Clear the backstack
+            }
+        }
+    }
 
     LaunchedEffect(
         key1 = Unit
@@ -200,7 +213,7 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
     val inComingCall by videoViewModel.videoCall.collectAsState()
     val state = chattingFCMViewModel.state
 
-    NavHost(navController = navController, startDestination = ScreenRoutes.RegistrationScreen.route) {
+    NavHost(navController = navController, startDestination = ScreenRoutes.SignUpScreen.route) {
 
         composable(route= ScreenRoutes.SignUpScreen.route) {
             SignUpScreen(navController = navController, viewModel = viewModel)
@@ -228,11 +241,11 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
         }
 
         composable(route = ScreenRoutes.ProfileScreen.route){
-            ProfileScreen(navController = navController,hyperKycLauncher)
+            ProfileScreen(navController = navController,hyperKycLauncher, registrationViewModel, authenticationViewModel)
         }
 
         composable(route = ScreenRoutes.WalletScreen.route) {
-            WalletScreen(navController, walletViewModel)
+            WalletScreen(navController, walletViewModel, registrationViewModel,authenticationViewModel )
         }
 
         composable(route = VideoCallRoute.VideoCall.route) {
@@ -279,7 +292,7 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
             PaymentSettings(navController = navController)
         }
         composable(route = ScreenRoutes.ChatRoomScreen.route){
-            ChatRoomScreen()
+            ChatRoomScreen(chatViewModel, chatRequestViewModel, authenticationViewModel)
         }
 
         composable(route = ScreenRoutes.FeedbackScreen.route){

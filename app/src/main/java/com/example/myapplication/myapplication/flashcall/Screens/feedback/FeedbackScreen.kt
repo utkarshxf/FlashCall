@@ -41,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -50,6 +51,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.myapplication.flashcall.R
+import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.feedback.FeedbackViewModel
 import com.example.myapplication.myapplication.flashcall.ui.theme.BorderColor2
 import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
@@ -61,13 +63,16 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamil
 @Composable
 fun FeedbackScreen(
     feedbackViewModel: FeedbackViewModel = hiltViewModel(),
+    authenticationViewModel: AuthenticationViewModel = hiltViewModel(),
     navController: NavController
 ){
-
+    val context = LocalContext.current
+    val userData = authenticationViewModel.getUserFromPreferences(context)
+    val uid = userData?._id
     LaunchedEffect(
         Unit
     ) {
-        feedbackViewModel.getFeedbacks()
+        feedbackViewModel.getFeedbacks(uid.toString())
     }
 
     Surface(

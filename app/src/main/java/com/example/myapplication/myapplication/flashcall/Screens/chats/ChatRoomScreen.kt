@@ -91,7 +91,7 @@ import com.example.myapplication.myapplication.flashcall.Data.MessageType
 import com.example.myapplication.myapplication.flashcall.Data.model.Resource
 import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.MessageDataClass
 import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.audio.AudioPlayerState
-import com.example.myapplication.myapplication.flashcall.Screens.uriImg
+import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.chats.ChatRequestViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.chats.ChatViewModel
 import com.example.myapplication.myapplication.flashcall.ui.theme.ChatBackground
@@ -109,314 +109,245 @@ import java.util.Locale
 @Composable
 fun ChatRoomScreen(
     chatViewModel: ChatViewModel = hiltViewModel(),
-    chatRequestViewModel: ChatRequestViewModel = hiltViewModel()
-){
-
-
+    chatRequestViewModel: ChatRequestViewModel = hiltViewModel(),
+    authenticationViewModel: AuthenticationViewModel = hiltViewModel()
+) {
+    val context = LocalContext.current
+    val userData = authenticationViewModel.getUserFromPreferences(context)
+    val uid = userData?._id
+    val name = userData?.fullName
     val messages = chatViewModel.messages.collectAsState().value
 
-//    Log.d("ChatRoomScreen", "ChatRoomScreen: $messages")
-    LaunchedEffect(Unit) {
-        delay(1000)
-        val chatDetails = chatRequestViewModel.incomingChatRequest.value
-        Log.d("ChatDetails", "ChatDetails: $chatDetails")
-    }
-
-
-    var messageText by remember {
-        mutableStateOf("")
-    }
-
-    var imagePicker by remember {
-        mutableStateOf(false)
-    }
-
-    var chatImageUri by rememberSaveable {
-        mutableStateOf("")
-    }
-
+    var messageText by remember { mutableStateOf("") }
+    var imagePicker by remember { mutableStateOf(false) }
+    var chatImageUri by rememberSaveable { mutableStateOf("") }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-
         uri?.let {
-            uriImg = it
             chatImageUri = it.toString()
         }
-
         chatViewModel.onImageSelected(uri)
     }
 
-   Surface(
-       color = ChatBackground
-   ) {
-       Column(
-           modifier = Modifier.wrapContentSize()
-       ) {
+    Surface(
+        color = ChatBackground
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // Header Section
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Image(
+                        modifier = Modifier.size(50.dp),
+                        painter = painterResource(id = com.example.myapplication.myapplication.flashcall.R.drawable.profile_picture_holder),
+                        contentDescription = "Chat Client Image"
+                    )
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 16.dp)
+                    ) {
+                        Text(
+                            text = "Ongoing Chat with",
+                            style = TextStyle(
+                                color = Color.White,
+                                fontSize = 14.sp,
+                                fontFamily = arimoFontFamily,
+                                fontWeight = FontWeight.Light
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = name.toString(),
+                            style = TextStyle(
+                                color = Color.White,
+                                fontSize = 22.sp,
+                                fontFamily = arimoFontFamily,
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                    }
+                    Button(
+                        onClick = { /* Handle End Chat */ },
+                        modifier = Modifier
+                            .width(120.dp)
+                            .height(50.dp),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Red,
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text(
+                            text = "End Chat",
+                            style = TextStyle(
+                                color = Color.White,
+                                fontFamily = arimoFontFamily,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            )
+                        )
+                    }
+                }
+            }
 
-           Box(
-               modifier = Modifier
-                   .fillMaxWidth()
-                   .wrapContentHeight()
-           ){
-               Row(
-                   modifier = Modifier
-                       .wrapContentSize()
-                       .padding(16.dp)
-               ) {
-                   Image(
-                       modifier = Modifier.size(50.dp),
-                       painter = painterResource(id = com.example.myapplication.myapplication.flashcall.R.drawable.client_chat_image),
-                       contentDescription = "Chat Client Image")
+            // Timer Section
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(TimerBackground.copy(alpha = 0.1f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(TimerBackground.copy(alpha = 0.7f))
+                        .padding(8.dp),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "Time Left: 01:59",
+                        style = TextStyle(
+                            fontSize = 16.sp,
+                            color = Color.Red,
+                            fontFamily = arimoFontFamily,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                }
+            }
 
-                   Column(
-                       modifier = Modifier
-                           .wrapContentSize()
-                           .padding(start = 16.dp)
-                   ){
-                       Text(
-                           text ="Ongoing Chat with",
-                           style = TextStyle(
-                               color = Color.White,
-                               fontSize = 14.sp,
-                               fontFamily = arimoFontFamily,
-                               fontWeight = FontWeight.Light
-                           )
-                       )
-                       Spacer(modifier = Modifier.size(8.dp))
-                       Text(
-                           text ="Naina Talwar",
-                           style = TextStyle(
-                               color = Color.White,
-                               fontSize = 22.sp,
-                               fontFamily = arimoFontFamily,
-                               fontWeight = FontWeight.Bold
-                           )
-                       )
-                   }
+            // Messages List
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    reverseLayout = true // To display latest messages at the bottom
+                ) {
+                    when (messages) {
+                        is Resource.Success<*> -> {
+                            val messageList = messages.data as? List<MessageDataClass> ?: emptyList()
+                            items(messageList) {
+                                MessageItem(
+                                    message = it,
+                                    creatorId = uid.toString(),
+                                    onMessageSeen = chatViewModel::markMessageAsSeen,
+                                    viewModel = chatViewModel
+                                )
+                            }
+                        }
+                        is Resource.Error -> {
+                            // Handle error
+                        }
+                        is Resource.Loading -> {
+                            // Handle loading state
+                        }
+                    }
+                }
+            }
 
-                   Spacer(modifier = Modifier.weight(1f))
+            // Message Input and Actions
+            var progress by remember { mutableStateOf(false) }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp)
+                    .background(Color.White)
+                    .clip(RoundedCornerShape(24.dp)),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                OutlinedTextField(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 8.dp)
+                        .height(IntrinsicSize.Min),
+                    value = messageText,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                    keyboardActions = KeyboardActions(
+                        onSend = {
+                            if (messageText.isNotEmpty()) {
+                                chatViewModel.sendMessage(messageText, MessageType.TEXT)
+                                messageText = ""
+                            }
+                        }
+                    ),
+                    onValueChange = {
+                        messageText = it
+                    },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = Color.White.copy(alpha = 0.3f),
+                        unfocusedContainerColor = Color.White.copy(alpha = 0.3f),
+                        focusedTextColor = SecondaryText,
+                        unfocusedTextColor = SecondaryText,
+                        unfocusedBorderColor = Color.Transparent,
+                        focusedBorderColor = Color.Transparent
+                    ),
+                    placeholder = {
+                        Text(
+                            text = if (progress) "Recording..." else "Message",
+                            style = TextStyle(
+                                color = SecondaryText,
+                                fontSize = 16.sp,
+                                fontFamily = arimoFontFamily,
+                                fontWeight = FontWeight.Black
+                            )
+                        )
+                    },
+                    shape = RoundedCornerShape(32.dp),
+                    trailingIcon = {
+                        Row(
+                            modifier = Modifier.width(70.dp),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            Icon(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clickable { launcher.launch("image/*") },
+                                painter = painterResource(id = R.drawable.attach_file_chat),
+                                contentDescription = "Attach File"
+                            )
+                            Icon(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clickable { launcher.launch("camera/*") },
+                                painter = painterResource(id = R.drawable.camera_icon_chat),
+                                contentDescription = "Camera"
+                            )
+                        }
+                    }
+                )
 
-                   Button(
-                       onClick = {  },
-                       modifier = Modifier
-                           .width(120.dp)
-                           .height(50.dp),
-                       shape = RoundedCornerShape(10.dp),
-                       colors = ButtonDefaults.buttonColors(
-                           containerColor = Color.Red,
-                           contentColor = Color.White
-                       )
-                   ) {
-                       Text(text = "End Chat",
-                           style = TextStyle(
-                               color = Color.White,
-                               fontFamily = arimoFontFamily,
-                               fontWeight = FontWeight.Bold,
-                               fontSize = 16.sp,
-                           )
-                       )
-                   }
-               }
-           }
-
-           Box(
-               modifier = Modifier
-                   .fillMaxWidth()
-                   .wrapContentHeight()
-                   .background(TimerBackground.copy(alpha = 0.1f)),
-               contentAlignment = Alignment.Center
-           ){
-               Row(
-                   modifier = Modifier
-                       .fillMaxWidth()
-                       .background(TimerBackground.copy(alpha = 0.7f))
-                       .padding(8.dp),
-                   horizontalArrangement = Arrangement.Center,
-               ) {
-                   Text(text = "Time Left : 01:59",
-                       style = TextStyle(
-                           fontSize = 16.sp,
-                           color = Color.Red,
-                           fontFamily = arimoFontFamily,
-                           fontWeight = FontWeight.Bold
-                       )
-                   )
-               }
-           }
-
-           Column(
-               modifier = Modifier.fillMaxSize()
-           ) {
-               Column(
-                   modifier = Modifier.weight(1f)
-               ) {
-                   LazyColumn(
-                       modifier = Modifier
-                           .fillMaxWidth(),
-//                       reverseLayout = true,
-                   ){
-                       when(messages){
-
-                           is Resource.Success<*> ->{
-                               
-                               val messageList = messages.data as?
-                                       List<MessageDataClass> ?: emptyList()
-                               
-                               items(messageList){
-                                   Log.d("MessageItemChat", "ChatRoomScreen: ${it.text}")
-                                   MessageItem(message = it, creatorId = "6687f55f290500fb85b7ace0",chatViewModel::markMessageAsSeen,viewModel = chatViewModel)
-                               }
-                           }
-
-                           is Resource.Error -> {
-                               Log.d("ChatRoomScreen", "ChatRoomScreen: Error")
-                           }
-                           is Resource.Loading -> {
-                               Log.d("ChatRoomScreen", "ChatRoomScreen: Loading")
-                           }
-                       }
-//                       item {
-//                           ReceiverMessageCard("Hello this is testing")
-//                       }
-//                       item {
-//                           SenderMessageCard("My Name is Sujit")
-//                       }
-//                       item{
-//                           ReceiverMessageCard("What is your Name")
-//                       }
-                   }
-               }
-
-               var progress by remember {
-                   mutableStateOf(false)
-               }
-
-               Row(
-                   modifier = Modifier
-                       .fillMaxWidth()
-                       .padding(10.dp),
-                   verticalAlignment = Alignment.Bottom,
-                   horizontalArrangement = Arrangement.SpaceBetween
-               ) {
-                   OutlinedTextField(
-                       modifier = Modifier
-                           .height(IntrinsicSize.Max)
-                           .width(285.dp),
-                       value = messageText,
-                       keyboardOptions = KeyboardOptions(
-                           imeAction = ImeAction.Send
-                       ),
-                       keyboardActions = KeyboardActions(
-                           onSend = {
-                               if(messageText.isNotEmpty())
-                                   chatViewModel.sendMessage(messageText,MessageType.TEXT)
-                               messageText = ""
-                           }
-                       ),
-                       onValueChange = {
-                           messageText = it
-                       },
-                       colors = OutlinedTextFieldDefaults.colors(
-                           focusedContainerColor = Color.White.copy(alpha = 0.3f),
-                           unfocusedContainerColor = Color.White.copy(alpha = 0.3f),
-                           focusedTextColor = SecondaryText,
-                           unfocusedTextColor = SecondaryText,
-                           unfocusedBorderColor = Color.Transparent,
-                           focusedBorderColor = Color.Transparent
-                       ),
-                       placeholder = {
-                           Text(text = if(progress) "Recording..." else "Message",
-                               style = TextStyle(
-                                   color = SecondaryText,
-                                   fontSize = 16.sp,
-                                   fontFamily = arimoFontFamily,
-                                   fontWeight = FontWeight.Black
-                               )
-                           )
-                       },
-                       shape = RoundedCornerShape(32.dp),
-                       trailingIcon = {
-                           Row(
-                               modifier = Modifier.width(70.dp),
-                               horizontalArrangement = Arrangement.SpaceEvenly
-                           ) {
-                               Icon(
-                                   modifier = Modifier
-                                       .size(24.dp)
-                                       .clickable {
-                                           launcher.launch("image/*")
-                                       },
-                                   painter = painterResource(id = R.drawable.attach_file_chat),
-                                   contentDescription = "Attach File"
-                               )
-                               Icon(
-                                   modifier = Modifier
-                                       .size(24.dp)
-                                       .clickable {
-                                           launcher.launch("camera/*")
-                                       },
-                                   painter = painterResource(id = R.drawable.camera_icon_chat),
-                                   contentDescription = "Camera"
-                               )
-                           }
-                       }
-                   )
-
-                   AudioRecorderButton(
-                       onRecordingStarted = { chatViewModel::startRecording },
-                       onRecordingCanceled = { chatViewModel.cancelRecording() },
-                       onSendClick = {
-                           chatViewModel.sendMessage(messageText,MessageType.TEXT)
-                           messageText = ""},
-                       onStopRecording = {
-                                         chatViewModel::stopRecording
-                       },
-                       isRecording = chatViewModel.isRecording.collectAsState().value,
-                       viewModel = chatViewModel
-                   )
-
-                   val recordingState by chatViewModel.isRecording.collectAsState()
-
-
-                   Button(
-                       modifier = Modifier
-                           .padding(bottom = 2.dp)
-                           .clip(CircleShape)
-                           .size(50.dp),
-                       onClick = {
-                                 recordingState.let {
-                                     if(it == false) {
-                                         chatViewModel.startRecording()
-                                         progress = true
-                                     }
-                                     else{
-                                         chatViewModel.stopRecording()
-                                         progress = false
-                                     }
-                                 }
-                       },
-                       shape = CircleShape,
-                       contentPadding = PaddingValues(0.dp),
-                       colors = ButtonDefaults.buttonColors(
-                           containerColor = MainColor,
-                           contentColor = Color.Black
-                       )
-                   ) {
-                       Icon(
-                           modifier = Modifier
-                               .size(34.dp)
-                               .clip(CircleShape),
-                           painter = painterResource(id = R.drawable.mic_chat),
-                           contentDescription = "Send"
-                       )
-                   }
-               }
-           }
-       }
-   }
+                AudioRecorderButton(
+                    onRecordingStarted = { chatViewModel.startRecording() },
+                    onRecordingCanceled = { chatViewModel.cancelRecording() },
+                    onSendClick = {
+                        chatViewModel.sendMessage(messageText, MessageType.TEXT)
+                        messageText = ""
+                    },
+                    onStopRecording = {
+                        chatViewModel.stopRecording()
+                    },
+                    isRecording = chatViewModel.isRecording.collectAsState().value,
+                    viewModel = chatViewModel
+                )
+            }
+        }
+    }
 }
+
 
 @Composable
 fun MessageItem(

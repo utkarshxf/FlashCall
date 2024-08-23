@@ -1,5 +1,7 @@
 package com.example.myapplication.myapplication.flashcall.ViewModel
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
 import android.util.Log.d
 import android.widget.Toast
@@ -15,12 +17,15 @@ import androidx.navigation.NavHostController
 import com.example.myapplication.myapplication.flashcall.Data.Events
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.IsUserCreatedResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.ResendOTPResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.SendOTPResponseX
 import com.example.myapplication.myapplication.flashcall.Data.model.VerifyOTPResponse
 import com.example.myapplication.myapplication.flashcall.preferenceStore.userPref
 import com.example.myapplication.myapplication.flashcall.repository.AuthRepository
+import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,24 +41,17 @@ import javax.inject.Inject
 @HiltViewModel
 class AuthenticationViewModel @Inject constructor(
     private val authenticationRepository: AuthRepository,
-    private val userPref: userPref
+    private val userPref: userPref,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     var inProcess = mutableStateOf(false)
     val eventMutableState = mutableStateOf<Events<String>?>(null)
 
-//    init {
-//        viewModelScope.launch {
-////            authenticationRepository.sendOtp("https://flashcall.vercel.app/api/v1/send-otp","7008150349").collect {
-////                Log.d("OTP", "onCreate: $it")
-////            }
-//
-//            authenticationRepository.resendOtp("https://flashcall.vercel.app/api/v1/send-otp","7008150349").collect{
-//                Log.d("ResendOTP", "onCreate: $it")
-//            }
-//        }
-//
-//    }
+    private var _isUserLoggedIn = false
+    var isUserLoggedIn = _isUserLoggedIn
+
+
 
     private val _sendOTPState = MutableStateFlow<APIResponse<SendOTPResponseX>>(APIResponse.Empty)
     val sendOTPState : StateFlow<APIResponse<SendOTPResponseX>> = _sendOTPState
@@ -67,6 +65,11 @@ class AuthenticationViewModel @Inject constructor(
     private val _phone : MutableState<String> = mutableStateOf("")
     val phoneNumber : State<String> = _phone
 
+    private val _isCreatedUserState = MutableStateFlow<IsUserCreatedResponse?>(null)
+    val isCreatedUserState: StateFlow<IsUserCreatedResponse?> = _isCreatedUserState
+
+
+
 
 
     fun signUP(phoneNumber : String, navController: NavController,sendToke:String?)
@@ -75,9 +78,10 @@ class AuthenticationViewModel @Inject constructor(
 
         viewModelScope.launch {
 
+
             _sendOTPState.value = APIResponse.Loading
             try{
-
+                Log.e("phone", "phone No:$phoneNumber")
                 authenticationRepository.sendOtp("https://flashcall.vercel.app/api/v1/send-otp", phoneNumber).collect{
                    if(it==null)
                    {
@@ -97,6 +101,7 @@ class AuthenticationViewModel @Inject constructor(
 
         }
     }
+
 
     fun resendOTP(phone : String)
     {
@@ -136,10 +141,22 @@ class AuthenticationViewModel @Inject constructor(
                                     }
                                 }
                                 delay(2000)
-                                navController.navigate(ScreenRoutes.RegistrationScreen.route) {
+                                if (isCreatedUserState.value!=null){
+                                    saveTokenToPreferences(context, token)
+                                    navController.navigate(ScreenRoutes.MainScreen.route) {
 
-                                    popUpTo(ScreenRoutes.LoginDoneScreen.route) {
-                                        inclusive = true
+                                        popUpTo(ScreenRoutes.LoginDoneScreen.route) {
+                                            inclusive = true
+                                        }
+                                    }
+                                }
+                                else {
+                                    saveTokenToPreferences(context, token)
+                                    navController.navigate(ScreenRoutes.RegistrationScreen.route) {
+
+                                        popUpTo(ScreenRoutes.LoginDoneScreen.route) {
+                                            inclusive = true
+                                        }
                                     }
                                 }
                             }
@@ -186,5 +203,126 @@ class AuthenticationViewModel @Inject constructor(
             userPref.saveToken(token)
         }
     }
+    fun iCreatedUser(phone: String) {
+        viewModelScope.launch {
+            try {
+                // Collect the Flow<IsUserCreatedResponse?>
+                authenticationRepository.isCreatedUser("https://flashcall.vercel.app/api/v1/user/getUserByPhone", phone)
+                    .collect { userData ->
+                        if (userData != null) {
+                            // Process the user data here
+                            Log.d("iCreatedUser", "User data fetched successfully: $userData")
+                            _isCreatedUserState.value = userData
+                            saveUserToPreferences(context, userData)
+                        } else {
+                            Log.e("iCreatedUser", "User not found")
+                            // Handle "No User Found" case here
+                            _isCreatedUserState.value = null
+                        }
+                    }
+            } catch (e: Exception) {
+                Log.e("iCreatedUser", "Exception: ${e.localizedMessage}")
+                // Handle exceptions here
+            }
+        }
+    }
+    val sharedPreferences: SharedPreferences = context.getSharedPreferences("user_prefs1", Context.MODE_PRIVATE)
+    fun saveTokenToPreferences(context: Context, token: String) {
+
+        sharedPreferences.edit().apply {
+            putString("user_token", token)
+            apply() // Apply changes asynchronously
+        }
+    }
+    fun deleteTokenFromPreferences() {
+        sharedPreferences.edit().apply {
+            remove("user_token") // Remove the token
+            apply() // Apply changes asynchronously
+        }
+    }
+
+    fun getTokenFromPreferences(context: Context): String? {
+        val sharedPreferences: SharedPreferences = context.getSharedPreferences("user_prefs1", Context.MODE_PRIVATE)
+        return sharedPreferences.getString("user_token", null)
+    }
+    fun saveUserToPreferences(context: Context, userData: IsUserCreatedResponse) {
+        val sharedPreferences: SharedPreferences = context.getSharedPreferences("user_prefs1", Context.MODE_PRIVATE)
+        sharedPreferences.edit().apply {
+
+        // Save each value to SharedPreferences
+        putString("user_id", userData._id)
+        putString("username", userData.username)
+        putString("phone", userData.phone)
+        putString("full_name", userData.fullName)
+        putString("first_name", userData.firstName)
+        putString("last_name", userData.lastName)
+        putString("photo", userData.photo)
+        putString("theme_selected", userData.themeSelected)
+        putString("bio", userData.bio)
+        putString("profession", userData.profession)
+        putString("dob", userData.dob)
+        putString("gender", userData.gender)
+        putFloat("wallet_balance", userData.walletBalance?.toFloat() ?: 0f)  // SharedPreferences does not support Double
+        putBoolean("audio_allowed", userData.audioAllowed ?: false)
+        putBoolean("chat_allowed", userData.chatAllowed ?: false)
+        putBoolean("video_allowed", userData.videoAllowed ?: false)
+        putString("user_type", userData.userType)
+        putString("message", userData.message)
+
+        // Apply the changes
+        apply()
+            }
+    }
+     fun getUserFromPreferences(context: Context): IsUserCreatedResponse? {
+        val sharedPreferences: SharedPreferences = context.getSharedPreferences("user_prefs1", Context.MODE_PRIVATE)
+
+        // Fetch each value from SharedPreferences
+        val userId = sharedPreferences.getString("user_id", null)
+        val username = sharedPreferences.getString("username", null)
+        val phone = sharedPreferences.getString("phone", null)
+        val fullName = sharedPreferences.getString("full_name", null)
+        val firstName = sharedPreferences.getString("first_name", null)
+        val lastName = sharedPreferences.getString("last_name", null)
+        val photo = sharedPreferences.getString("photo", null)
+        val themeSelected = sharedPreferences.getString("theme_selected", null)
+        val bio = sharedPreferences.getString("bio", null)
+        val profession = sharedPreferences.getString("profession", null)
+        val dob = sharedPreferences.getString("dob", null)
+        val gender = sharedPreferences.getString("gender", null)
+        val walletBalance = sharedPreferences.getFloat("wallet_balance", 0f).toDouble()
+        val audioAllowed = sharedPreferences.getBoolean("audio_allowed", false)
+        val chatAllowed = sharedPreferences.getBoolean("chat_allowed", false)
+        val videoAllowed = sharedPreferences.getBoolean("video_allowed", false)
+        val userType = sharedPreferences.getString("user_type", null)
+        val message = sharedPreferences.getString("message", null)
+
+        return if (userId != null) {
+            // Create the user data object
+            IsUserCreatedResponse(
+                _id = userId,
+                username = username,
+                phone = phone,
+                fullName = fullName,
+                firstName = firstName,
+                lastName = lastName,
+                photo = photo,
+                themeSelected = themeSelected,
+                bio = bio,
+                profession = profession,
+                dob = dob,
+                gender = gender,
+                walletBalance = walletBalance,
+                audioAllowed = audioAllowed,
+                chatAllowed = chatAllowed,
+                videoAllowed = videoAllowed,
+                userType = userType,
+                message = message
+            )
+        } else {
+            null // Return null if no user data is found
+        }
+    }
+
+
 
 }

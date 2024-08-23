@@ -60,3 +60,42 @@ data class ValidateRequest(
     @SerializedName("token")
     val token : String
 )
+
+data class UpdateUserRequest(
+    @SerializedName("userId")
+    val userId: String,
+    @SerializedName("user")
+    val user: UserUpdateData
+)
+data class UserUpdateData(
+    @SerializedName("fullName")
+    val fullName: String,
+    @SerializedName("username")
+    val username: String,
+    @SerializedName("phone")
+    val phone: String,
+    @SerializedName("firstName")
+    val firstName: String,
+    @SerializedName("lastName")
+    val lastName: String,
+
+    @SerializedName("photo")
+    val photo: String,
+    @SerializedName("profession")
+    val profession: String,
+    @SerializedName("themeSelected")
+    val themeSelected: String,
+    @SerializedName("videoRate")
+    val videoRate: String,
+    @SerializedName("audioRate")
+    val audioRate: String,
+    @SerializedName("chatRate")
+    val chatRate: String,
+    @SerializedName("gender")
+    val gender: String,
+    @SerializedName("dob")
+    val dob: String,
+    @SerializedName("bio")
+    val bio: String
+)
+

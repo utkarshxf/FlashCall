@@ -28,11 +28,13 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -46,6 +48,9 @@ import com.example.myapplication.myapplication.flashcall.Data.model.wallet.Trans
 import com.example.myapplication.myapplication.flashcall.Data.model.wallet.TransactionGroup
 import com.example.myapplication.myapplication.flashcall.Data.model.wallet.groupByDate
 import com.example.myapplication.myapplication.flashcall.R
+import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
+import com.example.myapplication.myapplication.flashcall.ViewModel.RegistrationViewModel
+import com.example.myapplication.myapplication.flashcall.ViewModel.chats.ChatRequestViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.wallet.WalletViewModel
 import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.ProfileBackground
@@ -55,10 +60,24 @@ import java.time.format.DateTimeFormatter
 import kotlin.math.abs
 
 @Composable
-fun WalletScreen(navController: NavController, walletViewModel: WalletViewModel = hiltViewModel())
+fun WalletScreen(navController: NavController, walletViewModel: WalletViewModel = hiltViewModel(), registrationViewModel: RegistrationViewModel, authenticationViewModel: AuthenticationViewModel = hiltViewModel())
 {
     val scrollState = rememberScrollState()
+    val context = LocalContext.current
+    val uid = registrationViewModel.getStoredUserData("_id")
+    val userData = authenticationViewModel.getUserFromPreferences(context)
+    var name: String? = userData?.fullName
+    if (name == null) {
+        name = registrationViewModel.getStoredUserData("fullName")
+    }
+    Log.d("uidtransaction", "$uid")
+    LaunchedEffect(uid) {
+        uid?.let {
+            walletViewModel.fetchTransactions(it)
+        }
+    }
     val transactions = walletViewModel.transactions.collectAsState()
+
     val listOfTransactions = transactions.value.transactions
 //    val transactions = listOf(
 //        Transaction(
@@ -215,7 +234,7 @@ fun WalletScreen(navController: NavController, walletViewModel: WalletViewModel 
                     )
 
                     Text(
-                        text = "Sujit Kumar",
+                        text = name.toString(),
                         modifier = Modifier.padding(top = 10.dp),
                         style = TextStyle(
                             fontFamily = arimoFontFamily,

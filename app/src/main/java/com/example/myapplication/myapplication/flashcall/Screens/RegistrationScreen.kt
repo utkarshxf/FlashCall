@@ -96,7 +96,7 @@ import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-var uriImg : Uri? = null
+
 var imageUrl : String? = null
 var imageUploadCounter = false
 var userToken : String = ""
@@ -124,7 +124,7 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
         uriImg?.let { uri ->
             uploadImageToFirebase(uri, context) { url ->
                 imageUrl = url
-                Toast.makeText(context, "Image uploaded successfully", Toast.LENGTH_SHORT).show()
+//                Toast.makeText(context, "Image uploaded successfully", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -137,6 +137,9 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
 
     var name by remember {
         mutableStateOf("")
+    }
+    val (firstName, lastName) = name.split(" ", limit = 2).let {
+        if (it.size == 2) it else listOf(it[0], "")
     }
 
     var userId by remember {
@@ -307,6 +310,7 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                         cursorColor = MainColor
                     )
                 )
+
 
                 Spacer(modifier = Modifier.height(15.dp))
 
@@ -589,10 +593,10 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                         Log.d("Image", "Image: $imageUrl")
                         registrationViewModel.createUser(
                             userId,
-                            "913913",
+                            phoneNumber,
                             name,
-                            "sc",
-                            "sa",
+                            firstName,
+                            lastName,
                             imageUrl,
                             "Astrologer",
                             "#50A65C",

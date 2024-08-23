@@ -27,10 +27,10 @@ fun BottomNavGraph(homeNavController: NavHostController, navController: NavContr
             HomeScreen(homeNavController, registrationViewModel, authenticationViewModel = authenticationViewModel)
         }
         composable(route = ScreenRoutes.WalletScreen.route) {
-            WalletScreen(navController, walletViewModel)
+            WalletScreen(navController, walletViewModel, registrationViewModel, authenticationViewModel)
         }
         composable(route = ScreenRoutes.ProfileScreen.route) {
-            ProfileScreen(navController, hyperKycLauncher = hyperKycLauncher)
+            ProfileScreen(navController, hyperKycLauncher = hyperKycLauncher, registrationViewModel, authenticationViewModel)
         }
         composable(route = ScreenRoutes.EditScreen.route){
             EditProfileScreen(navController = homeNavController)
