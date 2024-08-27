@@ -67,53 +67,73 @@ class RegistrationViewModel @Inject constructor(private val repository: CreateRe
         viewModelScope.launch {
             _createUserState.value = APIResponse.Loading
             try {
-                // Proceed with user creation in the repository
-                repository.createUser(
-                    "https://flashcall.vercel.app/api/v1/creator/createUser",
-                    username ?: "", // Default value to avoid null
-                    phone ?: "",    // Ensure non-null values are sent to the API
-                    fullName ?: "",
-                    firstName ?: "",
-                    lastName ?: "",
-                    photo ?: "",
-                    profession ?: "",
-                    themeSelected ?: "",
-                    videoRate ?: "",
-                    audioRate ?: "",
-                    chatRate ?: "",
-                    gender ?: "",
-                    dob ?: "",
-                    bio ?: "",
-                    kyc_status ?: ""
-                ).collect { response ->
-                    _createUserState.value = APIResponse.Success(response)
-                    Log.d("User", "User created successfully")
+                // Check if username is available before proceeding
+                val isUsernameAvailable = checkUsernameAvailability(username ?: "")
+                if (isUsernameAvailable) {
+                    // Proceed with user creation in the repository
+                    repository.createUser(
+                        "https://flashcall.vercel.app/api/v1/creator/createUser",
+                        username ?: "", // Default value to avoid null
+                        phone ?: "",    // Ensure non-null values are sent to the API
+                        fullName ?: "",
+                        firstName ?: "",
+                        lastName ?: "",
+                        photo ?: "",
+                        profession ?: "",
+                        themeSelected ?: "",
+                        videoRate ?: "",
+                        audioRate ?: "",
+                        chatRate ?: "",
+                        gender ?: "",
+                        dob ?: "",
+                        bio ?: "",
+                        kyc_status ?: ""
+                    ).collect { response ->
+                        _createUserState.value = APIResponse.Success(response)
+                        Log.d("User", "User created successfully")
 
-                    storeResponseInPreferences(response)
-                    val fcmToken = Firebase.messaging.token.await()
+                        // Store response in shared preferences
+                        storeResponseInPreferences(response)
 
-                    // Create FCM document in Firestore with FCM token, username, and _id
-                    val fcmData = hashMapOf(
-                        "username" to response.username,
-                        "_id" to response._id,
-                        "FCMtoken" to fcmToken
-                    )
+                        // Get FCM token
+                        val fcmToken = Firebase.messaging.token.await()
 
-                    firestore.collection("FCMtoken").document(response._id).set(fcmData)  // Using document ID as _id
-                        .addOnSuccessListener {
-                            Log.d("Firestore", "FCMtoken document created successfully")
-                        }
-                        .addOnFailureListener { e ->
-                            Log.e("FirestoreError", "Failed to create FCM document: ${e.message}")
-                        }
+                        // Create FCM document in Firestore
+                        val fcmData = hashMapOf(
+                            "username" to response.username,
+                            "_id" to response._id,
+                            "FCMtoken" to fcmToken
+                        )
 
-                    navController.navigate(ScreenRoutes.SelectSpeciality.route)
+                        firestore.collection("FCMtoken").document(response._id).set(fcmData)
+                            .addOnSuccessListener {
+                                Log.d("Firestore", "FCMtoken document created successfully")
+                            }
+                            .addOnFailureListener { e ->
+                                Log.e("FirestoreError", "Failed to create FCM document: ${e.message}")
+                            }
+
+                        // Navigate to SelectSpeciality screen
+                        navController.navigate(ScreenRoutes.SelectSpeciality.route)
+                    }
+                } else {
+                    // Username is taken, show error message
+                    _createUserState.value = APIResponse.Error("Username is already taken")
                 }
-
             } catch (e: Exception) {
                 Log.e("error", "User creation failed: ${e.message}")
                 _createUserState.value = APIResponse.Error(e.message ?: "User creation error")
             }
+        }
+    }
+
+    private suspend fun checkUsernameAvailability(username: String): Boolean {
+        return try {
+            val response = repository.checkUsernameAvailability(username)
+            response.message != "Username is already taken"
+        } catch (e: Exception) {
+            Log.e("UsernameCheckError", "Failed to check username: ${e.message}")
+            false
         }
     }
     fun updateUser(

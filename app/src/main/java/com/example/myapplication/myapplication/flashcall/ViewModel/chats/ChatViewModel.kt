@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.media.MediaRecorder
 import android.net.Uri
+import android.os.PowerManager
 import android.util.Log
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.core.content.ContextCompat
@@ -16,6 +17,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.audio.AudioPlayerState
 import com.example.myapplication.myapplication.flashcall.Data.MessageType
 import com.example.myapplication.myapplication.flashcall.Data.model.Resource
+import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.ChatDataClass
 import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.MessageDataClass
 //import com.example.myapplicationication.myapplicationcation.flashcall.Manifest
 //import com.example.myapplication.myapplicationication.flashcall.Manifest
@@ -23,6 +25,9 @@ import com.example.myapplication.myapplication.flashcall.domain.GetMessageUseCas
 import com.example.myapplication.myapplication.flashcall.domain.MarkMessageAsSeenUseCase
 import com.example.myapplication.myapplication.flashcall.domain.SendMessageUseCase
 import com.example.myapplication.myapplication.flashcall.repository.ChatRepository
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.internal.Contexts.getApplication
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -41,6 +46,7 @@ class ChatViewModel @Inject constructor(
     private val sendMessageUseCase: SendMessageUseCase,
     private val chatRepository: ChatRepository,
     private val markMessageAsSeenUseCase: MarkMessageAsSeenUseCase,
+    private val firestore : FirebaseFirestore,
     private val context: Application,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -51,6 +57,7 @@ class ChatViewModel @Inject constructor(
 
     private val _messages = MutableStateFlow<Resource<List<MessageDataClass>>>(Resource.Loading())
     val messages: StateFlow<Resource<List<MessageDataClass>>> = _messages.asStateFlow()
+
 
     private val _messageText = MutableStateFlow("")
     val messageText: StateFlow<String> = _messageText.asStateFlow()
@@ -91,6 +98,8 @@ class ChatViewModel @Inject constructor(
     private var recorder: MediaRecorder? = null
     private var outputFile: String? = null
     private var currentRecordedFile: File? = null
+    private val _chatData = MutableStateFlow<ChatDataClass?>(null)
+    val chatData: StateFlow<ChatDataClass?> = _chatData
 
 
 
@@ -104,6 +113,8 @@ class ChatViewModel @Inject constructor(
                 Log.d("ChatViewModelMessageList", "chatId $chatId")
 
             }
+            fetchChatData(chatId)
+
             Log.d("ChatViewModelMessageList", "chatId $chatId")
 
             getMessageUseCase(chatId).collectLatest { result ->
@@ -113,11 +124,81 @@ class ChatViewModel @Inject constructor(
                     result.data?.let{
                         markAllMessagesAsSeen(it)
                         _messages.value = Resource.Success(it)
-                        Log.d("ChatViewModelMessageList", "messages: $it")
+                        Log.d("ChatViewModelMessageList1", "messages: $it")
                     }
                 }
             }
         }
+    }
+    fun endChat(chatId: String) {
+        viewModelScope.launch {
+            try {
+                firestore.collection("chats").document(chatId).update(
+                    mapOf(
+                        "status" to "ended",
+                        "endedAt" to System.currentTimeMillis()
+                    )
+                ).addOnSuccessListener {
+                    // Optionally handle success (e.g., notify user)
+                }.addOnFailureListener { e ->
+                    // Optionally handle failure (e.g., show error message)
+                    Log.e("ChatViewModel", "Error updating chat status", e)
+                }
+            } catch (e: Exception) {
+                Log.e("ChatViewModel", "Error updating chat status", e)
+            }
+        }
+    }
+
+
+    private suspend fun fetchChatData(chatId: String) {
+        firestore.collection("chats").document(chatId).get()
+            .addOnSuccessListener { document ->
+                if (document != null && document.exists()) {
+                    val data = document.data ?: return@addOnSuccessListener
+                    val clientId = data["clientId"] as? String ?: return@addOnSuccessListener
+                    val clientName = data["clientName"] as? String
+                    val clientBalance = data["clientBalance"] as? Double
+                    val creatorId = data["creatorId"] as? String
+                    val endedAt = data["endedAt"] as? Long
+                    val maxChatDuration = data["maxChatDuration"] as? Int
+                    val startedAt = data["startedAt"] as? Long
+                    val status = data["status"] as? String
+                    val timeLeft = data["timeLeft"] as? Double
+                    val timeUtilized = data["timeUtilized"] as? Double
+                    val messagesData = data["messages"] as? List<Map<String, Any>> ?: emptyList()
+
+                    val messages = messagesData.map { messageData ->
+                        MessageDataClass(
+                            text = messageData["text"] as? String,
+                            audio = messageData["audio"] as? String,
+                            img = messageData["img"] as? String,
+                            createdAt = messageData["createdAt"] as? Long,
+                            seen = messageData["seen"] as? Boolean ?: false,
+                            senderId = messageData["senderId"] as? String, // Add clientName to each message if needed
+                        )
+                    }
+
+                    val chat = ChatDataClass(
+                        clientId = clientId,
+                        clientName = clientName,
+                        clientBalance = clientBalance,
+                        creatorId = creatorId ?: "",
+                        endedAt = endedAt,
+                        maxChatDuration = maxChatDuration,
+                        startedAt = startedAt,
+                        status = status,
+                        timeLeft = timeLeft,
+                        timeUtilized = timeUtilized,
+                        messages = messages
+                    )
+
+                    _chatData.value = chat
+                }
+            }
+            .addOnFailureListener { exception ->
+                // Handle failure
+            }
     }
 
     fun onMessageTextChange(text: String) {
@@ -223,38 +304,108 @@ class ChatViewModel @Inject constructor(
                     setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
                     prepare()
                     start()
-                    Log.e("ChatViewModelAudio", "Started recording:")
                 }
-                _isRecording.value = true
+                _isRecording.value = true  // Update the state to indicate recording has started
             } catch (e: Exception) {
                 Log.e("ChatViewModel", "Error starting recording: ${e.message}")
             }
         }
     }
 
-
     fun stopRecording() {
-        if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED){
-            viewModelScope.launch(Dispatchers.IO) {
-                try {
-                    recorder?.stop()
-                    recorder?.release()
-                    recorder = null
-                    currentRecordedFile?.let { file ->
-                        val uri = Uri.fromFile(file)
-                        _recordedAudioUri.value = uri
-                        sendMessage(uri.toString(), MessageType.AUDIO) // Send audio message
-                        currentRecordedFile = null // Reset the file reference
-                    }
-                } catch (e: Exception) {
-                    Log.e("ChatViewModel", "Error stopping recording: ${e.message}")
-                } finally {
-                    _isRecording.value = false
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                recorder?.apply {
+                    stop()
+                    release()
                 }
+                recorder = null
+
+                currentRecordedFile?.let { file ->
+                    val uri = Uri.fromFile(file)
+                    _recordedAudioUri.value = uri
+                    uploadAudioToFirebase(file) // Upload audio after stopping recording
+                    currentRecordedFile = null
+                }
+            } catch (e: Exception) {
+                Log.e("ChatViewModel", "Error stopping recording: ${e.message}", e)
+            } finally {
+                _isRecording.value = false
             }
-        } else {
         }
     }
+
+    private fun uploadAudioToFirebase(file: File) {
+        viewModelScope.launch {
+            try {
+                val storageRef = FirebaseStorage.getInstance().reference
+                val audioRef = storageRef.child("audio/${file.name}")
+                val uploadTask = audioRef.putFile(Uri.fromFile(file))
+
+                uploadTask.addOnSuccessListener {
+                    audioRef.downloadUrl.addOnSuccessListener { uri ->
+                        // Handle the URL of the uploaded audio
+                        Log.d("ChatViewModel", "Audio uploaded successfully: $uri")
+                        saveAudioMetadata(uri.toString(), file.name)
+                    }.addOnFailureListener {
+                        Log.e("ChatViewModel", "Failed to get download URL", it)
+                    }
+                }.addOnFailureListener {
+                    Log.e("ChatViewModel", "Failed to upload audio", it)
+                }
+            } catch (e: Exception) {
+                Log.e("ChatViewModel", "Error uploading audio: ${e.message}", e)
+            }
+        }
+    }
+
+    private fun saveAudioMetadata(downloadUrl: String, fileName: String) {
+        viewModelScope.launch {
+            try {
+                val firestore = FirebaseFirestore.getInstance()
+                val audioMetadata = hashMapOf(
+                    "url" to downloadUrl,
+                    "fileName" to fileName,
+                    "timestamp" to FieldValue.serverTimestamp() // Optionally add a timestamp
+                )
+
+                // Save metadata to Firestore
+                firestore.collection("audio")
+                    .add(audioMetadata)
+                    .addOnSuccessListener {
+                        Log.d("ChatViewModel", "Audio metadata saved successfully")
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("ChatViewModel", "Failed to save audio metadata", e)
+                    }
+            } catch (e: Exception) {
+                Log.e("ChatViewModel", "Error saving audio metadata: ${e.message}", e)
+            }
+        }
+    }
+
+
+
+    private fun saveAudioMetadata(uri: Uri) {
+        viewModelScope.launch {
+            try {
+                val audioMetadata = mapOf(
+                    "uri" to uri.toString(),
+                    "timestamp" to System.currentTimeMillis()
+                )
+                FirebaseFirestore.getInstance().collection("audioMessages")
+                    .add(audioMetadata)
+                    .addOnSuccessListener {
+                        Log.d("ChatViewModel", "Audio metadata saved successfully")
+                    }.addOnFailureListener {
+                        Log.e("ChatViewModel", "Failed to save audio metadata", it)
+                    }
+            } catch (e: Exception) {
+                Log.e("ChatViewModel", "Error saving audio metadata: ${e.message}", e)
+            }
+        }
+    }
+
 
 
     fun onAudioRecorded(uri: Uri?) {
@@ -326,5 +477,25 @@ class ChatViewModel @Inject constructor(
         // Release all ExoPlayer instances when the ViewModel is cleared
         _audioPlayerStates.values.forEach { it?.player?.release() }
         _audioPlayerStates.clear() // Optionally clear the map as well
+    }
+}
+object WakeLockManager {
+    private var wakeLock: PowerManager.WakeLock? = null
+
+    fun acquireWakeLock(context: Context) {
+        if (wakeLock == null) {
+            val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+            wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyApp::WakeLockTag")
+            wakeLock?.acquire()
+        }
+    }
+
+    fun releaseWakeLock() {
+        wakeLock?.let {
+            if (it.isHeld) {
+                it.release()
+            }
+            wakeLock = null // Nullify to avoid releasing it again
+        }
     }
 }

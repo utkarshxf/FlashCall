@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
@@ -33,6 +34,7 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.myapplication.myapplication.flashcall.Data.model.feedback.Feedback
 import com.example.myapplication.myapplication.flashcall.R
 import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.feedback.FeedbackViewModel
@@ -65,10 +68,14 @@ fun FeedbackScreen(
     feedbackViewModel: FeedbackViewModel = hiltViewModel(),
     authenticationViewModel: AuthenticationViewModel = hiltViewModel(),
     navController: NavController
-){
+) {
     val context = LocalContext.current
     val userData = authenticationViewModel.getUserFromPreferences(context)
     val uid = userData?._id
+
+    // Collect the feedbacks from the ViewModel
+    val feedbacks by feedbackViewModel.feedbacks.collectAsState()
+
     LaunchedEffect(
         Unit
     ) {
@@ -87,7 +94,7 @@ fun FeedbackScreen(
 
             Box(
                 modifier = Modifier.fillMaxWidth()
-            ){
+            ) {
                 Row(
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -103,7 +110,8 @@ fun FeedbackScreen(
                     .padding(start = 12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Text(text = "User's Feedbacks",
+                Text(
+                    text = "User's Feedbacks",
                     style = TextStyle(
                         fontFamily = arimoFontFamily,
                         fontSize = 24.sp,
@@ -113,89 +121,57 @@ fun FeedbackScreen(
             }
 
             Spacer(modifier = Modifier.height(30.dp))
-            
 
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                item {
-                    FeedbackListUtil()
-                }
-
-                item {
-                    FeedbackListUtil()
-                }
-
-                item {
-                    FeedbackListUtil()
-                }
-
-                item {
-                    FeedbackListUtil()
-                }
-
-                item {
-                    FeedbackListUtil()
-                }
-
-                item {
-                    FeedbackListUtil()
-                }
-
-                item {
-                    FeedbackListUtil()
+            // Check if feedbacks are available
+            if (feedbacks.isEmpty()) {
+                Text("No feedbacks available")
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(feedbacks) { feedbackResponse ->
+                        feedbackResponse.feedbacks?.forEach { feedback ->
+                            FeedbackListUtil(feedback)
+                        }
+                    }
                 }
             }
-
         }
     }
 }
 
 
 @Composable
-fun FeedbackListUtil(){
-
-    var isChecked by remember {
-        mutableStateOf(false)
-    }
-
-    var isExpanded by remember {
-        mutableStateOf(false)
-    }
-
+fun FeedbackListUtil(feedback: Feedback) {
+    var isChecked by remember { mutableStateOf(false) }
+    var isExpanded by remember { mutableStateOf(false) }
 
     Card(
-        onClick = { /*TODO*/ },
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
             .border(1.dp, Color.Black, shape = RoundedCornerShape(12.dp))
             .background(Color.White)
             .clip(RoundedCornerShape(12.dp)),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        )
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
-        Column(
-            modifier = Modifier.wrapContentSize()
-        ){
+        Column(modifier = Modifier.wrapContentSize()) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
                     .padding(16.dp),
-            ){
-
+            ) {
                 Icon(
                     painter = painterResource(id = R.drawable.reorder_icon),
-                    contentDescription ="reorder")
+                    contentDescription = "reorder"
+                )
 
-                Column(
-                    modifier = Modifier.padding(8.dp)
-                ) {
-                    
-                    Text(text = "+91 7008150349",
+                Column(modifier = Modifier.padding(8.dp)) {
+                    // Display client's phone or username
+                    Text(
+                        text = feedback.clientId?.phone ?: feedback.clientId?.username ?: "Unknown User",
                         style = TextStyle(
                             fontFamily = arimoFontFamily,
                             fontSize = 16.sp,
@@ -203,8 +179,8 @@ fun FeedbackListUtil(){
                         )
                     )
 
-                    RatingBar(rating = 4)
-                    
+                    // Display rating
+                    RatingBar(rating = feedback.rating ?: 0)
                 }
 
                 Column(
@@ -224,11 +200,9 @@ fun FeedbackListUtil(){
                         )
                     )
                 }
-
             }
 
             HorizontalDivider(thickness = 1.dp, modifier = Modifier.padding(start = 16.dp, end = 16.dp))
-
             Spacer(modifier = Modifier.size(10.dp))
 
             Row(
@@ -239,47 +213,42 @@ fun FeedbackListUtil(){
                     .clickable {
                         isExpanded = !isExpanded
                     }
-            ){
-                if(isExpanded == false) {
+            ) {
+                if (!isExpanded) {
                     Row(
                         modifier = Modifier.weight(0.5f),
                     ) {
                         Text(
-                            text = "The architecture firm Cadence, led by the vision\u2028husband-and-wife duo Angelo and Nancy Maras\u2028co, recently a transformative rebranding.",
+                            text = feedback.feedback ?: "No feedback provided",
                             overflow = TextOverflow.Ellipsis,
                             maxLines = 1,
                         )
                     }
                     Text("View More")
                 } else {
-
-                    Column(
-                        modifier = Modifier.wrapContentHeight(),
-                    ){
-
+                    Column(modifier = Modifier.wrapContentHeight()) {
                         Text(
-                            text = "The architecture firm Cadence, led by the vision\u2028husband-and-wife duo Angelo and Nancy Maras\u2028co, recently a transformative rebranding.",
+                            text = feedback.feedback ?: "No feedback provided",
                         )
 
                         Spacer(modifier = Modifier.height(20.dp))
 
-                        Text(
-                            text = "Video Call"
-                        )
-                        
+                        // Display call type (e.g., "Video Call")
+                        Text(text = "Call Type: Video Call")
+
                         Spacer(modifier = Modifier.height(10.dp))
-                        
+
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .wrapContentHeight(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                         ) {
+                            // Display client's phone or username
+                            Text(text = feedback.clientId?.phone ?: feedback.clientId?.username ?: "Unknown User")
 
-                            Text(text = "+91 7008150349")
-                            
-                            Text(text = "17/06/24, 04:22 PM")
-
+                            // Display created date
+                            Text(text = feedback.createdAt ?: "Unknown Date")
                         }
                     }
                 }
@@ -287,6 +256,7 @@ fun FeedbackListUtil(){
         }
     }
 }
+
 
 @Composable
 fun RatingBar(

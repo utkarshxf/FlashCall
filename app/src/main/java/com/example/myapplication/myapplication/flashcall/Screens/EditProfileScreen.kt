@@ -539,7 +539,7 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                         ) {
 
                             Button(
-                                shape = RoundedCornerShape(26.dp),
+                                shape = RoundedCornerShape(46.dp),
                                 onClick = { greenTheme = !greenTheme },
                                 colors = ButtonDefaults.buttonColors(MainColor),
                                 modifier = Modifier

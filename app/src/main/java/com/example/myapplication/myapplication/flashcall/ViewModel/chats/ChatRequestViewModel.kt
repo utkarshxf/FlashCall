@@ -63,15 +63,15 @@ class ChatRequestViewModel @Inject constructor(
     private var pendingChatRequestDoc: DocumentSnapshot? = null
     var pendingChatRequestDocId: String? = null
 
-    init {
-
-        viewModelScope.launch {
-            getChatRequestUseCase("6675197dc56dfe13b3ccabd3").collect{ result->
-                _pendingChatRequest.value = result
-            }
-        }
-
-    }
+//    init {
+//
+//        viewModelScope.launch {
+//            getChatRequestUseCase("6675197dc56dfe13b3ccabd3").collect{ result->
+//                _pendingChatRequest.value = result
+//            }
+//        }
+//
+//    }
 
 
     // Other properties and initializations...

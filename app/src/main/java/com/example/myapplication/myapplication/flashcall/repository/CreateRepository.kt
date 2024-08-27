@@ -6,6 +6,7 @@ import com.example.myapplication.myapplication.flashcall.Data.model.CreateUserRe
 import com.example.myapplication.myapplication.flashcall.Data.model.UpdateUserRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.UpdateUserResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.UserUpdateData
+import com.example.myapplication.myapplication.flashcall.Data.model.UsernameAvailabilityResponse
 import com.example.myapplication.myapplication.flashcall.Data.network.APIService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -150,5 +151,9 @@ class CreateRepository @Inject constructor(private val apiService: APIService) {
             emit(response)
             Log.e("resonseUpdateUser", "$response")
         }
+
+    }
+    suspend fun checkUsernameAvailability(username: String): UsernameAvailabilityResponse {
+        return apiService.checkUsernameAvailability("https://app.flashcall.me/api/v1/user/getAllUsernames?username=$username")
     }
 }

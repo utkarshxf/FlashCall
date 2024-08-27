@@ -13,6 +13,7 @@ import com.example.myapplication.myapplication.flashcall.Data.model.ResendReques
 import com.example.myapplication.myapplication.flashcall.Data.model.SendOTPResponseX
 import com.example.myapplication.myapplication.flashcall.Data.model.UpdateUserRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.UpdateUserResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.UsernameAvailabilityResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.ValidateRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.VerifyOTPResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.VerifyRequest
@@ -88,6 +89,10 @@ interface APIService {
         @Url url: String,
         @Body updateUser: UpdateUserRequest
     ) : UpdateUserResponse
+
+    suspend fun checkUsernameAvailability(
+        @Url url: String
+    ): UsernameAvailabilityResponse
 
 
 }

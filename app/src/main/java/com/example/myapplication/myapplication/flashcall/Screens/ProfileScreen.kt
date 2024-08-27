@@ -123,7 +123,12 @@ fun ProfileScreen(
                             .fillMaxWidth()
                             .padding(8.dp),
                     ) {
-                        ImageFromUrl(imageUrl = profilePic!!)
+                        Box(
+                            modifier = Modifier
+                                .size(100.dp).padding(6.dp)  // Adjust the size as per your requirement
+                        ) {
+                            ImageFromUrl(imageUrl = profilePic!!)
+                        }
 
                         Column {
                             Text(
@@ -134,7 +139,7 @@ fun ProfileScreen(
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 24.sp,
                                 ),
-                                modifier = Modifier.padding(top = 50.dp)
+                                modifier = Modifier.padding(top = 50.dp, start = 6.dp)
                             )
 
                             Text(
@@ -202,6 +207,7 @@ fun ProfileScreen(
                         Text(
                             text = "KYC",
                             modifier = Modifier.padding(start = 10.dp),
+                            color = Color.Black,
                             style = TextStyle(
                                 fontFamily = arimoFontFamily,
                                 fontWeight = FontWeight.Black,
@@ -270,6 +276,7 @@ fun ProfileScreen(
                     Text(
                         text = "Support",
                         modifier = Modifier.padding(start = 10.dp),
+                        color = Color.Black,
                         style = TextStyle(
                             fontFamily = arimoFontFamily,
                             fontWeight = FontWeight.Black,
@@ -312,6 +319,7 @@ fun ProfileScreen(
 
                     Text(
                         text = "User's Feedback",
+                        color = Color.Black,
                         modifier = Modifier.padding(start = 10.dp),
                         style = TextStyle(
                             fontFamily = arimoFontFamily,
@@ -356,6 +364,7 @@ fun ProfileScreen(
 
                     Text(
                         text = "Payment Settings",
+                        color = Color.Black,
                         modifier = Modifier.padding(start = 10.dp),
                         style = TextStyle(
                             fontFamily = arimoFontFamily,
@@ -397,6 +406,7 @@ fun ProfileScreen(
 
                     Text(
                         text = "Terms & Conditions",
+                        color = Color.Black,
                         modifier = Modifier.padding(start = 10.dp),
                         style = TextStyle(
                             fontFamily = arimoFontFamily,
@@ -448,6 +458,7 @@ fun ProfileScreen(
 
                     Text(
                         text = "Log Out",
+                        color = Color.Black,
                         modifier = Modifier.padding(start = 10.dp),
                         style = TextStyle(
                             fontFamily = arimoFontFamily,

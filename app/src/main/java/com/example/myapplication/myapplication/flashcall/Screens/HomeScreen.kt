@@ -563,7 +563,7 @@ fun WalletBar(navController: NavController)
 
     Box(modifier = Modifier
         .fillMaxWidth()
-        .height(56.dp)
+        .height(76.dp)
         .background(color = Color.White)
         .border(1.dp, BorderColor2, shape = RoundedCornerShape(10.dp))
     ){
@@ -611,8 +611,8 @@ fun WalletBar(navController: NavController)
             Spacer(Modifier.weight(1f))
             Button(modifier = Modifier
                 .padding(top = 8.dp, end = 10.dp)
-                .width(120.dp)
-                .height(40.dp),
+                .width(140.dp)
+                .height(55.dp),
                 shape = RoundedCornerShape(10.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MainColor,
