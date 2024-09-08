@@ -10,15 +10,15 @@ data class ChatDataClass(
     @SerializedName("createdAt")
     val createdAt : Timestamp?=null,
     @SerializedName("clientBalance")
-    val clientBalance: Double?,
+    val clientBalance: Double? = null,
     @SerializedName("creatorId")
-    val creatorId: String,
+    val creatorId: String?=null,
     @SerializedName("endedAt")
-    val endedAt: Long?,
+    val endedAt: Long?=null,
     @SerializedName("maxChatDuration")
-    val maxChatDuration: Int?,
+    val maxChatDuration: Int?=null,
     @SerializedName("startedAt")
-    val startedAt: Long?,
+    val startedAt: Long?=null,
     @SerializedName("messages")
     val messages : List<MessageDataClass>?=null,
     @SerializedName("status")
@@ -26,7 +26,7 @@ data class ChatDataClass(
     @SerializedName("timeLeft")
     val timeLeft : Double?=null,
     @SerializedName("timeUtilized")
-    val timeUtilized: Double?,
+    val timeUtilized: Double?=null,
     @SerializedName("clientName")
     val clientName : String?=null
 )

@@ -50,10 +50,10 @@ class AuthRepository @Inject constructor(private val apiService: APIService) : I
 
     }
 
-    override suspend fun verifyOtp(url:String,number: String, otp: String, token: String): Flow<VerifyOTPResponse>{
+    override suspend fun verifyOtp(url:String,number: String, otp: String): Flow<VerifyOTPResponse>{
 
         return flow{
-            val response = apiService.verifyOTP(url, VerifyRequest(number,otp,token))
+            val response = apiService.verifyOTP(url, VerifyRequest(number,otp))
             emit(response)
         }.flowOn(Dispatchers.IO)
     }

@@ -27,24 +27,23 @@ import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 @HiltViewModel
-class RegistrationViewModel @Inject constructor(private val repository: CreateRepository,
-                                                private val firestore : FirebaseFirestore,
-                                                @ApplicationContext private val context: Context
+class RegistrationViewModel @Inject constructor(
+    private val repository: CreateRepository,
+    private val firestore: FirebaseFirestore,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences("user_prefs1", Context.MODE_PRIVATE)
 
-    //sucess
-    //APIResponseState = Sucess->CreateUserResponse Data
-    private val _createUserState = MutableStateFlow<APIResponse<CreateUserResponse>>(APIResponse.Empty)
+    private val _createUserState =
+        MutableStateFlow<APIResponse<CreateUserResponse>>(APIResponse.Empty)
 
-    //
-    val createUserState : StateFlow<APIResponse<CreateUserResponse>> = _createUserState
+    val createUserState: StateFlow<APIResponse<CreateUserResponse>> = _createUserState
 
-    private val _updateUserState = MutableStateFlow<APIResponse<UpdateUserResponse>>(APIResponse.Empty)
+    private val _updateUserState =
+        MutableStateFlow<APIResponse<UpdateUserResponse>>(APIResponse.Empty)
 
-    val updateUserState : StateFlow<APIResponse<UpdateUserResponse>> = _updateUserState
-
+    val updateUserState: StateFlow<APIResponse<UpdateUserResponse>> = _updateUserState
 
     fun createUser(
         username: String?,
@@ -92,7 +91,6 @@ class RegistrationViewModel @Inject constructor(private val repository: CreateRe
                         _createUserState.value = APIResponse.Success(response)
                         Log.d("User", "User created successfully")
 
-                        // Store response in shared preferences
                         storeResponseInPreferences(response)
 
                         // Get FCM token
@@ -108,12 +106,13 @@ class RegistrationViewModel @Inject constructor(private val repository: CreateRe
                         firestore.collection("FCMtoken").document(response._id).set(fcmData)
                             .addOnSuccessListener {
                                 Log.d("Firestore", "FCMtoken document created successfully")
-                            }
-                            .addOnFailureListener { e ->
-                                Log.e("FirestoreError", "Failed to create FCM document: ${e.message}")
+                            }.addOnFailureListener { e ->
+                                Log.e(
+                                    "FirestoreError",
+                                    "Failed to create FCM document: ${e.message}"
+                                )
                             }
 
-                        // Navigate to SelectSpeciality screen
                         navController.navigate(ScreenRoutes.SelectSpeciality.route)
                     }
                 } else {
@@ -136,6 +135,7 @@ class RegistrationViewModel @Inject constructor(private val repository: CreateRe
             false
         }
     }
+
     fun updateUser(
         userId: String,
         username: String?,
@@ -176,8 +176,8 @@ class RegistrationViewModel @Inject constructor(private val repository: CreateRe
                     audioRate ?: "",
                     chatRate ?: "",
                     gender ?: "",
-                    dob?:"",
-                    bio?:""
+                    dob ?: "",
+                    bio ?: ""
                 ).collect { response ->
                     _updateUserState.value = APIResponse.Success(response)
                     Log.d("User", "User updated successfully")
@@ -240,6 +240,7 @@ class RegistrationViewModel @Inject constructor(private val repository: CreateRe
             apply()
         }
     }
+
     fun getStoredUserData(key: String): String? {
         return sharedPreferences.getString(key, null)
     }

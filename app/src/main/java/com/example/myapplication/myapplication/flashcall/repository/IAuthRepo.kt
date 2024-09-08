@@ -15,7 +15,7 @@ interface IAuthRepo {
 
     suspend fun resendOtp(url: String, number: String): Flow<ResendOTPResponse>
 
-    suspend fun verifyOtp(url: String, number: String, otp: String, token: String): Flow<VerifyOTPResponse>
+    suspend fun verifyOtp(url: String, number: String, otp: String): Flow<VerifyOTPResponse>
 
     suspend fun validateUser(url : String, token : String) : Flow<ValidateResponse>
 

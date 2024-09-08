@@ -6,14 +6,13 @@ import androidx.navigation.navArgument
 
 
 sealed class VideoCallRoute(
-    val route: String,
+    val videoCallRoute: String,
     val navArguments: List<NamedNavArgument> = emptyList()
 ) {
+    val name: String = videoCallRoute.appendArguments(navArguments)
 
-    val name: String = route.appendArguments(navArguments)
-
-    data object VideoCall : VideoCallRoute(
-        route = "video_call",
+    data object OngoingVideoCall : VideoCallRoute(
+        videoCallRoute = "video_call",
         navArguments = listOf(
             navArgument("call_id") {
                 type = NavType.StringType

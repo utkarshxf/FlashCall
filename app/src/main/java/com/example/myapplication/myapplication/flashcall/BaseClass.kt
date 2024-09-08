@@ -7,6 +7,8 @@ import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
 import android.util.Log
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.myapplication.myapplication.flashcall.ViewModel.wallet.WalletViewModel
 import com.example.myapplication.myapplication.flashcall.utils.TimestampConverter
 import com.google.firebase.FirebaseApp
 import com.google.firebase.Timestamp
@@ -28,13 +30,10 @@ class BaseClass : Application() {
         super.onCreate()
         createNotificationChannel()
         FirebaseApp.initializeApp(this)
-
         val gson = GsonBuilder()
             .registerTypeAdapter(Timestamp::class.java, TimestampConverter())
             .create()
         create(this)
-
-
 // Optionally modify the settings (e.g., enable persistence)
 
         val firestoreSettings = firestoreSettings {
@@ -47,7 +46,7 @@ class BaseClass : Application() {
     fun create(context: Context) {
 
         //Constant Data Object
-        val userId = "664c90ae43f0af8f1b3d5803"
+        val userId = "66d97acd79d3bf54c8e53be0"
         val notify: ((Call) -> Notification) = {
             Log.d("Call", "Call$it")
             Notification.Builder(context).build()
@@ -59,7 +58,7 @@ class BaseClass : Application() {
             token = StreamVideo.devToken(userId),
             user = User(
                 id = userId,
-                name = "Sujit",
+                name = "Utkarsh",
                 //Image Link by getUser API
                 image = "https://drive.google.com/file/d/1fosIGjYB_Wgw2DBHVrWXGBoHlbT1dK7s/view?usp=drivesdk",
                 role = "admin",

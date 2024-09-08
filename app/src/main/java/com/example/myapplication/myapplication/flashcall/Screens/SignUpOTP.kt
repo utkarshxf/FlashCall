@@ -62,7 +62,6 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryText
 import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
 import kotlinx.coroutines.delay
 
-
     var resendToken : String? = null
 var verificationToken : String? = null
 @Composable

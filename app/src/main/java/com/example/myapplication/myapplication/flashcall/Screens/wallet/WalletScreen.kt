@@ -64,20 +64,21 @@ fun WalletScreen(navController: NavController, walletViewModel: WalletViewModel 
 {
     val scrollState = rememberScrollState()
     val context = LocalContext.current
-    val uid = registrationViewModel.getStoredUserData("_id")
     val userData = authenticationViewModel.getUserFromPreferences(context)
     var name: String? = userData?.fullName
     if (name == null) {
         name = registrationViewModel.getStoredUserData("fullName")
     }
-    Log.d("uidtransaction", "$uid")
-    LaunchedEffect(uid) {
-        uid?.let {
-            walletViewModel.fetchTransactions(it)
+    LaunchedEffect(Unit) {
+        userData?._id.let {
+            walletViewModel.fetchTransactions(it.toString())
+        }
+        userData?._id.let {
+            walletViewModel.getUserDetails(it.toString())
         }
     }
     val transactions = walletViewModel.transactions.collectAsState()
-
+    val userDetails = walletViewModel.userDetails.collectAsState()
     val listOfTransactions = transactions.value.transactions
 //    val transactions = listOf(
 //        Transaction(
@@ -234,7 +235,7 @@ fun WalletScreen(navController: NavController, walletViewModel: WalletViewModel 
                     )
 
                     Text(
-                        text = name.toString(),
+                        text = userDetails.value.fullName?:"User",
                         modifier = Modifier.padding(top = 10.dp),
                         style = TextStyle(
                             fontFamily = arimoFontFamily,
@@ -279,7 +280,7 @@ fun WalletScreen(navController: NavController, walletViewModel: WalletViewModel 
                     Spacer(modifier = Modifier.height(20.dp))
 
                     Text(
-                        text = "₹100,000.00",
+                        text = "₹${userDetails.value.walletBalance}",
                         style = TextStyle(
                             fontFamily = arimoFontFamily,
                             fontSize = 32.sp,
@@ -341,7 +342,6 @@ fun TransactionGroup(transactions: List<Transaction>?){
         groupedTransaction?.size?.let {
             items(it){
                 TransactionGroupItem(groupedTransaction[it])
-                Log.d("TransactionGroup", "TransactionGroup: ${groupedTransaction[it]}")
             }
         }
     }

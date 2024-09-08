@@ -1,5 +1,10 @@
 package com.example.myapplication.myapplication.flashcall.Screens
 
+//import androidx.compose.foundation.layout.FlowColumnScopeInstance.align
+//import androidx.compose.foundation.layout.FlowColumnScopeInstance.align
+//import com.example.myapplication.myapplication.flashcall.bottomnav.BottomNavGraph
+//import com.example.myapplication.myapplication.flashcall.bottomnav.BottomNavGraph
+//import com.example.myapplication.myapplication.flashcall.bottomnav.BottomNavGraph
 import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -7,7 +12,6 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -17,8 +21,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-//import androidx.compose.foundation.layout.FlowColumnScopeInstance.align
-//import androidx.compose.foundation.layout.FlowColumnScopeInstance.align
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -44,7 +46,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchColors
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -59,7 +60,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -72,46 +72,33 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.core.content.ContextCompat.startActivity
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
-import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
-import coil.request.ImageResult
-import coil.size.Size
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
 import com.example.myapplication.myapplication.flashcall.R
 import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.RegistrationViewModel
-import com.example.myapplication.myapplication.flashcall.bottomnav.BottomBar
-import com.example.myapplication.myapplication.flashcall.bottomnav.BottomNavGraph
-//import com.example.myapplication.myapplication.flashcall.bottomnav.BottomNavGraph
-//import com.example.myapplication.myapplication.flashcall.bottomnav.BottomNavGraph
-import com.example.myapplication.myapplication.flashcall.bottomnav.Screen
-//import com.example.myapplication.myapplication.flashcall.bottomnav.BottomNavGraph
 import com.example.myapplication.myapplication.flashcall.ui.theme.BorderColor2
-import com.example.myapplication.myapplication.flashcall.ui.theme.BottomBackground
 import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.PrimaryBackGround
 import com.example.myapplication.myapplication.flashcall.ui.theme.SwitchColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
-import com.example.myapplication.myapplication.flashcall.utils.ShareComplete
-import kotlinx.coroutines.flow.collectLatest
-import java.time.LocalDate
 
-var uriImg : Uri? = null
-var creatorUid:String = ""
-var token : String = ""
-var creatorUserName : String = ""
+var uriImg: Uri? = null
+var creatorUid: String = ""
+var token: String = ""
+var creatorUserName: String = ""
+
 @Composable
-fun HomeScreen(navController: NavController, registrationViewModel: RegistrationViewModel = hiltViewModel(), authenticationViewModel: AuthenticationViewModel= hiltViewModel())
-{
-
+fun HomeScreen(
+    navController: NavController,
+    registrationViewModel: RegistrationViewModel = hiltViewModel(),
+    authenticationViewModel: AuthenticationViewModel = hiltViewModel()
+) {
     var uid by remember {
         mutableStateOf("")
     }
@@ -166,16 +153,16 @@ fun HomeScreen(navController: NavController, registrationViewModel: Registration
                 registrationViewModel.updateUser(
                     uid,
                     username,
-                    phone ,
+                    phone,
                     name,
                     firstName,
                     lastName,
                     imageUrl,
                     profession,
                     themeSelected,
-                    "25",
-                    "25",
-                    "25",
+                    videoRate,
+                    audioRate,
+                    chatRate,
                     gender,
                     dob,
                     bio,
@@ -193,7 +180,7 @@ fun HomeScreen(navController: NavController, registrationViewModel: Registration
     Log.d("CreateUserResponse", "$createUserState1")
 
     val userData = authenticationViewModel.getUserFromPreferences(context)
-    if (userData != null ) {
+    if (userData != null) {
         uid = userData._id ?: ""
         username = userData.username ?: ""
         name = userData.fullName ?: ""
@@ -205,30 +192,28 @@ fun HomeScreen(navController: NavController, registrationViewModel: Registration
         themeSelected = userData.themeSelected ?: ""
         profession = userData.profession ?: ""
         profilePic = userData.photo ?: ""
-    }
+    } else {
+        when (createUserState1) {
+            is APIResponse.Success -> {
 
-    else{
-    when (createUserState1) {
-        is APIResponse.Success -> {
+                val response = (createUserState1 as APIResponse.Success).data
+                Log.d("UserResponse", response._id)
+                uid = response._id
+                name = response.fullName
+                userId = response.username
+                profilePic = response.photo
+                Log.d("UserId", uid.toString())
 
-            val response = (createUserState1 as APIResponse.Success).data
-            Log.d("UserResponse", response.toString())
-            uid = response._id
-            name = response.fullName
-            userId = response.username
-            profilePic = response.photo
-            Log.d("UserId", uid.toString())
+            }
 
+            APIResponse.Empty -> Log.e("EmptyError", "empty")
+            is APIResponse.Error -> {
+                Log.e("Error", "Error Failed")
+            }
+
+            APIResponse.Loading -> Log.e("Loading", "Loading")
         }
-
-        APIResponse.Empty -> Log.e("EmptyError", "empty")
-        is APIResponse.Error -> {
-            Log.e("Error", "Error Failed")
-        }
-
-        APIResponse.Loading -> Log.e("Loading", "Loading")
     }
-}
 
     creatorUid = uid
     creatorUserName = userId
@@ -254,12 +239,10 @@ fun HomeScreen(navController: NavController, registrationViewModel: Registration
 //    }
 
 
-
     val scrollState = rememberScrollState()
 
     Surface(
-        modifier = Modifier.wrapContentSize(),
-        color = Color.Black
+        modifier = Modifier.wrapContentSize(), color = Color.Black
     ) {
 
         Scaffold(
@@ -280,8 +263,7 @@ fun HomeScreen(navController: NavController, registrationViewModel: Registration
                         .fillMaxSize()
                         .width(30.dp)
                         .height(50.dp)
-                )
-                {
+                ) {
                     Column(modifier = Modifier.fillMaxSize()) {
 
 
@@ -291,13 +273,10 @@ fun HomeScreen(navController: NavController, registrationViewModel: Registration
                                 .padding(top = 16.dp, end = 8.dp),
                             horizontalArrangement = Arrangement.Absolute.Right,
                         ) {
-                            Button(
-                                colors = ButtonDefaults.buttonColors(Color.White),
-                                onClick = { navController.navigate(ScreenRoutes.EditScreen.route) }
-                            ) {
+                            Button(colors = ButtonDefaults.buttonColors(Color.White),
+                                onClick = { navController.navigate(ScreenRoutes.EditScreen.route) }) {
                                 Text(
-                                    text = "edit profile",
-                                    style = TextStyle(
+                                    text = "edit profile", style = TextStyle(
                                         fontFamily = arimoFontFamily,
                                         fontWeight = FontWeight.Black,
                                         fontSize = 13.sp,
@@ -319,16 +298,14 @@ fun HomeScreen(navController: NavController, registrationViewModel: Registration
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically,
-                    )
-                    {
-                        if (profilePic==""){
+                    ) {
+                        if (profilePic == "") {
                             val imageUri = rememberSaveable {
                                 mutableStateOf("")
                             }
 
-                            val painter = rememberAsyncImagePainter(
-                                imageUri.value.ifEmpty { R.drawable.profile_picture_holder }
-                            )
+                            val painter =
+                                rememberAsyncImagePainter(imageUri.value.ifEmpty { R.drawable.profile_picture_holder })
 
                             val launcher = rememberLauncherForActivityResult(
                                 contract = ActivityResultContracts.GetContent()
@@ -343,8 +320,7 @@ fun HomeScreen(navController: NavController, registrationViewModel: Registration
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(90.dp)
-                            )
-                            {
+                            ) {
                                 Column(
                                     modifier = Modifier.fillMaxSize(),
                                     verticalArrangement = Arrangement.Center,
@@ -360,63 +336,52 @@ fun HomeScreen(navController: NavController, registrationViewModel: Registration
                                     )
                                 }
 
-                                Box(modifier = Modifier.padding(start = 200.dp, top = 70.dp))
-                                {
-                                    Image(
-                                        painter = painterResource(id = R.drawable.edit_icon),
+                                Box(modifier = Modifier.padding(start = 200.dp, top = 70.dp)) {
+                                    Image(painter = painterResource(id = R.drawable.edit_icon),
                                         contentDescription = null,
                                         modifier = Modifier
                                             .clip(CircleShape)
                                             .clickable {
                                                 launcher.launch("image/*")
 
-                                            }
-                                    )
+                                            })
                                 }
 
                             }
 
 
-                        }
-
-                        else {
+                        } else {
 
                             Log.d("ProfileImageofUser", "$profilePic")
-                            ImageFromUrl(imageUrl = profilePic!!)
+                            ImageFromUrl(imageUrl = profilePic)
                         }
                     }
 
                 }
 
 
-                    Text(
-                        text = name,
-                        color = Color.White,
-                        style = TextStyle(
-                            fontFamily = arimoFontFamily,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 24.sp,
-                        ),
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                    )
+                Text(
+                    text = name, color = Color.White, style = TextStyle(
+                        fontFamily = arimoFontFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 24.sp,
+                    ), modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
 
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                    Text(
-                        text = userId,
-                        color = Color.White,
-                        style = TextStyle(
-                            fontFamily = arimoFontFamily,
-                            fontWeight = FontWeight.Black,
-                            fontSize = 16.sp,
-                        ),
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                    )
+                Text(
+                    text = userId, color = Color.White, style = TextStyle(
+                        fontFamily = arimoFontFamily,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 16.sp,
+                    ), modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                Box(modifier = Modifier.fillMaxSize()){
+                Box(modifier = Modifier.fillMaxSize()) {
                     HomeScreenBottom(navController, username)
                 }
             }
@@ -426,8 +391,7 @@ fun HomeScreen(navController: NavController, registrationViewModel: Registration
 
 
 @Composable
-fun HomeScreenBottom(homeNavController: NavController, username: String)
-{
+fun HomeScreenBottom(homeNavController: NavController, username: String) {
     var showShareDialog by remember { mutableStateOf(true) }
 
 
@@ -442,10 +406,9 @@ fun HomeScreenBottom(homeNavController: NavController, username: String)
                 .fillMaxSize()
                 .fillMaxHeight()
                 .background(
-                    PrimaryBackGround,
-                    shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
+                    PrimaryBackGround, shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
                 )
-        ){
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -489,8 +452,7 @@ fun HomeScreenBottom(homeNavController: NavController, username: String)
 }
 
 @Composable
-fun CopyBar(homeNavController: NavController, username: String)
-{
+fun CopyBar(homeNavController: NavController, username: String) {
     var copyText by remember {
         mutableStateOf("https://www.flashcall.vercel.app/expert/$creatorUserName/$creatorUid")
     }
@@ -503,21 +465,24 @@ fun CopyBar(homeNavController: NavController, username: String)
             .wrapContentWidth()
             .height(50.dp)
             .clip(RoundedCornerShape(24.dp))
-    )
-    {
-        Box(modifier = Modifier
-            .wrapContentSize()
-            .background(color = Color.White)
-            .border(1.dp, BorderColor2, shape = RoundedCornerShape(24.dp)))
+    ) {
+        Box(
+            modifier = Modifier
+                .wrapContentSize()
+                .background(color = Color.White)
+                .border(1.dp, BorderColor2, shape = RoundedCornerShape(24.dp))
+        )
 
         {
-            Row(modifier = Modifier.wrapContentSize())
-            {
-                Image(painter = painterResource(id = R.drawable.link_icon),
+            Row(modifier = Modifier.wrapContentSize()) {
+                Image(
+                    painter = painterResource(id = R.drawable.link_icon),
                     modifier = Modifier.padding(16.dp),
-                    contentDescription = null)
+                    contentDescription = null
+                )
 
-                Text(text = copyText,
+                Text(
+                    text = copyText,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
@@ -531,18 +496,17 @@ fun CopyBar(homeNavController: NavController, username: String)
                     )
                 )
 
-                Image(painter = painterResource(id = R.drawable.copy_icon),
+                Image(
+                    painter = painterResource(id = R.drawable.copy_icon),
                     modifier = Modifier
                         .padding(16.dp)
                         .clickable {
                             copyToClipboard(
-                                context = context,
-                                copyText
+                                context = context, copyText
                             )
                         },
-                    contentDescription = null)
-
-
+                    contentDescription = null
+                )
             }
         }
 
@@ -557,47 +521,47 @@ fun CopyBar(homeNavController: NavController, username: String)
 }
 
 @Composable
-fun WalletBar(navController: NavController)
-{
+fun WalletBar(navController: NavController) {
 
 
-    Box(modifier = Modifier
-        .fillMaxWidth()
-        .height(76.dp)
-        .background(color = Color.White)
-        .border(1.dp, BorderColor2, shape = RoundedCornerShape(10.dp))
-    ){
-        Row(modifier = Modifier.fillMaxSize())
-        {
-            Image(painter = painterResource(id = R.drawable.wallet_icon),
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(76.dp)
+            .background(color = Color.White)
+            .border(1.dp, BorderColor2, shape = RoundedCornerShape(10.dp))
+    ) {
+        Row(modifier = Modifier.fillMaxSize()) {
+            Image(
+                painter = painterResource(id = R.drawable.wallet_icon),
                 modifier = Modifier.padding(16.dp),
-                contentDescription = null)
+                contentDescription = null
+            )
 
             Column(modifier = Modifier.fillMaxHeight()) {
 
-                Text(text = "Today's Earning",
+                Text(
+                    text = "Today's Earning",
                     modifier = Modifier.padding(top = 10.dp),
                     style = TextStyle(
-                    fontFamily = arimoFontFamily,
-                    fontWeight = FontWeight.Black,
-                    fontSize = 10.sp,
-                    color = Color.Black
+                        fontFamily = arimoFontFamily,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 10.sp,
+                        color = Color.Black
                     )
                 )
 
                 Row {
-                    Text(text = "Rs.",
-                        modifier = Modifier.padding(top = 8.dp),
-                        style = TextStyle(
+                    Text(
+                        text = "Rs.", modifier = Modifier.padding(top = 8.dp), style = TextStyle(
                             fontFamily = arimoFontFamily,
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp,
                             color = Color.Black
                         )
                     )
-                    Text(text = "10000",
-                        modifier = Modifier.padding(top = 8.dp),
-                        style = TextStyle(
+                    Text(
+                        text = "10000", modifier = Modifier.padding(top = 8.dp), style = TextStyle(
                             fontFamily = arimoFontFamily,
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp,
@@ -615,20 +579,19 @@ fun WalletBar(navController: NavController)
                 .height(55.dp),
                 shape = RoundedCornerShape(10.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MainColor,
-                    contentColor = Color.White
+                    containerColor = MainColor, contentColor = Color.White
                 ),
                 onClick = {
                     navController.navigate(ScreenRoutes.WalletScreen.route)
-                }
-            ) {
+                }) {
 
-                Text(text = "View Wallet",
-                    style = TextStyle(
+                Text(
+                    text = "View Wallet", style = TextStyle(
                         fontFamily = arimoFontFamily,
                         fontWeight = FontWeight.Black,
                         fontSize = 13.sp,
-                    ))
+                    )
+                )
 
             }
         }
@@ -695,7 +658,9 @@ fun ServicesSection() {
 
             Spacer(modifier = Modifier.height(5.dp))
 
-            HorizontalDivider(thickness = 1.dp, modifier = Modifier.padding(start = 10.dp, end = 10.dp))
+            HorizontalDivider(
+                thickness = 1.dp, modifier = Modifier.padding(start = 10.dp, end = 10.dp)
+            )
 
             Column(
                 modifier = Modifier
@@ -768,8 +733,7 @@ fun ServicesSection() {
     }
 
     if (isDialogOpen) {
-        EditPriceDialog(
-            videoPrice = videoPrice,
+        EditPriceDialog(videoPrice = videoPrice,
             audioPrice = audioPrice,
             chatPrice = chatPrice,
             onDismiss = { isDialogOpen = false },
@@ -778,8 +742,7 @@ fun ServicesSection() {
                 audioPrice = newAudioPrice
                 chatPrice = newChatPrice
                 isDialogOpen = false
-            }
-        )
+            })
     }
 }
 
@@ -816,8 +779,7 @@ fun ServiceRow(
             Spacer(modifier = Modifier.height(5.dp))
             Row {
                 Text(
-                    text = "Rs. $servicePrice/min",
-                    style = TextStyle(
+                    text = "Rs. $servicePrice/min", style = TextStyle(
                         fontFamily = arimoFontFamily,
                         fontWeight = FontWeight.Black,
                         fontSize = 14.sp,
@@ -825,8 +787,7 @@ fun ServiceRow(
                     )
                 )
 
-                Image(
-                    painter = painterResource(id = R.drawable.edit),
+                Image(painter = painterResource(id = R.drawable.edit),
                     contentDescription = null,
                     modifier = Modifier
                         .padding(start = 5.dp)
@@ -857,7 +818,6 @@ fun ServiceRow(
 }
 
 
-
 @Composable
 fun EditPriceDialog(
     videoPrice: String,
@@ -872,39 +832,28 @@ fun EditPriceDialog(
 
     Dialog(onDismissRequest = { onDismiss() }) {
         Surface(
-            shape = RoundedCornerShape(12.dp),
-            color = Color.White
+            shape = RoundedCornerShape(12.dp), color = Color.White
         ) {
             Column(
                 modifier = Modifier.padding(16.dp)
             ) {
                 Text(
-                    text = "Price",
-                    style = TextStyle(
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
-                    ),
-                    color = Color.Black,
-                    modifier = Modifier.padding(bottom = 12.dp)
+                    text = "Price", style = TextStyle(
+                        fontWeight = FontWeight.Bold, fontSize = 20.sp
+                    ), color = Color.Black, modifier = Modifier.padding(bottom = 12.dp)
                 )
 
-                PriceInputRow(
-                    serviceName = "Video Call",
+                PriceInputRow(serviceName = "Video Call",
                     price = newVideoPrice,
-                    onPriceChange = { newVideoPrice = it }
-                )
+                    onPriceChange = { newVideoPrice = it })
 
-                PriceInputRow(
-                    serviceName = "Audio Call",
+                PriceInputRow(serviceName = "Audio Call",
                     price = newAudioPrice,
-                    onPriceChange = { newAudioPrice = it }
-                )
+                    onPriceChange = { newAudioPrice = it })
 
-                PriceInputRow(
-                    serviceName = "Chat",
+                PriceInputRow(serviceName = "Chat",
                     price = newChatPrice,
-                    onPriceChange = { newChatPrice = it }
-                )
+                    onPriceChange = { newChatPrice = it })
 
                 Spacer(modifier = Modifier.height(20.dp))
 
@@ -914,10 +863,8 @@ fun EditPriceDialog(
                 ) {
                     TextButton(onClick = onDismiss) {
                         Text(
-                            text = "Cancel",
-                            style = TextStyle(
-                                color = Color.Gray,
-                                fontSize = 16.sp
+                            text = "Cancel", style = TextStyle(
+                                color = Color.Gray, fontSize = 16.sp
                             )
                         )
                     }
@@ -925,16 +872,12 @@ fun EditPriceDialog(
                     Button(
                         onClick = {
                             onConfirm(newVideoPrice, newAudioPrice, newChatPrice)
-                        },
-                        shape = RoundedCornerShape(50),
-                        colors = ButtonDefaults.buttonColors(
-                             Color(0xFF00A862) // Green color for Save button
+                        }, shape = RoundedCornerShape(50), colors = ButtonDefaults.buttonColors(
+                            Color(0xFF00A862) // Green color for Save button
                         )
                     ) {
                         Text(
-                            text = "Save",
-                            color = Color.White,
-                            fontSize = 16.sp
+                            text = "Save", color = Color.White, fontSize = 16.sp
                         )
                     }
                 }
@@ -945,9 +888,7 @@ fun EditPriceDialog(
 
 @Composable
 fun PriceInputRow(
-    serviceName: String,
-    price: String,
-    onPriceChange: (String) -> Unit
+    serviceName: String, price: String, onPriceChange: (String) -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -957,8 +898,7 @@ fun PriceInputRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "$serviceName\nper minute",
-            style = TextStyle(
+            text = "$serviceName\nper minute", style = TextStyle(
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 color = Color.Black,
@@ -987,21 +927,21 @@ fun TutorialSlide() {
 }
 
 @Composable
-fun CustomToggleButton(selected:Boolean, onChangeValue:(Boolean)->Unit) {
+fun CustomToggleButton(selected: Boolean, onChangeValue: (Boolean) -> Unit) {
     Card(
         modifier = Modifier.width(50.dp),
         elevation = CardDefaults.cardElevation(0.dp),
         shape = RoundedCornerShape(16.dp)
     ) {
-        Box(modifier = Modifier
-            .background(
-                if (selected) MainColor else Color.White
-            )
-            .clickable {
-                onChangeValue(!selected)
-            },
-            contentAlignment = if(selected) Alignment.TopEnd else Alignment.TopStart
-        ){
+        Box(
+            modifier = Modifier
+                .background(
+                    if (selected) MainColor else Color.White
+                )
+                .clickable {
+                    onChangeValue(!selected)
+                }, contentAlignment = if (selected) Alignment.TopEnd else Alignment.TopStart
+        ) {
             CustomCheck(Modifier.padding(5.dp))
         }
     }
@@ -1022,16 +962,14 @@ fun CustomCheck(modifier: Modifier) {
 
 
 fun copyToClipboard(
-    context : Context,
-    copyText : String
-){
+    context: Context, copyText: String
+) {
     val clipBoard = context.getSystemService(
         Context.CLIPBOARD_SERVICE
     ) as ClipboardManager
 
     val clip = ClipData.newPlainText(
-        "Copied Text",
-        copyText
+        "Copied Text", copyText
     )
     clipBoard.setPrimaryClip(clip)
 }
@@ -1040,10 +978,7 @@ fun copyToClipboard(
 fun ImageFromUrl(imageUrl: String) {
     // Use the AsyncImage directly for simplicity
     AsyncImage(
-        model = ImageRequest.Builder(LocalContext.current)
-            .data(imageUrl)
-            .crossfade(true)
-            .build(),
+        model = ImageRequest.Builder(LocalContext.current).data(imageUrl).crossfade(true).build(),
         contentDescription = null,
         modifier = Modifier
             .size(120.dp)  // Ensure a consistent size
@@ -1054,10 +989,10 @@ fun ImageFromUrl(imageUrl: String) {
 
 
 @Composable
-fun shareLink(url : String) {
+fun shareLink(url: String) {
     val context = LocalContext.current
 
-    val sendIntent : Intent = Intent().apply {
+    val sendIntent: Intent = Intent().apply {
         action = Intent.ACTION_SEND
         putExtra(Intent.EXTRA_TEXT, url)
         type = "text/plain"
@@ -1068,20 +1003,21 @@ fun shareLink(url : String) {
 }
 
 @Composable
-fun ShareTextButton(textToShare: String,homeNavController: NavController, username: String) {
+fun ShareTextButton(textToShare: String, homeNavController: NavController, username: String) {
     val context = LocalContext.current
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {result->
-        if(result.resultCode == Activity.RESULT_OK)
-        {
+    val launcher =
+        rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+
+            }
 
         }
-
-    }
 
     var shareText by remember {
         mutableStateOf("https://app.flashcall.me/creator/$username")
     }
-    Image(painter = painterResource(id = R.drawable.share_icon),
+    Image(
+        painter = painterResource(id = R.drawable.share_icon),
         modifier = Modifier
             .padding(start = 2.dp, top = 2.dp)
             .size(42.dp)
@@ -1089,8 +1025,7 @@ fun ShareTextButton(textToShare: String,homeNavController: NavController, userna
                 val sendIntent: Intent = Intent().apply {
                     action = Intent.ACTION_SEND
                     putExtra(
-                        Intent.EXTRA_TEXT,
-                        "$shareText"
+                        Intent.EXTRA_TEXT, "$shareText"
                     )
                     type = "text/plain"
                 }
@@ -1104,32 +1039,35 @@ fun ShareTextButton(textToShare: String,homeNavController: NavController, userna
 }
 
 @Composable
-fun DemoText()
-{
-    Box(modifier = Modifier.fillMaxWidth()){
+fun DemoText() {
+    Box(modifier = Modifier.fillMaxWidth()) {
 
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
-        ){
-            Column(){
-                Text(text = "If you are Interested in Learning how to create an ",
+        ) {
+            Column {
+                Text(
+                    text = "If you are Interested in Learning how to create an ",
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                     style = TextStyle(
 //                        textDecoration = TextDecoration.Underline,
                         color = Color.Black,
 //                        fontWeight = FontWeight.Bold,
                         fontSize = 14.sp
-                    ))
-                Text(text = "account on Flashcall and how it works.",
+                    )
+                )
+                Text(
+                    text = "account on Flashcall and how it works.",
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                     style = TextStyle(
 //                        textDecoration = TextDecoration.Underline,
-                    color = Color.Black,
+                        color = Color.Black,
 //                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp
-                ))
+                        fontSize = 14.sp
+                    )
+                )
                 Text(
                     text = "please click here",
 
@@ -1137,8 +1075,7 @@ fun DemoText()
                         .align(Alignment.CenterHorizontally)
                         .clickable {
 
-                        },
-                    style = TextStyle(
+                        }, style = TextStyle(
                         textDecoration = TextDecoration.Underline,
                         color = MainColor,
                         fontWeight = FontWeight.Bold,

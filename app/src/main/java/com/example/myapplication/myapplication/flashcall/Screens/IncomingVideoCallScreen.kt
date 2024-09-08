@@ -1,5 +1,6 @@
 package com.example.myapplication.myapplication.flashcall.Screens
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -11,10 +12,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Data.VideoCallRoute
@@ -24,13 +23,12 @@ import io.getstream.video.android.compose.ui.components.call.controls.actions.Ac
 import io.getstream.video.android.compose.ui.components.call.controls.actions.LeaveCallAction
 import io.getstream.video.android.compose.ui.components.call.ringing.RingingCallContent
 import io.getstream.video.android.core.Call
-import io.getstream.video.android.model.User
-import io.getstream.video.android.core.StreamVideo
 
 @Composable
-fun IncomingCallScreen(
+fun IncomingVideoCallScreen(
     call: Call,
-    navController: NavController
+    navController: NavController,
+    videoCallViewModel: VideoCallViewModel = hiltViewModel()
 ){
     CompositionLocalProvider(
         androidx.lifecycle.compose.LocalLifecycleOwner provides androidx.compose.ui.platform.LocalLifecycleOwner.current,
@@ -39,7 +37,8 @@ fun IncomingCallScreen(
             RingingCallContent(
                 call = call,
                 controlsContent = {
-                    Box(modifier = Modifier.fillMaxWidth()
+                    Box(modifier = Modifier
+                        .fillMaxWidth()
                         .padding(32.dp)
                         .align(Alignment.BottomCenter)){
                         Row(
@@ -54,24 +53,31 @@ fun IncomingCallScreen(
                                 modifier = Modifier.size(52.dp),
                                 bgColor = Color.Green,
                                 onCallAction = {
-//                                          videoCallViewModel.joinCall()
-                                    navController.navigate(VideoCallRoute.VideoCall.route)
+                                    navController.navigate(VideoCallRoute.OngoingVideoCall.videoCallRoute)
                                 }
                             )
                             LeaveCallAction(
                                 modifier = Modifier.size(52.dp),
                                 onCallAction = {
-                                    navController.navigate(ScreenRoutes.MainScreen.route)
+                                    try {
+                                        navController.navigate(VideoCallRoute.OngoingVideoCall.videoCallRoute)
+                                    } catch (e: Exception) {
+                                        Log.e("NavigationError", "Error navigating: ${e.message}")
+                                    }
                                 }
                             )
                         }
                     }
                 },
                 onAcceptedContent = {
-                    navController.navigate(VideoCallRoute.VideoCall.route) },
+                    navController.navigate(VideoCallRoute.OngoingVideoCall.videoCallRoute) },
                 onNoAnswerContent = {
                     navController.navigate(ScreenRoutes.MainScreen.route)
-                }
+                },
+                onRejectedContent = {
+                    navController.navigate(ScreenRoutes.MainScreen.route)
+                },
+                isVideoType = true,
             )
         }
     }

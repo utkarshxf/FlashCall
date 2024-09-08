@@ -1,9 +1,5 @@
 package com.example.myapplication.myapplication.flashcall.Data.network
 
-import com.example.myapplication.myapplication.flashcall.Data.ResendOTP
-import com.example.myapplication.myapplication.flashcall.Data.SendOTP
-import com.example.myapplication.myapplication.flashcall.Data.VerifyOTP
-import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.CreateUser
 import com.example.myapplication.myapplication.flashcall.Data.model.CreateUserResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.IsUserCreatedResponse
@@ -13,19 +9,19 @@ import com.example.myapplication.myapplication.flashcall.Data.model.ResendReques
 import com.example.myapplication.myapplication.flashcall.Data.model.SendOTPResponseX
 import com.example.myapplication.myapplication.flashcall.Data.model.UpdateUserRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.UpdateUserResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.UserDetailsResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.UsernameAvailabilityResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.ValidateRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.VerifyOTPResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.VerifyRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.ValidateResponse
-import com.example.myapplication.myapplication.flashcall.Data.model.feedback.FeedBackResponse
-import com.example.myapplication.myapplication.flashcall.Data.model.wallet.Transaction
-import com.example.myapplication.myapplication.flashcall.Data.model.wallet.TransactionResponse
-import org.checkerframework.checker.guieffect.qual.PolyUIType
+import com.example.myapplication.myapplication.flashcall.Data.model.feedback.FeedbackResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.feedback.UpdateFeedback
+import com.example.myapplication.myapplication.flashcall.Data.model.feedback.UpdateFeedbackResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.wallet.TransactionsResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.wallet.UserId
 import retrofit2.Response
 import retrofit2.http.Body
-import retrofit2.http.Field
-import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
@@ -71,12 +67,18 @@ interface APIService {
     @GET
     suspend fun getFeedbacks(
         @Url url:String
-    ) : List<FeedBackResponse>
+    ) : FeedbackResponse
+
+    @POST
+    suspend fun updateFeedback(
+        @Url url:String,
+        @Body updateFeedback: UpdateFeedback
+    ) : UpdateFeedbackResponse
 
     @GET
     suspend fun getTransactions(
         @Url url:String
-    ) : TransactionResponse
+    ) : TransactionsResponse
 
     @POST
     suspend fun isCreatedUser(
@@ -90,9 +92,14 @@ interface APIService {
         @Body updateUser: UpdateUserRequest
     ) : UpdateUserResponse
 
+    @GET
     suspend fun checkUsernameAvailability(
         @Url url: String
     ): UsernameAvailabilityResponse
 
-
+    @POST
+    suspend fun getUserById(
+        @Url url: String,
+        @Body userId:UserId
+    ):Response<UserDetailsResponse>
 }

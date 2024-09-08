@@ -2,6 +2,7 @@ package com.example.myapplication.myapplication.flashcall.Screens
 
 import android.Manifest
 import android.os.Build
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 //import androidx.compose.foundation.layout.FlowRowScopeInstance.weight
@@ -20,18 +21,14 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.traceEventEnd
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
+import com.example.myapplication.myapplication.flashcall.Data.VideoCallRoute
 import com.example.myapplication.myapplication.flashcall.Data.model.SDKResponseState
 import com.example.myapplication.myapplication.flashcall.ViewModel.VideoCallViewModel
 import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
@@ -46,27 +43,21 @@ import io.getstream.video.android.compose.ui.components.call.controls.actions.Le
 import io.getstream.video.android.compose.ui.components.call.controls.actions.ToggleCameraAction
 import io.getstream.video.android.compose.ui.components.call.controls.actions.ToggleMicrophoneAction
 import io.getstream.video.android.compose.ui.components.call.controls.actions.ToggleSpeakerphoneAction
-import io.getstream.video.android.compose.ui.components.call.renderer.ParticipantVideoRenderer
 import io.getstream.video.android.core.Call
 
 @Composable
-fun VideoCall(
+fun OngoingVideoCall(
     videoCall : Boolean,
     viewModel: VideoCallViewModel,
     navController: NavController
 ){
-
-
     val uiState by viewModel.videoMutableUiState.collectAsStateWithLifecycle(lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current)
-
     EnsureVideoCallPermissions {
         viewModel.joinCall()
     }
-
     when(uiState){
-
         is SDKResponseState.Success -> {
-
+            Log.d("VideoCall", "VideoCall:${(uiState as SDKResponseState.Success).data} ")
             VideoCallContent(
                 call =  (uiState as SDKResponseState.Success).data,
                 videoCall = videoCall,
@@ -75,6 +66,7 @@ fun VideoCall(
         }
 
         SDKResponseState.Error -> {
+            Log.d("VideoCall", "VideoCall:${(uiState as SDKResponseState.Error)} ")
             VideoCallError()
         }
         SDKResponseState.Loading -> {
@@ -95,18 +87,18 @@ fun VideoCallContent(
     val isCameraEnabled by call.camera.isEnabled.collectAsStateWithLifecycle(lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current)
     val isMicrophoneEnabled by call.microphone.isEnabled.collectAsStateWithLifecycle(lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current)
     val isSpeakerphoneEnabled by call.speaker.isEnabled.collectAsStateWithLifecycle(lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current)
-
-    DisposableEffect(key1 = call.id ){
-        if(!videoCall){
+    DisposableEffect(key1 = call.id) {
+        if (!videoCall) {
             call.camera.setEnabled(false)
             call.microphone.setEnabled(false)
         }
-
         onDispose {
             call.leave()
+            navController.navigate(ScreenRoutes.MainScreen.route){
+                popUpTo(VideoCallRoute.OngoingVideoCall.videoCallRoute) { inclusive = true }
+            }
         }
     }
-
 
     CompositionLocalProvider(
         androidx.lifecycle.compose.LocalLifecycleOwner provides androidx.compose.ui.platform.LocalLifecycleOwner.current,
@@ -120,45 +112,52 @@ fun VideoCallContent(
                     enableInPictureInPicture = true,
                     controlsContent = {
                         if(videoCall) {
-
                             Box(modifier = Modifier.fillMaxWidth(),
                                 ) {
                                 ControlActions(
                                     call = call,
-                                    actions = listOf(
-                                        {
+                                    actions = listOf {
                                         Row(
                                             modifier = Modifier.width(350.dp),
                                             horizontalArrangement = Arrangement.SpaceBetween
                                         ) {
                                             ToggleCameraAction(
-                                                modifier = Modifier.size(52.dp).padding(start = 10.dp),
+                                                modifier = Modifier
+                                                    .size(52.dp)
+                                                    .padding(start = 10.dp),
                                                 isCameraEnabled = isCameraEnabled,
                                                 onCallAction = { call.camera.setEnabled(it.isEnabled) }
                                             )
 
                                             ToggleMicrophoneAction(
-                                                modifier = Modifier.size(52.dp).padding(horizontal = 20.dp),
+                                                modifier = Modifier
+                                                    .size(52.dp)
+                                                    .padding(horizontal = 20.dp),
                                                 isMicrophoneEnabled = isMicrophoneEnabled,
                                                 onCallAction = { call.microphone.setEnabled(it.isEnabled) }
                                             )
 
                                             FlipCameraAction(
-                                                modifier = Modifier.size(52.dp).padding(horizontal = 20.dp),
+                                                modifier = Modifier
+                                                    .size(52.dp)
+                                                    .padding(horizontal = 20.dp),
                                                 onCallAction = { call.camera.flip() }
                                             )
-
                                             LeaveCallAction(
                                                 modifier = Modifier.size(52.dp),
                                                 onCallAction = {
                                                     call.leave()
                                                     navController.navigate(ScreenRoutes.MainScreen.route)
+                                                    {
+                                                        popUpTo(VideoCallRoute.OngoingVideoCall.videoCallRoute) {
+                                                            inclusive = true
+                                                        }
+                                                    }
                                                 }
                                             )
 
                                         }
-                                        }
-                                    )
+                                    }
                                 )
                             }
                         } else
@@ -181,8 +180,7 @@ fun VideoCallContent(
                                                 navController.navigate(ScreenRoutes.MainScreen.route)
                                             }
                                         )
-                                    },
-                                    {
+                                    }, {
                                         ToggleSpeakerphoneAction(
                                             modifier = Modifier.size(52.dp),
                                             isSpeakerphoneEnabled = isSpeakerphoneEnabled){
@@ -237,11 +235,9 @@ fun EnsureVideoCallPermissions(onPermissionsGranted: () -> Unit) {
             }
         }
     )
-
     LaunchedEffect(key1 = Unit) {
         permissionsState.launchMultiplePermissionRequest()
     }
-
     LaunchedEffect(key1 = permissionsState.allPermissionsGranted) {
         if (permissionsState.allPermissionsGranted) {
             onPermissionsGranted()

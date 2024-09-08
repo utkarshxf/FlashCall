@@ -13,14 +13,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.StarOutline
 import androidx.compose.material3.Card
@@ -53,15 +52,17 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.myapplication.flashcall.Data.model.feedback.Feedback
+import com.example.myapplication.myapplication.flashcall.Data.model.feedback.FeedbackX
+import com.example.myapplication.myapplication.flashcall.Data.model.feedback.UpdateFeedback
 import com.example.myapplication.myapplication.flashcall.R
 import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.feedback.FeedbackViewModel
-import com.example.myapplication.myapplication.flashcall.ui.theme.BorderColor2
 import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.ProfileBackground
 import com.example.myapplication.myapplication.flashcall.ui.theme.RatingColor
-import com.example.myapplication.myapplication.flashcall.ui.theme.SwitchColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
+import java.time.ZonedDateTime
+import java.util.Date
 
 @Composable
 fun FeedbackScreen(
@@ -76,15 +77,12 @@ fun FeedbackScreen(
     // Collect the feedbacks from the ViewModel
     val feedbacks by feedbackViewModel.feedbacks.collectAsState()
 
-    LaunchedEffect(
-        Unit
-    ) {
+    LaunchedEffect(Unit) {
         feedbackViewModel.getFeedbacks(uid.toString())
     }
 
     Surface(
-        modifier = Modifier.wrapContentSize(),
-        color = ProfileBackground
+        modifier = Modifier.wrapContentSize(), color = ProfileBackground
     ) {
         Column(
             modifier = Modifier
@@ -99,7 +97,12 @@ fun FeedbackScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.KeyboardArrowLeft, contentDescription = "Back", tint = Color.Black, modifier = Modifier.size(28.dp))
+                        Icon(
+                            Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                            contentDescription = "Back",
+                            tint = Color.Black,
+                            modifier = Modifier.size(28.dp)
+                        )
                     }
                 }
             }
@@ -111,11 +114,8 @@ fun FeedbackScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
-                    text = "User's Feedbacks",
-                    style = TextStyle(
-                        fontFamily = arimoFontFamily,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold
+                    text = "User's Feedbacks", style = TextStyle(
+                        fontFamily = arimoFontFamily, fontSize = 24.sp, fontWeight = FontWeight.Bold
                     )
                 )
             }
@@ -132,7 +132,18 @@ fun FeedbackScreen(
                 ) {
                     items(feedbacks) { feedbackResponse ->
                         feedbackResponse.feedbacks?.forEach { feedback ->
-                            FeedbackListUtil(feedback)
+                            FeedbackListUtil(feedback) {
+                                feedbackViewModel.updateFeedback(
+                                    UpdateFeedback(
+                                        clientId = feedback.clientId?._id,
+                                        createdAt = Date().toString(),
+                                        creatorId = feedbackResponse.creatorId?._id,
+                                        feedbackText = feedback.feedback,
+                                        rating = feedback.rating,
+                                        showFeedback = it
+                                    )
+                                )
+                            }
                         }
                     }
                 }
@@ -143,10 +154,9 @@ fun FeedbackScreen(
 
 
 @Composable
-fun FeedbackListUtil(feedback: Feedback) {
+fun FeedbackListUtil(feedback: FeedbackX, toggle: (Boolean) -> Unit = {}) {
     var isChecked by remember { mutableStateOf(false) }
     var isExpanded by remember { mutableStateOf(false) }
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -171,8 +181,8 @@ fun FeedbackListUtil(feedback: Feedback) {
                 Column(modifier = Modifier.padding(8.dp)) {
                     // Display client's phone or username
                     Text(
-                        text = feedback.clientId?.phone ?: feedback.clientId?.username ?: "Unknown User",
-                        style = TextStyle(
+                        text = feedback.clientId?.phone ?: feedback.clientId?.username
+                        ?: "Unknown User", style = TextStyle(
                             fontFamily = arimoFontFamily,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
@@ -187,12 +197,10 @@ fun FeedbackListUtil(feedback: Feedback) {
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Switch(
-                        checked = isChecked,
-                        onCheckedChange = {
+                        checked = isChecked, onCheckedChange = {
                             isChecked = it
-                        },
-                        modifier = Modifier.align(Alignment.End),
-                        colors = SwitchDefaults.colors(
+                            toggle(it)
+                        }, modifier = Modifier.align(Alignment.End), colors = SwitchDefaults.colors(
                             checkedThumbColor = Color.White,
                             checkedTrackColor = MainColor,
                             uncheckedThumbColor = Color.White,
@@ -202,18 +210,19 @@ fun FeedbackListUtil(feedback: Feedback) {
                 }
             }
 
-            HorizontalDivider(thickness = 1.dp, modifier = Modifier.padding(start = 16.dp, end = 16.dp))
+            HorizontalDivider(
+                thickness = 1.dp,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp)
+            )
             Spacer(modifier = Modifier.size(10.dp))
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(start = 16.dp, end = 16.dp)
-                    .clickable {
-                        isExpanded = !isExpanded
-                    }
-            ) {
+            Row(modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(start = 16.dp, end = 16.dp)
+                .clickable {
+                    isExpanded = !isExpanded
+                }) {
                 if (!isExpanded) {
                     Row(
                         modifier = Modifier.weight(0.5f),
@@ -245,7 +254,10 @@ fun FeedbackListUtil(feedback: Feedback) {
                             horizontalArrangement = Arrangement.SpaceBetween,
                         ) {
                             // Display client's phone or username
-                            Text(text = feedback.clientId?.phone ?: feedback.clientId?.username ?: "Unknown User")
+                            Text(
+                                text = feedback.clientId?.phone ?: feedback.clientId?.username
+                                ?: "Unknown User"
+                            )
 
                             // Display created date
                             Text(text = feedback.createdAt ?: "Unknown Date")
@@ -261,16 +273,15 @@ fun FeedbackListUtil(feedback: Feedback) {
 @Composable
 fun RatingBar(
     modifier: Modifier = Modifier,
-    starColor : Color = RatingColor,
-    stars : Int = 5,
-    rating : Int = 0,
-){
+    starColor: Color = RatingColor,
+    stars: Int = 5,
+    rating: Int = 0,
+) {
 
     Row {
         for (index in 1..stars) {
             Icon(
-                imageVector =
-                if (index <= rating) {
+                imageVector = if (index <= rating) {
                     Icons.Rounded.Star
                 } else {
                     Icons.Rounded.StarOutline
