@@ -110,15 +110,6 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
     var profession by remember {
         mutableStateOf("")
     }
-    var videoRate by remember {
-        mutableStateOf("")
-    }
-    var audioRate by remember {
-        mutableStateOf("")
-    }
-    var chatRate by remember {
-        mutableStateOf("")
-    }
     var gender by remember {
         mutableStateOf("")
     }
@@ -145,23 +136,19 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                 imageUrl = url
 //                Toast.makeText(context, "Image uploaded successfully", Toast.LENGTH_SHORT).show()
                 registrationViewModel.updateUser(
-                    uid,
-                    username,
-                    phone ,
-                    name,
-                    firstName,
-                    lastName,
-                    imageUrl,
-                    profession,
-                    themeSelected,
-                    "25",
-                    "25",
-                    "25",
-                    gender,
-                    dob,
-                    bio,
-                    "incomplete",
-                    navController
+                    userId = uid,
+                    username = username,
+                    phone = phone,
+                    fullName = name,
+                    firstName = firstName,
+                    lastName = lastName,
+                    photo = imageUrl,
+                    profession = profession,
+                    themeSelected = themeSelected,
+                    gender = gender,
+                    dob = dob,
+                    bio = bio,
+                    navController = navController
                 )
             }
         }
@@ -715,23 +702,19 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                             onClick = {
                                 navController.navigate(ScreenRoutes.HomeScreen.route)
                                 registrationViewModel.updateUser(
-                                    uid,
-                                    username,
-                                    phone ,
-                                    edit_profile_name,
-                                    firstName,
-                                    lastName,
-                                    imageUrl,
-                                    profession,
-                                    themeSelected,
-                                    "25",
-                                    "25",
-                                    "25",
-                                    gender,
-                                    dob,
-                                    edit_profile_bio,
-                                    "incomplete",
-                                    navController
+                                    userId = uid,
+                                    username = username,
+                                    phone = phone ,
+                                    fullName = edit_profile_name,
+                                    firstName = firstName,
+                                    lastName= lastName,
+                                    photo = imageUrl,
+                                    profession = profession,
+                                    themeSelected = themeSelected,
+                                    gender = gender,
+                                    dob = dob,
+                                    bio = edit_profile_bio,
+                                    navController = navController
                                 )
                                 Toast.makeText(context, "Profile Updated", Toast.LENGTH_SHORT).show()
                             }

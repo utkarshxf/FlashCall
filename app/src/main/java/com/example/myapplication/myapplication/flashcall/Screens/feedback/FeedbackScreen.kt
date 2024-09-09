@@ -1,5 +1,6 @@
 package com.example.myapplication.myapplication.flashcall.Screens.feedback
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -136,7 +137,7 @@ fun FeedbackScreen(
                                 feedbackViewModel.updateFeedback(
                                     UpdateFeedback(
                                         clientId = feedback.clientId?._id,
-                                        createdAt = Date().toString(),
+                                        createdAt = feedback.createdAt,
                                         creatorId = feedbackResponse.creatorId?._id,
                                         feedbackText = feedback.feedback,
                                         rating = feedback.rating,
@@ -144,6 +145,7 @@ fun FeedbackScreen(
                                     )
                                 )
                             }
+                            Spacer(modifier = Modifier.height(12.dp))
                         }
                     }
                 }
@@ -155,7 +157,7 @@ fun FeedbackScreen(
 
 @Composable
 fun FeedbackListUtil(feedback: FeedbackX, toggle: (Boolean) -> Unit = {}) {
-    var isChecked by remember { mutableStateOf(false) }
+    var isChecked by remember { mutableStateOf(feedback.showFeedback ?: false) }
     var isExpanded by remember { mutableStateOf(false) }
     Card(
         modifier = Modifier
@@ -172,6 +174,8 @@ fun FeedbackListUtil(feedback: FeedbackX, toggle: (Boolean) -> Unit = {}) {
                     .fillMaxWidth()
                     .wrapContentHeight()
                     .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.reorder_icon),

@@ -61,12 +61,10 @@ import kotlinx.coroutines.flow.collectLatest
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
     private val viewModel by viewModels<SplashViewModel>()
     private val authenticationViewModel by viewModels<AuthenticationViewModel>()
     private val chatRequestViewModel by viewModels<ChatRequestViewModel>()
 //    private val chattingFCMViewModel: ChattingFCMViewModel by viewModels()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         installSplashScreen().apply {
@@ -74,7 +72,6 @@ class MainActivity : ComponentActivity() {
                 !viewModel.isReady.value
             }
         }
-
         var config = HyperKycConfig(
             appId = "muzdob",
             appKey = "2ns9u1evoeugbrydykl7",
@@ -164,6 +161,7 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
     val ringingCall by videoCallViewModel.incomingCall.collectAsState()
     val activeVideoCall by videoCallViewModel.incomingCall.collectAsState()
     val state = chattingFCMViewModel.state
+
     LaunchedEffect(key1 = Unit) {
         val token = authenticationViewModel.getTokenFromPreferences(context)
         if (!token.isNullOrEmpty()) {
@@ -172,6 +170,7 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
             }
         }
     }
+
     LaunchedEffect(Unit) {
         videoCallViewModel.incomingCall.collectLatest { call ->
             if (call != null) {

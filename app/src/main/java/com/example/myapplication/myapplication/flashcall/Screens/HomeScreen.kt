@@ -50,6 +50,7 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -77,8 +78,10 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
+import com.example.myapplication.myapplication.flashcall.BaseClass
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.firestore.UserServicesResponse
 import com.example.myapplication.myapplication.flashcall.R
 import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.RegistrationViewModel
@@ -145,29 +148,28 @@ fun HomeScreen(
         if (it.size == 2) it else listOf(it[0], "")
     }
     val context = LocalContext.current
+//    val appInstance = (context.applicationContext as BaseClass)
+//    appInstance.streamRemoveClient()
+//    appInstance.streamBuilder(context)
     if (uriImg != null) {
         uriImg?.let { uri ->
             uploadImageToFirebase(uri, context) { url ->
                 imageUrl = url
 //                Toast.makeText(context, "Image uploaded successfully", Toast.LENGTH_SHORT).show()
                 registrationViewModel.updateUser(
-                    uid,
-                    username,
-                    phone,
-                    name,
-                    firstName,
-                    lastName,
-                    imageUrl,
-                    profession,
-                    themeSelected,
-                    videoRate,
-                    audioRate,
-                    chatRate,
-                    gender,
-                    dob,
-                    bio,
-                    "incomplete",
-                    navController
+                    userId = uid,
+                    username = username,
+                    phone = phone,
+                    fullName = name,
+                    firstName = firstName,
+                    lastName = lastName,
+                    photo = imageUrl,
+                    profession = profession,
+                    themeSelected = themeSelected,
+                    gender = gender,
+                    dob = dob,
+                    bio = bio,
+                    navController = navController
                 )
             }
         }
@@ -175,10 +177,6 @@ fun HomeScreen(
 
     val createdUserState2 by authenticationViewModel.isCreatedUserState.collectAsState()
     val createUserState1 by registrationViewModel.createUserState.collectAsState()
-    Log.d("UserCreatedAlready", "$createdUserState2")
-    Log.d("CreatedUserData", createUserState1.toString())
-    Log.d("CreateUserResponse", "$createUserState1")
-
     val userData = authenticationViewModel.getUserFromPreferences(context)
     if (userData != null) {
         uid = userData._id ?: ""
@@ -214,33 +212,9 @@ fun HomeScreen(
             APIResponse.Loading -> Log.e("Loading", "Loading")
         }
     }
-
     creatorUid = uid
     creatorUserName = userId
-
-//    val createUserState by registrationViewModel.createUserState.collectAsState()
-//    Log.d("CreateUserStateHome", "$createUserState")
-//    when(createUserState)
-//    {
-//        is APIResponse.Success->{
-//            val response = (createUserState as APIResponse.Success).data
-//            Log.d("UserResponse", response.toString())
-//            uid = response._id
-//            name = response.fullName
-//            userId = response.username
-//            Log.d("UserId", uid.toString())
-//        }
-//
-//        APIResponse.Empty -> Log.e("EmptyError", "empty")
-//        is APIResponse.Error -> {
-//            Log.e("Error", "Error Failed")
-//        }
-//        APIResponse.Loading -> Log.e("Loading", "Loading")
-//    }
-
-
     val scrollState = rememberScrollState()
-
     Surface(
         modifier = Modifier.wrapContentSize(), color = Color.Black
     ) {
@@ -599,22 +573,44 @@ fun WalletBar(navController: NavController) {
 }
 
 @Composable
-fun ServicesSection() {
+fun ServicesSection(
+    registrationViewModel: RegistrationViewModel = hiltViewModel(),
+) {
+    val context = LocalContext.current
+    val serviceData = registrationViewModel.serviceState.collectAsState()
     var serviceSelected by remember { mutableStateOf(false) }
     var audioService by remember { mutableStateOf(true) }
     var videoService by remember { mutableStateOf(true) }
     var chatService by remember { mutableStateOf(true) }
 
-    var audioPrice by remember { mutableStateOf("25") }
-    var chatPrice by remember { mutableStateOf("25") }
-    var videoPrice by remember { mutableStateOf("25") }
+    var audioPrice by remember { mutableStateOf("") }
+    var chatPrice by remember { mutableStateOf("") }
+    var videoPrice by remember { mutableStateOf("") }
 
     var isDialogOpen by remember { mutableStateOf(false) }
     var selectedService by remember { mutableStateOf("") }
     var priceToEdit by remember { mutableStateOf("") }
-
-    // Dynamic text color based on the service toggle state
     val textColor = if (serviceSelected) Color.Black else Color.Gray
+    LaunchedEffect(Unit) {
+        registrationViewModel.getAllServiceData(creatorUid)
+    }
+    if(serviceData.value is APIResponse.Success) {
+        LaunchedEffect(Unit) {
+            val response = (serviceData.value as APIResponse.Success<UserServicesResponse>).data
+            response.prices.let {
+                videoPrice = it.videoCall.toString()
+                audioPrice = it.audioCall.toString()
+                chatPrice = it.chat.toString()
+            }
+            response.services.let {
+                videoService = it.videoCall
+                audioService = it.audioCall
+                chatService = it.chat
+            }
+
+            serviceSelected = response.services.myServices ?: false
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -643,7 +639,9 @@ fun ServicesSection() {
                 Spacer(modifier = Modifier.weight(1f))
                 Switch(
                     checked = serviceSelected,
-                    onCheckedChange = { serviceSelected = it },
+                    onCheckedChange = {
+                        serviceSelected = it
+                        registrationViewModel.updateServices(userId = creatorUid , masterToggle = it) },
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = Color.White,
                         checkedTrackColor = MainColor,
@@ -681,6 +679,7 @@ fun ServicesSection() {
                     onCheckedChange = {
                         if (serviceSelected) {
                             videoService = it
+                            registrationViewModel.updateServices(userId = creatorUid , servicesVideo = it)
                         }
                     },
                     serviceSelected = serviceSelected,
@@ -702,6 +701,7 @@ fun ServicesSection() {
                     onCheckedChange = {
                         if (serviceSelected) {
                             audioService = it
+                            registrationViewModel.updateServices(userId = creatorUid , servicesAudio = it)
                         }
                     },
                     serviceSelected = serviceSelected,
@@ -723,6 +723,7 @@ fun ServicesSection() {
                     onCheckedChange = {
                         if (serviceSelected) {
                             chatService = it
+                            registrationViewModel.updateServices(userId = creatorUid , servicesChat = it)
                         }
                     },
                     serviceSelected = serviceSelected,
@@ -742,7 +743,14 @@ fun ServicesSection() {
                 audioPrice = newAudioPrice
                 chatPrice = newChatPrice
                 isDialogOpen = false
+                registrationViewModel.updateServices(
+                    userId = creatorUid,
+                    videoRate = videoPrice,
+                    audioRate = audioPrice,
+                    chatRate = chatPrice
+                )
             })
+
     }
 }
 

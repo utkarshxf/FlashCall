@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
@@ -72,7 +73,6 @@ fun OngoingVideoCall(
         SDKResponseState.Loading -> {
             VideoCallLoading()
         }
-
     }
 
 }
@@ -82,20 +82,26 @@ fun OngoingVideoCall(
 fun VideoCallContent(
     call : Call,
     videoCall : Boolean,
-    navController: NavController
+    navController: NavController,
+    viewModel: VideoCallViewModel = hiltViewModel()
 ){
+
     val isCameraEnabled by call.camera.isEnabled.collectAsStateWithLifecycle(lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current)
     val isMicrophoneEnabled by call.microphone.isEnabled.collectAsStateWithLifecycle(lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current)
     val isSpeakerphoneEnabled by call.speaker.isEnabled.collectAsStateWithLifecycle(lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current)
+    // Listen to call status changes and end call if necessary
     DisposableEffect(key1 = call.id) {
         if (!videoCall) {
             call.camera.setEnabled(false)
             call.microphone.setEnabled(false)
         }
         onDispose {
-            call.leave()
-            navController.navigate(ScreenRoutes.MainScreen.route){
-                popUpTo(VideoCallRoute.OngoingVideoCall.videoCallRoute) { inclusive = true }
+            viewModel.leaveCall(call){
+                navController.navigate(ScreenRoutes.MainScreen.route){
+                    popUpTo(VideoCallRoute.OngoingVideoCall.videoCallRoute) {
+                        inclusive = true
+                    }
+                }
             }
         }
     }
@@ -146,11 +152,12 @@ fun VideoCallContent(
                                             LeaveCallAction(
                                                 modifier = Modifier.size(52.dp),
                                                 onCallAction = {
-                                                    call.leave()
-                                                    navController.navigate(ScreenRoutes.MainScreen.route)
-                                                    {
-                                                        popUpTo(VideoCallRoute.OngoingVideoCall.videoCallRoute) {
-                                                            inclusive = true
+                                                    viewModel.leaveCall(call){
+                                                        navController.navigate(ScreenRoutes.MainScreen.route)
+                                                        {
+                                                            popUpTo(VideoCallRoute.OngoingVideoCall.videoCallRoute) {
+                                                                inclusive = true
+                                                            }
                                                         }
                                                     }
                                                 }
@@ -176,8 +183,13 @@ fun VideoCallContent(
                                         LeaveCallAction(
                                             modifier = Modifier.size(52.dp),
                                             onCallAction = {
-                                                call.leave()
-                                                navController.navigate(ScreenRoutes.MainScreen.route)
+                                                viewModel.leaveCall(call){
+                                                    navController.navigate(ScreenRoutes.MainScreen.route){
+                                                        popUpTo(VideoCallRoute.OngoingVideoCall.videoCallRoute) {
+                                                            inclusive = true
+                                                        }
+                                                    }
+                                                }
                                             }
                                         )
                                     }, {

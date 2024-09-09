@@ -461,7 +461,7 @@ fun TransactionItem(transaction: Transaction, isLastInGroup: Boolean) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column {
-                    Text("Transaction ID: ${transaction._id}", fontWeight = FontWeight.Bold)
+                    Text("Transaction ID:\n ${transaction._id}", fontWeight = FontWeight.Bold)
                     Text(text = createdAtTime, fontSize = 14.sp)
                 }
 

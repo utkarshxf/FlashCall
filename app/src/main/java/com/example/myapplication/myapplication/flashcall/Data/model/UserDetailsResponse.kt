@@ -27,5 +27,5 @@ data class UserDetailsResponse(
     val username: String?=null,
     val videoAllowed: Boolean?=null,
     val videoRate: String?=null,
-    val walletBalance: Double?=null
+    val walletBalance: Double?=0.00
 )

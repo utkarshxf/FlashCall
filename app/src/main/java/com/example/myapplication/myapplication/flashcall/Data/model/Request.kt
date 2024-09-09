@@ -67,33 +67,33 @@ data class UpdateUserRequest(
 )
 data class UserUpdateData(
     @SerializedName("fullName")
-    val fullName: String,
+    val fullName: String?=null,
     @SerializedName("username")
-    val username: String,
+    val username: String?=null,
     @SerializedName("phone")
-    val phone: String,
+    val phone: String?=null,
     @SerializedName("firstName")
-    val firstName: String,
+    val firstName: String?=null,
     @SerializedName("lastName")
-    val lastName: String,
+    val lastName: String?=null,
 
     @SerializedName("photo")
-    val photo: String,
+    val photo: String?=null,
     @SerializedName("profession")
-    val profession: String,
+    val profession: String?=null,
     @SerializedName("themeSelected")
-    val themeSelected: String,
+    val themeSelected: String?=null,
     @SerializedName("videoRate")
-    val videoRate: String,
+    val videoRate: String?=null,
     @SerializedName("audioRate")
-    val audioRate: String,
+    val audioRate: String?=null,
     @SerializedName("chatRate")
-    val chatRate: String,
+    val chatRate: String?=null,
     @SerializedName("gender")
-    val gender: String,
+    val gender: String?=null,
     @SerializedName("dob")
-    val dob: String,
+    val dob: String?=null,
     @SerializedName("bio")
-    val bio: String
+    val bio: String?=null
 )
 

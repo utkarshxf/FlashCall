@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,13 +24,26 @@ import io.getstream.video.android.compose.ui.components.call.controls.actions.Ac
 import io.getstream.video.android.compose.ui.components.call.controls.actions.LeaveCallAction
 import io.getstream.video.android.compose.ui.components.call.ringing.RingingCallContent
 import io.getstream.video.android.core.Call
+import io.getstream.video.android.core.RingingState
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun IncomingVideoCallScreen(
     call: Call,
     navController: NavController,
     videoCallViewModel: VideoCallViewModel = hiltViewModel()
-){
+) {
+//    LaunchedEffect(Unit) {
+//        videoCallViewModel.incomingCall.collectLatest { call ->
+//            if (call == null) {
+//                navController.navigate(ScreenRoutes.MainScreen.route) {
+//                    popUpTo(ScreenRoutes.IncomingVideoCallScreen.route) {
+//                        inclusive = true
+//                    }
+//                }
+//            }
+//        }
+//    }
     CompositionLocalProvider(
         androidx.lifecycle.compose.LocalLifecycleOwner provides androidx.compose.ui.platform.LocalLifecycleOwner.current,
     ) {
@@ -37,10 +51,12 @@ fun IncomingVideoCallScreen(
             RingingCallContent(
                 call = call,
                 controlsContent = {
-                    Box(modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(32.dp)
-                        .align(Alignment.BottomCenter)){
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp)
+                            .align(Alignment.BottomCenter)
+                    ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth(0.7f)
@@ -49,33 +65,52 @@ fun IncomingVideoCallScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            AcceptCallAction(
-                                modifier = Modifier.size(52.dp),
+                            AcceptCallAction(modifier = Modifier.size(52.dp),
                                 bgColor = Color.Green,
                                 onCallAction = {
                                     navController.navigate(VideoCallRoute.OngoingVideoCall.videoCallRoute)
-                                }
-                            )
-                            LeaveCallAction(
-                                modifier = Modifier.size(52.dp),
-                                onCallAction = {
-                                    try {
-                                        navController.navigate(VideoCallRoute.OngoingVideoCall.videoCallRoute)
-                                    } catch (e: Exception) {
-                                        Log.e("NavigationError", "Error navigating: ${e.message}")
+                                    {
+                                        popUpTo(ScreenRoutes.IncomingVideoCallScreen.route) {
+                                            inclusive = true
+                                        }
                                     }
+                                })
+                            LeaveCallAction(modifier = Modifier.size(52.dp), onCallAction = {
+                                try {
+                                    videoCallViewModel.leaveCall(call) {
+                                        navController.navigate(ScreenRoutes.MainScreen.route) {
+                                            popUpTo(ScreenRoutes.IncomingVideoCallScreen.route) {
+                                                inclusive = true
+                                            }
+                                        }
+                                    }
+                                } catch (e: Exception) {
+                                    Log.e("NavigationError", "Error navigating: ${e.message}")
                                 }
-                            )
+                            })
                         }
                     }
                 },
                 onAcceptedContent = {
-                    navController.navigate(VideoCallRoute.OngoingVideoCall.videoCallRoute) },
+                    navController.navigate(VideoCallRoute.OngoingVideoCall.videoCallRoute) {
+                        popUpTo(ScreenRoutes.IncomingVideoCallScreen.route) {
+                            inclusive = true
+                        }
+                    }
+                },
                 onNoAnswerContent = {
-                    navController.navigate(ScreenRoutes.MainScreen.route)
+                    navController.navigate(ScreenRoutes.MainScreen.route){
+                        popUpTo(ScreenRoutes.IncomingVideoCallScreen.route) {
+                            inclusive = true
+                        }
+                    }
                 },
                 onRejectedContent = {
-                    navController.navigate(ScreenRoutes.MainScreen.route)
+                    navController.navigate(ScreenRoutes.MainScreen.route){
+                        popUpTo(ScreenRoutes.IncomingVideoCallScreen.route) {
+                            inclusive = true
+                        }
+                    }
                 },
                 isVideoType = true,
             )

@@ -7,18 +7,13 @@ import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
 import android.util.Log
-import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.myapplication.myapplication.flashcall.ViewModel.wallet.WalletViewModel
 import com.example.myapplication.myapplication.flashcall.utils.TimestampConverter
 import com.google.firebase.FirebaseApp
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.FirebaseFirestoreSettings
-import com.google.firebase.firestore.LocalCacheSettings
 import com.google.firebase.firestore.firestoreSettings
 import com.google.gson.GsonBuilder
 import dagger.hilt.android.HiltAndroidApp
-import io.getstream.video.android.core.Call
 import io.getstream.video.android.core.StreamVideo
 import io.getstream.video.android.core.StreamVideoBuilder
 import io.getstream.video.android.model.User
@@ -30,42 +25,62 @@ class BaseClass : Application() {
         super.onCreate()
         createNotificationChannel()
         FirebaseApp.initializeApp(this)
+
         val gson = GsonBuilder()
             .registerTypeAdapter(Timestamp::class.java, TimestampConverter())
             .create()
-        create(this)
-// Optionally modify the settings (e.g., enable persistence)
 
+        // Initialize Firestore settings
         val firestoreSettings = firestoreSettings {
             isPersistenceEnabled = true
         }
-
         FirebaseFirestore.getInstance().firestoreSettings = firestoreSettings
+
+        streamBuilder(this)
     }
 
-    fun create(context: Context) {
+    fun streamBuilder(context: Context) {
+        val sharedPreferences = context.getSharedPreferences("user_prefs1", Context.MODE_PRIVATE)
+        var userId = "user_Id"
+        var userName = "Unknown User"
+        var profileImage = ""
 
-        //Constant Data Object
-        val userId = "66d97acd79d3bf54c8e53be0"
-        val notify: ((Call) -> Notification) = {
-            Log.d("Call", "Call$it")
-            Notification.Builder(context).build()
+        // Attempt to retrieve values from SharedPreferences with proper error handling
+        try {
+            userId = sharedPreferences.getString("user_id", "user_Id") ?: "user_Id"
+            userName = sharedPreferences.getString("full_name", "Unknown User") ?: "Unknown User"
+            profileImage = sharedPreferences.getString("photo", "") ?: ""
+        } catch (e: Exception) {
+            Log.e("BaseClass", "Error reading SharedPreferences: ${e.message}")
         }
 
-        StreamVideoBuilder(
-            context = context,
-            apiKey = "9jpqevnvhfzv",
-            token = StreamVideo.devToken(userId),
-            user = User(
-                id = userId,
-                name = "Utkarsh",
-                //Image Link by getUser API
-                image = "https://drive.google.com/file/d/1fosIGjYB_Wgw2DBHVrWXGBoHlbT1dK7s/view?usp=drivesdk",
-                role = "admin",
-            ),
-            ringNotification = notify,
-        ).build()
+
+        // Log retrieved values for debugging
+        Log.d("BaseClass", "userId: $userId, userName: $userName, profileImage: $profileImage")
+
+        // Build the StreamVideo session with safe nullable checks
+        try {
+            StreamVideoBuilder(
+                context = context,
+                apiKey = "9jpqevnvhfzv",
+                token = StreamVideo.devToken(userId),  // Token requires valid userId
+                user = User(
+                    id = userId,
+                    name = userName,
+                    image = profileImage?:"null",
+                    role = "admin",
+                ),
+                ringNotification = { call -> Notification.Builder(context).build() }
+            ).build()
+        } catch (e: Exception) {
+            Log.e("BaseClass", "Error initializing StreamVideo: ${e.message}")
+        }
     }
+    fun streamRemoveClient()
+    {
+        StreamVideo.removeClient()
+    }
+
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = "Chat Notifications"
@@ -82,5 +97,4 @@ class BaseClass : Application() {
     companion object {
         const val CHANNEL_ID = "CHAT_REQUEST_CHANNEL"
     }
-
 }

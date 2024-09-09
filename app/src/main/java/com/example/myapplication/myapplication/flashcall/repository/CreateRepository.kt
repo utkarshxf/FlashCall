@@ -109,22 +109,21 @@ class CreateRepository @Inject constructor(private val apiService: APIService) {
     suspend fun updateUser(
         url: String,
         userId: String,
-        fullName: String,
-        firstName: String,
-        lastName: String,
-        username: String,
-        phone: String,
-        photo: String,
-        profession: String,
-        themeSelected: String,
-        videoRate: String,
-        audioRate: String,
-        chatRate: String,
-        gender: String,
-        dob: String,
-        bio: String
+        fullName: String?=null,
+        firstName: String?=null,
+        lastName: String?=null,
+        username: String?=null,
+        phone: String?=null,
+        photo: String?=null,
+        profession: String?=null,
+        themeSelected: String?=null,
+        videoRate: String?=null,
+        audioRate: String?=null,
+        chatRate: String?=null,
+        gender: String?=null,
+        dob: String?=null,
+        bio: String?=null
     ): Flow<UpdateUserResponse> {
-//        Log.e("resonseUpdateUser", "$response")
         return flow {
             val response = apiService.updateUser(
                 url,
@@ -148,10 +147,9 @@ class CreateRepository @Inject constructor(private val apiService: APIService) {
                     )
                 )
             )
-            emit(response)
             Log.e("resonseUpdateUser", "$response")
+            emit(response)
         }
-
     }
     suspend fun checkUsernameAvailability(username: String): UsernameAvailabilityResponse {
         return apiService.checkUsernameAvailability("https://app.flashcall.me/api/v1/user/getAllUsernames?username=$username")
