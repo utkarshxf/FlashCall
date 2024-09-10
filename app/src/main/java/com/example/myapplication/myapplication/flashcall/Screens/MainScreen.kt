@@ -9,6 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -32,16 +34,21 @@ fun MainScreen(
     chatRequestViewModel: ChatRequestViewModel = hiltViewModel(),
     authenticationViewModel: AuthenticationViewModel = hiltViewModel(),
     videoCallViewModel: VideoCallViewModel = hiltViewModel()
-    ) {
+) {
     val homeNavController = rememberNavController()
     val chatRequestCreated by chatRequestViewModel.chatRequestCreated.collectAsState()
-//    val ringingCall by videoCallViewModel.incomingCall.collectAsState()
-//    val activeVideoCall by videoCallViewModel.incomingCall.collectAsState()
-    val isLoggedIn = true
+    val incomingCall by videoCallViewModel.incomingCall.collectAsState(initial = null)
+    val activeVideoCall by videoCallViewModel.activeCall.collectAsState(initial = null)
     val context = LocalContext.current
-
+    LaunchedEffect(Unit) {
+        videoCallViewModel.incomingCall.collectLatest { call ->
+            call?.let {
+                homeNavController.navigate(ScreenRoutes.IncomingVideoCallScreen.route)
+            }
+        }
+    }
     Scaffold(modifier = Modifier.fillMaxSize(), bottomBar = {
-        if (!chatRequestCreated) {
+        if (!chatRequestCreated && incomingCall == null && activeVideoCall == null) {
             BottomBar(navController = homeNavController)
         }
     }) {
@@ -50,15 +57,11 @@ fun MainScreen(
                 .padding(it)
                 .fillMaxSize()
         ) {
-
             val uid = authenticationViewModel.getUserFromPreferences(context)
             chatRequestViewModel.listenForChatRequests(uid?._id.toString())
-
             if (chatRequestCreated) {
                 IncomingChatScreen(navController = navController)
-            }
-            else {
-                // Show the main navigation when no chat request is active
+            } else {
                 BottomNavGraph(
                     homeNavController = homeNavController,
                     navController = navController,

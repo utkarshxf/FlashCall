@@ -47,7 +47,7 @@ import io.getstream.video.android.compose.ui.components.call.controls.actions.To
 import io.getstream.video.android.core.Call
 
 @Composable
-fun OngoingVideoCall(
+fun OngoingVideoCallScreen(
     videoCall : Boolean,
     viewModel: VideoCallViewModel,
     navController: NavController
@@ -66,11 +66,10 @@ fun OngoingVideoCall(
             )
         }
 
-        SDKResponseState.Error -> {
-            Log.d("VideoCall", "VideoCall:${(uiState as SDKResponseState.Error)} ")
+        is SDKResponseState.Error -> {
             VideoCallError()
         }
-        SDKResponseState.Loading -> {
+        is SDKResponseState.Loading -> {
             VideoCallLoading()
         }
     }
@@ -119,7 +118,7 @@ fun VideoCallContent(
                     controlsContent = {
                         if(videoCall) {
                             Box(modifier = Modifier.fillMaxWidth(),
-                                ) {
+                            ) {
                                 ControlActions(
                                     call = call,
                                     actions = listOf {
