@@ -72,10 +72,7 @@ class AuthenticationViewModel @Inject constructor(
 
     fun signUP(phoneNumber: String, navController: NavController, sendToke: String?) {
 
-
         viewModelScope.launch {
-
-
             _sendOTPState.value = APIResponse.Loading
             try {
                 Log.e("phone", "phone No:$phoneNumber")
@@ -145,7 +142,6 @@ class AuthenticationViewModel @Inject constructor(
                                 } else {
                                     saveTokenToPreferences(context, it.token)
                                     navController.navigate(ScreenRoutes.RegistrationScreen.route) {
-
                                         popUpTo(ScreenRoutes.LoginDoneScreen.route) {
                                             inclusive = true
                                         }

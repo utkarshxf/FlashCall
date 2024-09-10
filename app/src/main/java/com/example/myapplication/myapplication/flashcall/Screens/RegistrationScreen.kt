@@ -592,24 +592,23 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                     onClick = {
                         Log.d("Image", "Image: $imageUrl")
                         registrationViewModel.createUser(
-                            userId,
-                            phoneNumber,
-                            name,
-                            firstName,
-                            lastName,
-                            imageUrl,
-                            "Astrologer",
-                            "#50A65C",
-                            "25",
-                            "25",
-                            "25",
-                            selectedGender,
-                            formattedDate,
-                            "mdlapd",
-                            "Incomplete",
-                            navController
+                           username = userId,
+                        phone = phoneNumber,
+                         fullName = name,
+                         firstName = firstName,
+                         lastName= lastName,
+                         photo= imageUrl,
+                         profession= "Astrologer" ,// constant value
+                         themeSelected = "#50A65C", // constant value
+                         videoRate= "25", // constant value
+                         audioRate= "25", // constant value
+                         chatRate= "25", // constant value
+                         gender= selectedGender,
+                         dob = formattedDate,
+                         bio = "mdlapd", // constant value
+                         kyc_status = "Incomplete", // constant value
+                         navController= navController
                         )
-//                        Toast.makeText(context, "User Created", Toast.LENGTH_SHORT).show()
                         authenticationViewModel.saveToken(userToken)
                     }
                 ) {

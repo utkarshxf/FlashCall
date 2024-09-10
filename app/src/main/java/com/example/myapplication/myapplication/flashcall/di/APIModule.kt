@@ -1,7 +1,9 @@
 package com.example.myapplication.myapplication.flashcall.di
 
 import android.app.Application
+import android.app.Notification
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
@@ -22,6 +24,9 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import io.getstream.video.android.core.StreamVideo
+import io.getstream.video.android.core.StreamVideoBuilder
+import io.getstream.video.android.model.User
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -99,4 +104,32 @@ object APIModule {
     @Singleton
     fun provideApplicationContext(@ApplicationContext context: Context): Context = context
 
+    @Provides
+    fun provideSharedPreferences(
+        @ApplicationContext context: Context
+    ): SharedPreferences {
+        return context.getSharedPreferences("user_prefs1", Context.MODE_PRIVATE)
+    }
+
+    @Provides
+    fun provideStreamVideoBuilder(
+        @ApplicationContext context: Context,
+        sharedPreferences: SharedPreferences
+    ): StreamVideo {
+        val userId = sharedPreferences.getString("user_id", "user_Id") ?: "user_Id"
+        val userName = sharedPreferences.getString("full_name", "Unknown User") ?: "Unknown User"
+        val profileImage = sharedPreferences.getString("photo", "") ?: ""
+        return StreamVideoBuilder(
+            context = context,
+            apiKey = "9jpqevnvhfzv",
+            token = StreamVideo.devToken(userId),
+            user = User(
+                id = userId,
+                name = userName,
+                image = profileImage.ifEmpty { "null" },
+                role = "admin"
+            ),
+            ringNotification = { call -> Notification.Builder(context).build() }
+        ).build()
+    }
 }

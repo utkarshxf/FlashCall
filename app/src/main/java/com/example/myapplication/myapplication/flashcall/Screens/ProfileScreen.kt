@@ -117,11 +117,10 @@ fun ProfileScreen(
                             modifier = Modifier.size(28.dp)
                         )
                     }
-
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(8.dp),
+                            .padding(8.dp)
                     ) {
                         Box(
                             modifier = Modifier
@@ -129,8 +128,10 @@ fun ProfileScreen(
                         ) {
                             ImageFromUrl(imageUrl = profilePic!!)
                         }
-
-                        Column {
+                        Column(
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
                             Text(
                                 text = name.toString(),
                                 color = Color.Black,

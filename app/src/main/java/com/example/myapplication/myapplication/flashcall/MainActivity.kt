@@ -72,6 +72,10 @@ class MainActivity : ComponentActivity() {
                 !viewModel.isReady.value
             }
         }
+        val userId = authenticationViewModel.getUserFromPreferences(this)?._id
+        userId?.let {
+
+        }
         var config = HyperKycConfig(
             appId = "muzdob",
             appKey = "2ns9u1evoeugbrydykl7",

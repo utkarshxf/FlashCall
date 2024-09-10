@@ -50,7 +50,7 @@ class RegistrationViewModel @Inject constructor(
     val serviceState: StateFlow<APIResponse<UserServicesResponse>> = _serviceState
 
     fun createUser(
-        username: String?,
+        username: String,
         phone: String?,
         fullName: String?,
         firstName: String?,
@@ -67,6 +67,7 @@ class RegistrationViewModel @Inject constructor(
         kyc_status: String?,
         navController: NavController
     ) {
+
         viewModelScope.launch {
             _createUserState.value = APIResponse.Loading
             try {
@@ -76,7 +77,7 @@ class RegistrationViewModel @Inject constructor(
                     // Proceed with user creation in the repository
                     repository.createUser(
                         "https://flashcall.vercel.app/api/v1/creator/createUser",
-                        username ?: "", // Default value to avoid null
+                        username, // Default value to avoid null
                         phone ?: "",    // Ensure non-null values are sent to the API
                         fullName ?: "",
                         firstName ?: "",
@@ -96,7 +97,7 @@ class RegistrationViewModel @Inject constructor(
                         Log.d("User", "User created successfully")
 
                         storeResponseInPreferences(response)
-
+                        addDataIntoFirestore(response._id,videoRate , audioRate , chatRate)
                         // Get FCM token
                         val fcmToken = Firebase.messaging.token.await()
 
@@ -129,6 +130,37 @@ class RegistrationViewModel @Inject constructor(
         }
     }
 
+    private fun addDataIntoFirestore(userId: String, videoRate: String?, audioRate: String?, chatRate: String?) {
+        try {
+            val servicesMap = hashMapOf(
+                "prices" to hashMapOf(
+                    "videoCall" to videoRate,
+                    "audioCall" to audioRate,
+                    "chat" to chatRate
+                ),
+                "services" to hashMapOf(
+                    "myServices" to true,
+                    "videoCall" to true,
+                    "audioCall" to true,
+                    "chat" to true
+                )
+            )
+
+            FirebaseFirestore.getInstance().collection("services").document(userId)
+                .set(servicesMap)
+                .addOnSuccessListener {
+                    Log.d("CreateUser", "Services document created successfully")
+                }
+                .addOnFailureListener { e ->
+                    // Handle failure
+                    Log.e("CreateUser", "Error creating services document", e)
+                }
+        }catch (e:Exception){
+                // Handle failure
+                Log.e("CreateUser", "Error creating user document", e)
+        }
+    }
+
     private suspend fun checkUsernameAvailability(username: String): Boolean {
         return try {
             val response = repository.checkUsernameAvailability(username)
@@ -141,13 +173,13 @@ class RegistrationViewModel @Inject constructor(
 
     fun updateServices(
         userId: String,
-        masterToggle: Boolean?=null,
-        servicesVideo: Boolean?=null,
-        servicesAudio: Boolean?=null,
-        servicesChat: Boolean?=null,
-        videoRate: String?=null,
-        audioRate: String?=null,
-        chatRate: String?=null,
+        masterToggle: Boolean? = null,
+        servicesVideo: Boolean? = null,
+        servicesAudio: Boolean? = null,
+        servicesChat: Boolean? = null,
+        videoRate: String? = null,
+        audioRate: String? = null,
+        chatRate: String? = null,
     ) {
         val updateMap = mutableMapOf<String, Any>()
 
@@ -156,39 +188,61 @@ class RegistrationViewModel @Inject constructor(
         chatRate?.let { updateMap["prices.chat"] = it }
         videoRate?.let { updateMap["prices.videoCall"] = it }
 
-        // For services, you might want to update only if a specific condition is met
-        // or if you have boolean flags for these. For now, I'll keep them as they were
+        // For services, add non-null values
         servicesAudio?.let { updateMap["services.audioCall"] = it }
         servicesChat?.let { updateMap["services.chat"] = it }
         masterToggle?.let { updateMap["services.myServices"] = it }
         servicesVideo?.let { updateMap["services.videoCall"] = it }
 
-        // Only perform the update if there are fields to update
+        // Perform the update if there are fields to update
         if (updateMap.isNotEmpty()) {
-            firestore.collection("services").document(userId).update(updateMap)
-                .addOnSuccessListener {
-                    viewModelScope.launch {
-                        _updateUserState.value = APIResponse.Loading
-                        try {
-                            repository.updateUser(
-                                "https://flashcall.vercel.app/api/v1/creator/updateUser", // Replace with actual update endpoint
-                                userId = userId,
-                                videoRate = videoRate,
-                                audioRate = audioRate,
-                                chatRate = chatRate,
-                            ).collect { response ->
-                                _updateUserState.value = APIResponse.Success(response)
-                                storeUpdateUserResponseInPreferences(response)
-                            }
-                        } catch (e: Exception) {
-                            Log.e("error", "User update failed: ${e.message}")
-                            _createUserState.value =
-                                APIResponse.Error(e.message ?: "User update error")
+            val documentRef = firestore.collection("services").document(userId)
+
+            // Check if the document exists first
+            documentRef.get().addOnSuccessListener { document ->
+                if (document.exists()) {
+                    // If the document exists, use update
+                    documentRef.update(updateMap)
+                        .addOnSuccessListener {
+                            updateUserBackend(userId, videoRate, audioRate, chatRate)
                         }
-                    }
-                }.addOnFailureListener { e ->
-                    Log.w("Firestore", "Error updating document", e)
+                        .addOnFailureListener { e ->
+                            Log.w("Firestore", "Error updating document", e)
+                        }
+                } else {
+                    // If the document doesn't exist, use set to create it
+                    documentRef.set(updateMap)
+                        .addOnSuccessListener {
+                            updateUserBackend(userId, videoRate, audioRate, chatRate)
+                        }
+                        .addOnFailureListener { e ->
+                            Log.w("Firestore", "Error creating document", e)
+                        }
                 }
+            }.addOnFailureListener { e ->
+                Log.w("Firestore", "Error checking document", e)
+            }
+        }
+    }
+
+    private fun updateUserBackend(userId: String, videoRate: String?, audioRate: String?, chatRate: String?) {
+        viewModelScope.launch {
+            _updateUserState.value = APIResponse.Loading
+            try {
+                repository.updateUser(
+                    "https://flashcall.vercel.app/api/v1/creator/updateUser", // Replace with actual update endpoint
+                    userId = userId,
+                    videoRate = videoRate,
+                    audioRate = audioRate,
+                    chatRate = chatRate,
+                ).collect { response ->
+                    _updateUserState.value = APIResponse.Success(response)
+                    storeUpdateUserResponseInPreferences(response)
+                }
+            } catch (e: Exception) {
+                Log.e("error", "User update failed: ${e.message}")
+                _createUserState.value = APIResponse.Error(e.message ?: "User update error")
+            }
         }
     }
 
