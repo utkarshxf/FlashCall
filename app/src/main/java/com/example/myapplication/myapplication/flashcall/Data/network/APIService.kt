@@ -21,6 +21,7 @@ import com.example.myapplication.myapplication.flashcall.Data.model.feedback.Upd
 import com.example.myapplication.myapplication.flashcall.Data.model.wallet.TransactionsResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.wallet.UserId
 import retrofit2.Response
+import retrofit2.Retrofit
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -37,48 +38,48 @@ interface APIService {
     suspend fun sendOTP(
         @Url url:String,
         @Body request: Request
-    ): Response<SendOTPResponseX>
+    ): retrofit2.Response<SendOTPResponseX>
 
 
     @POST
     suspend fun resendOTP(
         @Url url:String,
         @Body resendOTP: ResendRequest
-    ):ResendOTPResponse
+    ):Response <ResendOTPResponse>
 
     @POST
     suspend fun verifyOTP(
         @Url url:String,
         @Body resendOTP: VerifyRequest
-    ): VerifyOTPResponse
+    ) :Response <VerifyOTPResponse>
 
     @POST
     suspend fun createUSER(
         @Url url:String,
         @Body createUser: CreateUser
-    ): CreateUserResponse
+    ):Response < CreateUserResponse>
 
     @POST
     suspend fun validateUser(
         @Url url:String,
         @Body validateUser: ValidateRequest
-    ) : ValidateResponse
+    ) :Response < ValidateResponse>
 
     @GET
     suspend fun getFeedbacks(
         @Url url:String
-    ) : FeedbackResponse
+    ) :Response < FeedbackResponse>
 
     @POST
     suspend fun updateFeedback(
         @Url url:String,
         @Body updateFeedback: UpdateFeedback
-    ) : UpdateFeedbackResponse
+    ) :Response <UpdateFeedbackResponse>
 
     @GET
     suspend fun getTransactions(
         @Url url:String
-    ) : TransactionsResponse
+    ) :Response < TransactionsResponse>
 
     @POST
     suspend fun isCreatedUser(
@@ -90,12 +91,12 @@ interface APIService {
     suspend fun updateUser(
         @Url url: String,
         @Body updateUser: UpdateUserRequest
-    ) : UpdateUserResponse
+    ) :Response < UpdateUserResponse>
 
     @GET
     suspend fun checkUsernameAvailability(
         @Url url: String
-    ): UsernameAvailabilityResponse
+    ):Response < UsernameAvailabilityResponse>
 
     @POST
     suspend fun getUserById(

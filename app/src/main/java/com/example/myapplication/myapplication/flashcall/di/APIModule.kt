@@ -111,25 +111,4 @@ object APIModule {
         return context.getSharedPreferences("user_prefs1", Context.MODE_PRIVATE)
     }
 
-    @Provides
-    fun provideStreamVideoBuilder(
-        @ApplicationContext context: Context,
-        sharedPreferences: SharedPreferences
-    ): StreamVideo {
-        val userId = sharedPreferences.getString("user_id", "user_Id") ?: "user_Id"
-        val userName = sharedPreferences.getString("full_name", "Unknown User") ?: "Unknown User"
-        val profileImage = sharedPreferences.getString("photo", "") ?: ""
-        return StreamVideoBuilder(
-            context = context,
-            apiKey = "9jpqevnvhfzv",
-            token = StreamVideo.devToken(userId),
-            user = User(
-                id = userId,
-                name = userName,
-                image = profileImage.ifEmpty { "null" },
-                role = "admin"
-            ),
-            ringNotification = { call -> Notification.Builder(context).build() }
-        ).build()
-    }
 }

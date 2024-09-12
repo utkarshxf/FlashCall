@@ -60,15 +60,11 @@ import java.time.format.DateTimeFormatter
 import kotlin.math.abs
 
 @Composable
-fun WalletScreen(navController: NavController, walletViewModel: WalletViewModel = hiltViewModel(), registrationViewModel: RegistrationViewModel, authenticationViewModel: AuthenticationViewModel = hiltViewModel())
+fun WalletScreen(navController: NavController, walletViewModel: WalletViewModel = hiltViewModel(), authenticationViewModel: AuthenticationViewModel = hiltViewModel())
 {
     val scrollState = rememberScrollState()
     val context = LocalContext.current
     val userData = authenticationViewModel.getUserFromPreferences(context)
-    var name: String? = userData?.fullName
-    if (name == null) {
-        name = registrationViewModel.getStoredUserData("fullName")
-    }
     LaunchedEffect(Unit) {
         userData?._id.let {
             walletViewModel.fetchTransactions(it.toString())

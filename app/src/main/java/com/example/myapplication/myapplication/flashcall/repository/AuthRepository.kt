@@ -16,6 +16,7 @@ import com.example.myapplication.myapplication.flashcall.Data.model.VerifyOTPRes
 import com.example.myapplication.myapplication.flashcall.Data.model.VerifyRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.ValidateResponse
 import com.example.myapplication.myapplication.flashcall.Data.network.APIService
+import com.example.myapplication.myapplication.flashcall.utils.SafeApiRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -23,20 +24,21 @@ import kotlinx.coroutines.flow.flowOn
 import retrofit2.Response
 import javax.inject.Inject
 
-class AuthRepository @Inject constructor(private val apiService: APIService) : IAuthRepo {
+class AuthRepository @Inject constructor(private val apiService: APIService) : IAuthRepo , SafeApiRequest() {
 
     override suspend fun sendOtp(url:String,number: String): Flow<SendOTPResponseX?> {
-        Log.e("phone2", "$number $url" )
-        return flow{
-            val abc = Request(number)
-            Log.e("phone4", "$number $url $abc"  )
-            val response = apiService.sendOTP(url, Request(number))
-            Log.e("phone3", response.toString())
-            if(response.isSuccessful){
-                emit(response.body()!!)
-            }else{
-                emit(null)
-            }
+        return flow {
+            val response1 = safeApiRequest{ apiService.sendOTP(url , Request(number))}
+            emit(response1)
+//            val abc = Request(number)
+//            Log.e("phone4", "$number $url $abc"  )
+//            val response = apiService.sendOTP(url, Request(number))
+//            Log.e("phone3", response.toString())
+//            if(response.isSuccessful){
+//                emit(response.body()!!)
+//            }else{
+//                emit(null)
+//            }
         }.flowOn(Dispatchers.IO)
 
     }
@@ -44,7 +46,7 @@ class AuthRepository @Inject constructor(private val apiService: APIService) : I
     override suspend fun resendOtp(url:String,number: String): Flow<ResendOTPResponse>{
 
         return flow{
-            val response = apiService.resendOTP(url, ResendRequest(number))
+            val response = safeApiRequest {  apiService.resendOTP(url, ResendRequest(number))}
             emit(response)
         }.flowOn(Dispatchers.IO)
 
@@ -53,7 +55,7 @@ class AuthRepository @Inject constructor(private val apiService: APIService) : I
     override suspend fun verifyOtp(url:String,number: String, otp: String): Flow<VerifyOTPResponse>{
 
         return flow{
-            val response = apiService.verifyOTP(url, VerifyRequest(number,otp))
+            val response = safeApiRequest {  apiService.verifyOTP(url, VerifyRequest(number,otp))}
             emit(response)
         }.flowOn(Dispatchers.IO)
     }
@@ -61,7 +63,7 @@ class AuthRepository @Inject constructor(private val apiService: APIService) : I
     override suspend fun validateUser(url:String, token: String): Flow<ValidateResponse>{
 
         return flow {
-            val response = apiService.validateUser(url, ValidateRequest(token))
+            val response = safeApiRequest {  apiService.validateUser(url, ValidateRequest(token))}
             emit(response)
         }.flowOn(Dispatchers.IO)
     }
@@ -69,18 +71,15 @@ class AuthRepository @Inject constructor(private val apiService: APIService) : I
     override suspend fun isCreatedUser(url:String, phone: String): Flow<IsUserCreatedResponse?> {
 
         return flow{
-            Log.e("created2", "$phone $url" )
-            val response = apiService.isCreatedUser(url, Request(phone))
-            Log.e("created3", "$phone $url" )
-            if(response.isSuccessful){
-                emit(response.body()!!)
-            }else{
-                emit(null)
-            }
+            val response = safeApiRequest { apiService.isCreatedUser(url, Request(phone))}
+            emit(response)
+//            if(response.isSuccessful){
+//                emit(response.body()!!)
+//            }else{
+//                emit(null)
+//            }
         }.flowOn(Dispatchers.IO)
     }
-
-
 }
 
 

@@ -8,6 +8,7 @@ import com.example.myapplication.myapplication.flashcall.Data.model.UpdateUserRe
 import com.example.myapplication.myapplication.flashcall.Data.model.UserUpdateData
 import com.example.myapplication.myapplication.flashcall.Data.model.UsernameAvailabilityResponse
 import com.example.myapplication.myapplication.flashcall.Data.network.APIService
+import com.example.myapplication.myapplication.flashcall.utils.SafeApiRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -61,7 +62,7 @@ import javax.inject.Inject
 //    }
 //}
 
-class CreateRepository @Inject constructor(private val apiService: APIService) {
+class CreateRepository @Inject constructor(private val apiService: APIService):SafeApiRequest() {
 
     suspend fun createUser(
         url: String,
@@ -82,27 +83,28 @@ class CreateRepository @Inject constructor(private val apiService: APIService) {
         kyc_status: String
     ): Flow<CreateUserResponse> {
         return flow {
-            val response = apiService.createUSER(
+            val response =  apiService.createUSER(
                 url,
                 CreateUser(
-                    username,
-                    phone,
-                    fullName,
-                    firstName,
-                    lastName,
-                    photo,
-                    profession,
-                    themeSelected,
-                    videoRate,
-                    audioRate,
-                    chatRate,
-                    gender,
-                    dob,
-                    bio,
-                    kyc_status
+                    username = username,
+                    phone = phone,
+                    fullName = fullName,
+                    firstName = firstName,
+                    lastName = lastName,
+                    photo = photo,
+                    profession = profession,
+                    themeSelected = themeSelected,
+                    videoRate = videoRate,
+                    audioRate = audioRate,
+                    chatRate = chatRate,
+                    gender = gender,
+                    dob = dob,
+                    bio = bio,
+                    kyc_status = kyc_status
                 )
             )
-            emit(response)
+
+            emit(safeApiRequest { response})
         }
     }
 
@@ -148,10 +150,10 @@ class CreateRepository @Inject constructor(private val apiService: APIService) {
                 )
             )
             Log.e("resonseUpdateUser", "$response")
-            emit(response)
+            emit(safeApiRequest {  response})
         }
     }
     suspend fun checkUsernameAvailability(username: String): UsernameAvailabilityResponse {
-        return apiService.checkUsernameAvailability("https://app.flashcall.me/api/v1/user/getAllUsernames?username=$username")
+        return safeApiRequest {  apiService.checkUsernameAvailability("https://app.flashcall.me/api/v1/user/getAllUsernames?username=$username")}
     }
 }

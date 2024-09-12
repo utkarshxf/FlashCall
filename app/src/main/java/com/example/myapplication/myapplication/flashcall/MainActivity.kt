@@ -204,7 +204,7 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
             ProfileScreen(navController = navController, hyperKycLauncher, registrationViewModel, authenticationViewModel)
         }
         composable(route = ScreenRoutes.WalletScreen.route) {
-            WalletScreen(navController, walletViewModel, registrationViewModel, authenticationViewModel)
+            WalletScreen(navController, walletViewModel, authenticationViewModel)
         }
 //        composable(route = VideoCallRoute.OngoingVideoCall.videoCallRoute) {
 //            OngoingVideoCall(videoCall = true, viewModel = videoCallViewModel, navController = navController)

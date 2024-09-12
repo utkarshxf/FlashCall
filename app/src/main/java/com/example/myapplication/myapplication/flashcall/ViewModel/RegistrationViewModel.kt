@@ -39,7 +39,6 @@ class RegistrationViewModel @Inject constructor(
         MutableStateFlow<APIResponse<CreateUserResponse>>(APIResponse.Empty)
 
     val createUserState: StateFlow<APIResponse<CreateUserResponse>> = _createUserState
-
     private val _updateUserState =
         MutableStateFlow<APIResponse<UpdateUserResponse>>(APIResponse.Empty)
 
@@ -73,30 +72,29 @@ class RegistrationViewModel @Inject constructor(
             try {
                 // Check if username is available before proceeding
                 val isUsernameAvailable = checkUsernameAvailability(username ?: "")
+                Log.v("error" , "$username")
                 if (isUsernameAvailable) {
                     // Proceed with user creation in the repository
                     repository.createUser(
                         "https://flashcall.vercel.app/api/v1/creator/createUser",
-                        username, // Default value to avoid null
-                        phone ?: "",    // Ensure non-null values are sent to the API
-                        fullName ?: "",
-                        firstName ?: "",
-                        lastName ?: "",
-                        photo ?: "",
-                        profession ?: "",
-                        themeSelected ?: "",
-                        videoRate ?: "",
-                        audioRate ?: "",
-                        chatRate ?: "",
-                        gender ?: "",
-                        dob ?: "",
-                        bio ?: "",
-                        kyc_status ?: ""
+                        username,           // Default value
+                        phone ?: "+910000000000",          // Ensure non-null value
+                        fullName ?: "fullName",             // Ensure non-null value
+                        firstName ?: "firstName",            // Ensure non-null value
+                        lastName ?: "lastName",             // Ensure non-null value
+                        photo ?: "photo", // Default image URL
+                        profession ?: "Android Developer", // Default profession
+                        themeSelected ?: "#000000",      // Default theme color
+                        videoRate ?: "30",               // Default video rate
+                        audioRate ?: "25",               // Default audio rate
+                        chatRate ?: "5",                 // Default chat rate
+                        gender ?: "Male",                // Default gender
+                        dob ?: "01/01/1900",             // Default date of birth
+                        bio ?: "This is the bio of my profile", // Default bio
+                        kyc_status ?: "InComplete"                 // Default KYC status (if available)
                     ).collect { response ->
                         _createUserState.value = APIResponse.Success(response)
                         Log.d("User", "User created successfully")
-
-                        storeResponseInPreferences(response)
                         addDataIntoFirestore(response._id,videoRate , audioRate , chatRate)
                         // Get FCM token
                         val fcmToken = Firebase.messaging.token.await()
@@ -117,6 +115,7 @@ class RegistrationViewModel @Inject constructor(
                                 )
                             }
 
+                        storeResponseInPreferences(response)
                         navController.navigate(ScreenRoutes.SelectSpeciality.route)
                     }
                 } else {
@@ -332,8 +331,6 @@ class RegistrationViewModel @Inject constructor(
             putString("gender", response.updatedUser.gender)
             putString("dob", response.updatedUser.dob)
             putString("bio", response.updatedUser.bio)
-
-            // other fields
             apply()
         }
     }
@@ -341,6 +338,7 @@ class RegistrationViewModel @Inject constructor(
 
     private fun storeResponseInPreferences(response: CreateUserResponse) {
         sharedPreferences.edit().apply {
+            putString("user_id" , response._id)
             putString("username", response.username)
             putString("phone", response.phone)
             putString("fullName", response.fullName)

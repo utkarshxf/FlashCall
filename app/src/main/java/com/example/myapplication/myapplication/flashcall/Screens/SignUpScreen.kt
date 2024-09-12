@@ -90,6 +90,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.navigation.NavHostController
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
+import com.example.myapplication.myapplication.flashcall.Screens.common.CircularLoaderButton
 import com.google.accompanist.insets.LocalWindowInsets
 
 var sendtoken : String? = ""
@@ -275,7 +276,7 @@ fun BottomSignUpBar(
     isKeyboardOpen: Boolean,
     onKeyboardToggle: (Boolean) -> Unit
 ) {
-
+    var loading by remember {mutableStateOf(false)}
     val context = LocalContext.current
     var phoneNumber by remember {
         mutableStateOf("")
@@ -437,11 +438,11 @@ fun BottomSignUpBar(
                         }
 
                         Box(contentAlignment = Alignment.CenterEnd) {
-                            Button(
+                            CircularLoaderButton(
                                 onClick = {
                                     viewModel.signUP(
                                         phoneNumber = phoneNumber, navController, sendtoken
-                                    )
+                                    ) {loading = it}
                                 },
                                 modifier = Modifier
                                     .padding(top = 5.dp, end = 1.dp),
@@ -449,15 +450,11 @@ fun BottomSignUpBar(
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = MainColor,
                                     contentColor = Color.White
-                                )
-                            ) {
-                                Text(
-                                    text = "Get OTP",
-                                    style = TextStyle(
-                                        fontSize = 10.sp
-                                    )
-                                )
-                            }
+                                ),
+                                text = "Get OTP",
+                                loading = loading,
+                                enabled = phoneNumber.length == 10
+                            )
                         }
                     }
                 }

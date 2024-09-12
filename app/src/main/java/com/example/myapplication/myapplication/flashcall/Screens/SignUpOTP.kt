@@ -16,12 +16,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,7 +36,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.semantics.Role.Companion.Button
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -52,6 +49,7 @@ import com.composeuisuite.ohteepee.configuration.OhTeePeeConfigurations
 //import com.example.myapplication.myapplication.flashcall.Components.OtpView
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
+import com.example.myapplication.myapplication.flashcall.Screens.common.CircularLoaderButton
 import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
 import com.example.myapplication.myapplication.flashcall.ui.theme.Background
 import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
@@ -60,13 +58,11 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.OTPBorder
 import com.example.myapplication.myapplication.flashcall.ui.theme.PrimaryText
 import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryText
 import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
-import kotlinx.coroutines.delay
 
     var resendToken : String? = null
 var verificationToken : String? = null
 @Composable
 fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) {
-
     var isKeyboardOpen by remember { mutableStateOf(false) }
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -109,7 +105,11 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
                      onKeyboardToggle: (Boolean) -> Unit) {
         var otpValue by remember { mutableStateOf("") }
         var phone = viewModel.phoneNumber.value
+        var loading by remember {
+            mutableStateOf(false)
+        }
 
+        var loadingResend by remember { mutableStateOf(false) }
         val resendOTPState by viewModel.resendOTPState.collectAsState()
         val sendOTPState by viewModel.sendOTPState.collectAsState()
         val verifyOTPState by viewModel.verifyOTPState.collectAsState()
@@ -119,7 +119,8 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
         val focusRequester = remember { FocusRequester() }
         val focusManager = LocalFocusManager.current
         Surface(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
                 .pointerInput(Unit) {
                     // Detect taps anywhere on the screen
                     detectTapGestures {
@@ -263,11 +264,11 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
                                                 // Automatically call verifyOTP when otpValue is exactly 6 digits
                                                 keyboardController?.hide()
                                                 if (resendToken != null) {
-                                                    viewModel.verifyOTP(phone, otpValue, resendToken, navController)
+                                                    viewModel.verifyOTP(phone, otpValue, resendToken, navController){loading = it}
                                                 } else {
-                                                    viewModel.verifyOTP(phone, otpValue, verificationToken, navController)
+                                                    viewModel.verifyOTP(phone, otpValue, verificationToken, navController){ loading = it}
                                                 }
-                                                viewModel.iCreatedUser(phone)
+                                                viewModel.iCreatedUser(phone){loading = it}
                                             }
                                         }
                                     },
@@ -323,11 +324,11 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
                                         if (otpValue.length == 6) {
                                             // Automatically call verifyOTP when otpValue is exactly 6 digits
                                             if (resendToken != null) {
-                                                viewModel.verifyOTP(phone, otpValue, resendToken, navController)
+                                                viewModel.verifyOTP(phone, otpValue, resendToken, navController){loading = it}
                                             } else {
-                                                viewModel.verifyOTP(phone, otpValue, verificationToken, navController)
+                                                viewModel.verifyOTP(phone, otpValue, verificationToken, navController){loading = it}
                                             }
-                                            viewModel.iCreatedUser(phone)
+                                            viewModel.iCreatedUser(phone){}
                                         }
                                     }
                                 },
@@ -359,7 +360,7 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
                             .clickable {
-                                viewModel.resendOTP(phone)
+                                viewModel.resendOTP(phone) { loadingResend = it}
                             },
                         color = PrimaryText,
                         style = TextStyle(
@@ -369,13 +370,13 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
                         )
                     )
 
-                    Button(
+                    CircularLoaderButton(
                         onClick = {
                             if (resendToken != null)
-                                viewModel.verifyOTP(phone, otpValue, resendToken, navController)
+                                viewModel.verifyOTP(phone, otpValue, resendToken, navController){loading = it}
                             else
-                                viewModel.verifyOTP(phone, otpValue, verificationToken, navController)
-                                viewModel.iCreatedUser(phone)
+                                viewModel.verifyOTP(phone, otpValue, verificationToken, navController){loading = it}
+                                viewModel.iCreatedUser(phone){loading = it}
                         },
                         modifier = Modifier
                             .align(CenterHorizontally)
@@ -384,15 +385,11 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MainColor,
                             contentColor = Color.White
-                        )
-                    ) {
-                        Text(
-                            text = "Verify",
-                            style = TextStyle(
-                                fontSize = 10.sp
-                            )
-                        )
-                    }
+                        ),
+                        text = "Verify",
+                        loading = loading,
+                        enabled = !loadingResend
+                    )
 
                     Spacer(modifier = Modifier.height(10.dp))
 

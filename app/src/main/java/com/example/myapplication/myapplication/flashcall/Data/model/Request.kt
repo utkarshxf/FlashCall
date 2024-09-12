@@ -20,7 +20,6 @@ data class VerifyRequest(
 )
 
 data class CreateUser(
-
     @SerializedName("username")
     val username : String,
     @SerializedName("phone")
@@ -51,6 +50,10 @@ data class CreateUser(
     val bio : String,
     @SerializedName("kyc_status")
     val kyc_status : String
+)
+data class Link(
+    val url: String,
+    val description: String?
 )
 
 

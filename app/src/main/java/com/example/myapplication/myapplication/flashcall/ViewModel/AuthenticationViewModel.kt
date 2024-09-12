@@ -44,14 +44,10 @@ class AuthenticationViewModel @Inject constructor(
     private val userPref: userPref,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
-
     var inProcess = mutableStateOf(false)
     val eventMutableState = mutableStateOf<Events<String>?>(null)
-
     private var _isUserLoggedIn = false
     var isUserLoggedIn = _isUserLoggedIn
-
-
     private val _sendOTPState = MutableStateFlow<APIResponse<SendOTPResponseX>>(APIResponse.Empty)
     val sendOTPState: StateFlow<APIResponse<SendOTPResponseX>> = _sendOTPState
 
@@ -70,88 +66,100 @@ class AuthenticationViewModel @Inject constructor(
     val isCreatedUserState: StateFlow<IsUserCreatedResponse?> = _isCreatedUserState
 
 
-    fun signUP(phoneNumber: String, navController: NavController, sendToke: String?) {
-
+    fun signUP(phoneNumber: String, navController: NavController, sendToke: String? , loading: (Boolean) -> Unit) {
+        _phone.value = phoneNumber  // Update the ViewModel's phone state
+        loading(true)
         viewModelScope.launch {
             _sendOTPState.value = APIResponse.Loading
             try {
-                Log.e("phone", "phone No:$phoneNumber")
                 authenticationRepository.sendOtp(
                     "https://flashcall.vercel.app/api/v1/send-otp", phoneNumber
                 ).collect {
                     if (it == null) {
-                        _sendOTPState.value = APIResponse.Error("Exception Occured")
-                        Log.e("SignUpError", "Exception Occured")
+                        _sendOTPState.value = APIResponse.Error("Exception Occurred")
+                        Log.e("SignUpError", "Exception Occurred")
+                        loading(false)
                     } else {
                         _sendOTPState.value = APIResponse.Success(it)
-                        _phone.value = phoneNumber
-                        navController.navigate("SignUpOTP")
+                        Log.e("SignUpError", "$phoneNumber")
+                        navController.navigate(ScreenRoutes.SignUpOTP.route)
+                        loading(false)
                     }
                 }
             } catch (e: Exception) {
                 _sendOTPState.value = APIResponse.Error(e.message ?: "OTP SEND ERROR")
+                loading(false)
             }
-
         }
     }
 
-
-    fun resendOTP(phone: String) {
+    fun resendOTP(phone: String, loading: (Boolean) -> Unit) {
 
         _resendOTPState.value = APIResponse.Loading
+        loading(true)
         viewModelScope.launch {
             try {
                 authenticationRepository.resendOtp(
                     "https://flashcall.vercel.app/api/v1/resend-otp", phone
                 ).collect {
-                        _resendOTPState.value = APIResponse.Success(it)
-                    }
+                    _resendOTPState.value = APIResponse.Success(it)
+                    loading(false)
+                }
             } catch (e: Exception) {
                 _resendOTPState.value = APIResponse.Error(e.message ?: "OTP RESEND ERROR")
+                loading(false)
             }
-
         }
     }
 
-    fun verifyOTP(phone: String, otp: String, token: String?, navController: NavController) {
+    fun verifyOTP(
+        phone: String,
+        otp: String,
+        token: String?,
+        navController: NavController,
+        loading: (Boolean) -> Unit
+    ) {
         _verifyOTPState.value = APIResponse.Loading
+        loading(true)
         try {
             viewModelScope.launch {
                 try {
+                    Log.e("qwerty" , "$phone $otp" )
                     authenticationRepository.verifyOtp(
-                        "https://flashcall.vercel.app/api/v1/verify-otp", phone, otp
+                        "https://app.flashcall.me/api/v1/verify-otp", phone, otp
                     ).collect {
-                            _verifyOTPState.value = APIResponse.Success(it)
-                            Log.e("it.token!=null" , it.token.toString())
-                            if(it.token!=null)
-                            {
-                                navController.navigate(ScreenRoutes.LoginDoneScreen.route) {
+                        _verifyOTPState.value = APIResponse.Success(it)
+                        if (it.token != null) {
+                            navController.navigate(ScreenRoutes.LoginDoneScreen.route) {
+                                popUpTo(ScreenRoutes.LoginDoneScreen.route) {
+                                    inclusive = true
+                                }
+                            }
+                            loading(false)
+                            delay(2000)
+                            if (isCreatedUserState.value != null) {
+                                saveTokenToPreferences(context, it.token)
+                                loading(false)
+                                navController.navigate(ScreenRoutes.MainScreen.route) {
                                     popUpTo(ScreenRoutes.LoginDoneScreen.route) {
                                         inclusive = true
                                     }
                                 }
-                                delay(2000)
-                                if (isCreatedUserState.value != null) {
-                                    saveTokenToPreferences(context, it.token)
-                                    navController.navigate(ScreenRoutes.MainScreen.route) {
-
-                                        popUpTo(ScreenRoutes.LoginDoneScreen.route) {
-                                            inclusive = true
-                                        }
-                                    }
-                                } else {
-                                    saveTokenToPreferences(context, it.token)
-                                    navController.navigate(ScreenRoutes.RegistrationScreen.route) {
-                                        popUpTo(ScreenRoutes.LoginDoneScreen.route) {
-                                            inclusive = true
-                                        }
+                            } else {
+                                saveTokenToPreferences(context, it.token)
+                                loading(false)
+                                navController.navigate(ScreenRoutes.RegistrationScreen.route) {
+                                    popUpTo(ScreenRoutes.LoginDoneScreen.route) {
+                                        inclusive = true
                                     }
                                 }
                             }
                         }
+                    }
                 } catch (e: HttpException) {
                     Log.e("verifyOTP", "HTTP error code: ${e.code()} - ${e.message()}")
                     _verifyOTPState.value = APIResponse.Error("Invalid OTP or Bad Request")
+                    loading(false)
                     Toast.makeText(
                         navController.context, "Invalid OTP. Please try again.", Toast.LENGTH_LONG
                     ).show()
@@ -161,6 +169,7 @@ class AuthenticationViewModel @Inject constructor(
         } catch (e: Exception) {
             // Handle other exceptions (e.g., network issues)
             Log.e("verifyOTP", "Exception: ${e.localizedMessage}")
+            loading(false)
             _verifyOTPState.value =
                 APIResponse.Error("An unexpected error occurred. Please try again.")
             Toast.makeText(
@@ -197,27 +206,31 @@ class AuthenticationViewModel @Inject constructor(
         }
     }
 
-    fun iCreatedUser(phone: String) {
+    fun iCreatedUser(phone: String, loading: (Boolean) -> Unit) {
+        loading(true)
         viewModelScope.launch {
             try {
                 // Collect the Flow<IsUserCreatedResponse?>
                 authenticationRepository.isCreatedUser(
                     "https://flashcall.vercel.app/api/v1/user/getUserByPhone", phone
                 ).collect { userData ->
-                        if (userData != null) {
-                            // Process the user data here
-                            d("iCreatedUser", "User data fetched successfully: $userData")
-                            _isCreatedUserState.value = userData
-                            saveUserToPreferences(context, userData)
-                        } else {
-                            Log.e("iCreatedUser", "User not found")
-                            // Handle "No User Found" case here
-                            _isCreatedUserState.value = null
-                        }
+                    if (userData != null) {
+                        // Process the user data here
+                        d("iCreatedUser", "User data fetched successfully: $userData")
+                        _isCreatedUserState.value = userData
+                        saveUserToPreferences(context, userData)
+                        loading(false)
+                    } else {
+                        Log.e("iCreatedUser", "User not found")
+                        // Handle "No User Found" case here
+                        _isCreatedUserState.value = null
+                        loading(false)
                     }
+                }
             } catch (e: Exception) {
                 Log.e("iCreatedUser", "Exception: ${e.localizedMessage}")
                 // Handle exceptions here
+                loading(false)
             }
         }
     }
@@ -236,7 +249,7 @@ class AuthenticationViewModel @Inject constructor(
     fun deleteTokenFromPreferences() {
         sharedPreferences.edit().apply {
             remove("user_token") // Remove the token
-            apply() // Apply changes asynchronously
+            apply()
         }
     }
 
@@ -250,9 +263,9 @@ class AuthenticationViewModel @Inject constructor(
         val sharedPreferences: SharedPreferences =
             context.getSharedPreferences("user_prefs1", Context.MODE_PRIVATE)
         sharedPreferences.edit().apply {
-
             // Save each value to SharedPreferences
             putString("user_id", userData._id)
+            putString("_id", userData._id)
             putString("username", userData.username)
             putString("phone", userData.phone)
             putString("full_name", userData.fullName)
@@ -264,16 +277,12 @@ class AuthenticationViewModel @Inject constructor(
             putString("profession", userData.profession)
             putString("dob", userData.dob)
             putString("gender", userData.gender)
-            putFloat(
-                "wallet_balance", userData.walletBalance?.toFloat() ?: 0f
-            )  // SharedPreferences does not support Double
+            putFloat("wallet_balance", userData.walletBalance?.toFloat() ?: 0f)
             putBoolean("audio_allowed", userData.audioAllowed ?: false)
             putBoolean("chat_allowed", userData.chatAllowed ?: false)
             putBoolean("video_allowed", userData.videoAllowed ?: false)
             putString("user_type", userData.userType)
             putString("message", userData.message)
-
-            // Apply the changes
             apply()
         }
     }
@@ -282,7 +291,6 @@ class AuthenticationViewModel @Inject constructor(
         val sharedPreferences: SharedPreferences =
             context.getSharedPreferences("user_prefs1", Context.MODE_PRIVATE)
 
-        // Fetch each value from SharedPreferences
         val userId = sharedPreferences.getString("user_id", null)
         val username = sharedPreferences.getString("username", null)
         val phone = sharedPreferences.getString("phone", null)
@@ -328,6 +336,4 @@ class AuthenticationViewModel @Inject constructor(
             null // Return null if no user data is found
         }
     }
-
-
 }

@@ -590,7 +590,6 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                     colors = ButtonDefaults.buttonColors(MainColor),
 //                    enabled = imageUploadCounter,
                     onClick = {
-                        Log.d("Image", "Image: $imageUrl")
                         registrationViewModel.createUser(
                            username = userId,
                         phone = phoneNumber,

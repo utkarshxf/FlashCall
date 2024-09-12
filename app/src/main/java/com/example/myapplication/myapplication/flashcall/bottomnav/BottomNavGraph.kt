@@ -65,7 +65,7 @@ fun BottomNavGraph(
         }
         composable(route = ScreenRoutes.WalletScreen.route) {
             WalletScreen(
-                navController, walletViewModel, registrationViewModel, authenticationViewModel
+                navController, walletViewModel, authenticationViewModel
             )
         }
         composable(route = ScreenRoutes.ProfileScreen.route) {
