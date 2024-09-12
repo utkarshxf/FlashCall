@@ -78,7 +78,6 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
-import com.example.myapplication.myapplication.flashcall.BaseClass
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.firestore.UserServicesResponse
@@ -118,15 +117,6 @@ fun HomeScreen(
         mutableStateOf("")
     }
     var profession by remember {
-        mutableStateOf("")
-    }
-    var videoRate by remember {
-        mutableStateOf("")
-    }
-    var audioRate by remember {
-        mutableStateOf("")
-    }
-    var chatRate by remember {
         mutableStateOf("")
     }
     var gender by remember {
@@ -178,6 +168,7 @@ fun HomeScreen(
     val createdUserState2 by authenticationViewModel.isCreatedUserState.collectAsState()
     val createUserState1 by registrationViewModel.createUserState.collectAsState()
     val userData = authenticationViewModel.getUserFromPreferences(context)
+//    Log.v("qwerty" , userData.toString())
     if (userData != null) {
         uid = userData._id ?: ""
         username = userData.username ?: ""
@@ -247,8 +238,11 @@ fun HomeScreen(
                                 .padding(top = 16.dp, end = 8.dp),
                             horizontalArrangement = Arrangement.Absolute.Right,
                         ) {
-                            Button(colors = ButtonDefaults.buttonColors(Color.White),
-                                onClick = { navController.navigate(ScreenRoutes.EditScreen.route) }) {
+                            Button(colors = ButtonDefaults.buttonColors(Color.White), onClick = {
+                                navController.navigate(ScreenRoutes.EditScreen.route) {
+                                    popUpTo(ScreenRoutes.MainScreen.route) { inclusive = true }
+                                }
+                            }) {
                                 Text(
                                     text = "edit profile", style = TextStyle(
                                         fontFamily = arimoFontFamily,
@@ -594,7 +588,7 @@ fun ServicesSection(
     LaunchedEffect(Unit) {
         registrationViewModel.getAllServiceData(creatorUid)
     }
-    if(serviceData.value is APIResponse.Success) {
+    if (serviceData.value is APIResponse.Success) {
         LaunchedEffect(Unit) {
             val response = (serviceData.value as APIResponse.Success<UserServicesResponse>).data
             response.prices.let {
@@ -608,7 +602,7 @@ fun ServicesSection(
                 chatService = it.chat
             }
 
-            serviceSelected = response.services.myServices ?: false
+            serviceSelected = response.services.myServices
         }
     }
 
@@ -638,17 +632,15 @@ fun ServicesSection(
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Switch(
-                    checked = serviceSelected,
-                    onCheckedChange = {
+                    checked = serviceSelected, onCheckedChange = {
                         serviceSelected = it
-                        registrationViewModel.updateServices(userId = creatorUid , masterToggle = it) },
-                    colors = SwitchDefaults.colors(
+                        registrationViewModel.updateServices(userId = creatorUid, masterToggle = it)
+                    }, colors = SwitchDefaults.colors(
                         checkedThumbColor = Color.White,
                         checkedTrackColor = MainColor,
                         uncheckedThumbColor = Color.White,
                         uncheckedTrackColor = SwitchColor
-                    ),
-                    modifier = Modifier
+                    ), modifier = Modifier
                         .width(50.dp)
                         .padding(top = 5.dp)
                 )
@@ -679,7 +671,9 @@ fun ServicesSection(
                     onCheckedChange = {
                         if (serviceSelected) {
                             videoService = it
-                            registrationViewModel.updateServices(userId = creatorUid , servicesVideo = it)
+                            registrationViewModel.updateServices(
+                                userId = creatorUid, servicesVideo = it
+                            )
                         }
                     },
                     serviceSelected = serviceSelected,
@@ -701,7 +695,9 @@ fun ServicesSection(
                     onCheckedChange = {
                         if (serviceSelected) {
                             audioService = it
-                            registrationViewModel.updateServices(userId = creatorUid , servicesAudio = it)
+                            registrationViewModel.updateServices(
+                                userId = creatorUid, servicesAudio = it
+                            )
                         }
                     },
                     serviceSelected = serviceSelected,
@@ -723,7 +719,9 @@ fun ServicesSection(
                     onCheckedChange = {
                         if (serviceSelected) {
                             chatService = it
-                            registrationViewModel.updateServices(userId = creatorUid , servicesChat = it)
+                            registrationViewModel.updateServices(
+                                userId = creatorUid, servicesChat = it
+                            )
                         }
                     },
                     serviceSelected = serviceSelected,

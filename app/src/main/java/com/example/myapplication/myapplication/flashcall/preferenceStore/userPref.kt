@@ -5,8 +5,6 @@ import kotlinx.coroutines.flow.Flow
 
 val USER_KEY = stringPreferencesKey("user_Token")
 interface userPref {
-
     fun getToken() : Flow<String>
-
     suspend fun saveToken(uid: String)
 }

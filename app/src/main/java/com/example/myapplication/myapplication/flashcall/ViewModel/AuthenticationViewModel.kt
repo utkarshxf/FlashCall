@@ -23,6 +23,7 @@ import com.example.myapplication.myapplication.flashcall.Data.model.SendOTPRespo
 import com.example.myapplication.myapplication.flashcall.Data.model.VerifyOTPResponse
 import com.example.myapplication.myapplication.flashcall.preferenceStore.userPref
 import com.example.myapplication.myapplication.flashcall.repository.AuthRepository
+import com.example.myapplication.myapplication.flashcall.repository.UserPreferencesRepository
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -42,6 +43,7 @@ import javax.inject.Inject
 class AuthenticationViewModel @Inject constructor(
     private val authenticationRepository: AuthRepository,
     private val userPref: userPref,
+    private val userPreferencesRepository:UserPreferencesRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
     var inProcess = mutableStateOf(false)
@@ -218,7 +220,8 @@ class AuthenticationViewModel @Inject constructor(
                         // Process the user data here
                         d("iCreatedUser", "User data fetched successfully: $userData")
                         _isCreatedUserState.value = userData
-                        saveUserToPreferences(context, userData)
+//                        saveUserToPreferences(context, userData)
+                        userPreferencesRepository.saveUser(userData)
                         loading(false)
                     } else {
                         Log.e("iCreatedUser", "User not found")
@@ -239,7 +242,6 @@ class AuthenticationViewModel @Inject constructor(
         context.getSharedPreferences("user_prefs1", Context.MODE_PRIVATE)
 
     fun saveTokenToPreferences(context: Context, token: String) {
-
         sharedPreferences.edit().apply {
             putString("user_token", token)
             apply() // Apply changes asynchronously
@@ -249,7 +251,7 @@ class AuthenticationViewModel @Inject constructor(
     fun deleteTokenFromPreferences() {
         sharedPreferences.edit().apply {
             remove("user_token") // Remove the token
-            apply()
+            apply() // Apply changes asynchronously
         }
     }
 
@@ -260,80 +262,11 @@ class AuthenticationViewModel @Inject constructor(
     }
 
     fun saveUserToPreferences(context: Context, userData: IsUserCreatedResponse) {
-        val sharedPreferences: SharedPreferences =
-            context.getSharedPreferences("user_prefs1", Context.MODE_PRIVATE)
-        sharedPreferences.edit().apply {
-            // Save each value to SharedPreferences
-            putString("user_id", userData._id)
-            putString("_id", userData._id)
-            putString("username", userData.username)
-            putString("phone", userData.phone)
-            putString("full_name", userData.fullName)
-            putString("first_name", userData.firstName)
-            putString("last_name", userData.lastName)
-            putString("photo", userData.photo)
-            putString("theme_selected", userData.themeSelected)
-            putString("bio", userData.bio)
-            putString("profession", userData.profession)
-            putString("dob", userData.dob)
-            putString("gender", userData.gender)
-            putFloat("wallet_balance", userData.walletBalance?.toFloat() ?: 0f)
-            putBoolean("audio_allowed", userData.audioAllowed ?: false)
-            putBoolean("chat_allowed", userData.chatAllowed ?: false)
-            putBoolean("video_allowed", userData.videoAllowed ?: false)
-            putString("user_type", userData.userType)
-            putString("message", userData.message)
-            apply()
-        }
+        userPreferencesRepository.saveUser(userData)
     }
 
     fun getUserFromPreferences(context: Context): IsUserCreatedResponse? {
-        val sharedPreferences: SharedPreferences =
-            context.getSharedPreferences("user_prefs1", Context.MODE_PRIVATE)
-
-        val userId = sharedPreferences.getString("user_id", null)
-        val username = sharedPreferences.getString("username", null)
-        val phone = sharedPreferences.getString("phone", null)
-        val fullName = sharedPreferences.getString("full_name", null)
-        val firstName = sharedPreferences.getString("first_name", null)
-        val lastName = sharedPreferences.getString("last_name", null)
-        val photo = sharedPreferences.getString("photo", null)
-        val themeSelected = sharedPreferences.getString("theme_selected", null)
-        val bio = sharedPreferences.getString("bio", null)
-        val profession = sharedPreferences.getString("profession", null)
-        val dob = sharedPreferences.getString("dob", null)
-        val gender = sharedPreferences.getString("gender", null)
-        val walletBalance = sharedPreferences.getFloat("wallet_balance", 0f).toDouble()
-        val audioAllowed = sharedPreferences.getBoolean("audio_allowed", false)
-        val chatAllowed = sharedPreferences.getBoolean("chat_allowed", false)
-        val videoAllowed = sharedPreferences.getBoolean("video_allowed", false)
-        val userType = sharedPreferences.getString("user_type", null)
-        val message = sharedPreferences.getString("message", null)
-
-        return if (userId != null) {
-            // Create the user data object
-            IsUserCreatedResponse(
-                _id = userId,
-                username = username,
-                phone = phone,
-                fullName = fullName,
-                firstName = firstName,
-                lastName = lastName,
-                photo = photo,
-                themeSelected = themeSelected,
-                bio = bio,
-                profession = profession,
-                dob = dob,
-                gender = gender,
-                walletBalance = walletBalance,
-                audioAllowed = audioAllowed,
-                chatAllowed = chatAllowed,
-                videoAllowed = videoAllowed,
-                userType = userType,
-                message = message
-            )
-        } else {
-            null // Return null if no user data is found
-        }
+       return userPreferencesRepository.getUser()
     }
+
 }

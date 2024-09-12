@@ -125,8 +125,12 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
     var bio by remember {
         mutableStateOf("")
     }
-    val (firstName, lastName) = name.split(" ", limit = 2).let {
-        if (it.size == 2) it else listOf(it[0], "")
+    val (firstName, lastName) = name.trim().split(" ", limit = 2).let {
+        when {
+            it.isEmpty() -> "" to ""
+            it.size == 1 -> it[0] to ""
+            else -> it[0] to it[1]
+        }
     }
     Log.d("First Name", "$firstName")
     val context = LocalContext.current

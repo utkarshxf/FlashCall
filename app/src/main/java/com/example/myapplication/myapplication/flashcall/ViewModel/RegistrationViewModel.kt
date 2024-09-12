@@ -12,6 +12,8 @@ import com.example.myapplication.myapplication.flashcall.Data.model.CreateUserRe
 import com.example.myapplication.myapplication.flashcall.Data.model.UpdateUserResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.firestore.UserServicesResponse
 import com.example.myapplication.myapplication.flashcall.repository.CreateRepository
+import com.example.myapplication.myapplication.flashcall.repository.UserPreferencesRepository
+import com.example.myapplication.myapplication.flashcall.utils.PreferencesKey
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
@@ -30,6 +32,7 @@ import javax.inject.Inject
 class RegistrationViewModel @Inject constructor(
     private val repository: CreateRepository,
     private val firestore: FirebaseFirestore,
+    private val userPreferencesRepository: UserPreferencesRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
     private val sharedPreferences: SharedPreferences =
@@ -115,7 +118,8 @@ class RegistrationViewModel @Inject constructor(
                                 )
                             }
 
-                        storeResponseInPreferences(response)
+//                        storeResponseInPreferences(response)
+                        userPreferencesRepository.storeResponseInPreferences(response)
                         navController.navigate(ScreenRoutes.SelectSpeciality.route)
                     }
                 } else {
@@ -236,7 +240,7 @@ class RegistrationViewModel @Inject constructor(
                     chatRate = chatRate,
                 ).collect { response ->
                     _updateUserState.value = APIResponse.Success(response)
-                    storeUpdateUserResponseInPreferences(response)
+                    userPreferencesRepository.storeUpdateUserResponseInPreferences(response)
                 }
             } catch (e: Exception) {
                 Log.e("error", "User update failed: ${e.message}")
@@ -279,7 +283,8 @@ class RegistrationViewModel @Inject constructor(
                     username = username
                 ).collect { response ->
                     _updateUserState.value = APIResponse.Success(response)
-                    storeUpdateUserResponseInPreferences(response)
+                    Log.v("qwerty123" , response.updatedUser.toString())
+                    userPreferencesRepository.storeUpdateUserResponseInPreferences(response)
                 }
             } catch (e: Exception) {
                 Log.e("error", "User update failed: ${e.message}")
@@ -293,7 +298,7 @@ class RegistrationViewModel @Inject constructor(
             _serviceState.value = APIResponse.Loading // Set loading state
 
             try {
-                val getUserID = getStoredUserData("user_id")
+                val getUserID = userPreferencesRepository.getStoredUserData(PreferencesKey.UserId.key)
                 val firestore = FirebaseFirestore.getInstance()
                 val documentSnapshot = withContext(Dispatchers.IO) {
                     firestore.collection("services").document(getUserID!!).get().await()
@@ -316,53 +321,8 @@ class RegistrationViewModel @Inject constructor(
         }
     }
 
-    private fun storeUpdateUserResponseInPreferences(response: UpdateUserResponse) {
-        sharedPreferences.edit().apply {
-            putString("username", response.updatedUser.username)
-            putString("phone", response.updatedUser.phone)
-            putString("fullName", response.updatedUser.fullName)
-            putString("profession", response.updatedUser.profession)
-            putString("themeSelected", response.updatedUser.themeSelected)
-            putString("photo", response.updatedUser.photo)
-            putString("phone", response.updatedUser.phone)
-            putString("videoRate", response.updatedUser.videoRate)
-            putString("audioRate", response.updatedUser.audioRate)
-            putString("chatRate", response.updatedUser.chatRate)
-            putString("gender", response.updatedUser.gender)
-            putString("dob", response.updatedUser.dob)
-            putString("bio", response.updatedUser.bio)
-            apply()
-        }
-    }
-
-
-    private fun storeResponseInPreferences(response: CreateUserResponse) {
-        sharedPreferences.edit().apply {
-            putString("user_id" , response._id)
-            putString("username", response.username)
-            putString("phone", response.phone)
-            putString("fullName", response.fullName)
-            putString("firstName", response.firstName)
-            putString("lastName", response.lastName)
-            putString("photo", response.photo)
-            putString("profession", response.profession)
-            putString("themeSelected", response.themeSelected)
-            putString("videoRate", response.videoRate)
-            putString("audioRate", response.audioRate)
-            putString("chatRate", response.chatRate)
-            putString("gender", response.gender)
-            putString("dob", response.dob)
-            putString("bio", response.bio)
-            putString("_id", response._id)
-            putString("createdAt", response.createdAt)
-            putString("updatedAt", response.updatedAt)
-            putString("__v", response.__v)
-            apply()
-        }
-    }
-
-    fun getStoredUserData(key: String): String? {
-        return sharedPreferences.getString(key, null)
+    fun getStoredUserData(preferencesKey: String): String? {
+        return userPreferencesRepository.getStoredUserData(preferencesKey)
     }
 }
 

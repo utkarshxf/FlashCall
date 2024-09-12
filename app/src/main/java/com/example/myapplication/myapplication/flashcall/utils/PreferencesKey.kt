@@ -1,0 +1,28 @@
+package com.example.myapplication.myapplication.flashcall.utils
+
+sealed class PreferencesKey(val key: String) {
+    data object UserId : PreferencesKey("user_id")
+    data object Username : PreferencesKey("username")
+    data object Phone : PreferencesKey("phone")
+    data object FullName : PreferencesKey("fullName")
+    data object FirstName : PreferencesKey("firstName")
+    data object LastName : PreferencesKey("lastName")
+    data object Photo : PreferencesKey("photo")
+    data object Profession : PreferencesKey("profession")
+    data object ThemeSelected : PreferencesKey("themeSelected")
+    data object Bio : PreferencesKey("bio")
+    data object Dob : PreferencesKey("dob")
+    data object Gender : PreferencesKey("gender")
+    data object WalletBalance : PreferencesKey("walletBalance")
+    data object AudioAllowed : PreferencesKey("audioAllowed")
+    data object ChatAllowed : PreferencesKey("chatAllowed")
+    data object VideoAllowed : PreferencesKey("videoAllowed")
+    data object UserType : PreferencesKey("userType")
+    data object Message : PreferencesKey("message")
+    data object CreatedAt : PreferencesKey("createdAt")
+    data object UpdatedAt : PreferencesKey("updatedAt")
+    data object V : PreferencesKey("__v")
+    data object VideoRate : PreferencesKey("videoRate")
+    data object AudioRate : PreferencesKey("audioRate")
+    data object ChatRate : PreferencesKey("chatRate")
+}
