@@ -85,7 +85,7 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.PrimaryBackGro
 import com.example.myapplication.myapplication.flashcall.ui.theme.SwitchColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
 
-var uriImg: Uri? = null
+//var uriImg: Uri? = null
 var creatorUid: String = ""
 var token: String = ""
 var creatorUserName: String = ""
@@ -134,28 +134,28 @@ fun HomeScreen(
     }
     val context = LocalContext.current
 
-    if (uriImg != null) {
-        uriImg?.let { uri ->
-            uploadImageToFirebase(uri, context) { url ->
-                imageUrl = url
-                registrationViewModel.updateUser(
-                    userId = uid,
-                    username = username,
-                    phone = phone,
-                    fullName = name,
-                    firstName = firstName,
-                    lastName = lastName,
-                    photo = imageUrl,
-                    profession = profession,
-                    themeSelected = themeSelected,
-                    gender = gender,
-                    dob = dob,
-                    bio = bio,
-                    navController = navController
-                ){}
-            }
-        }
-    }
+//    if (uriImg != null) {
+//        uriImg?.let { uri ->
+//            uploadImageToFirebase(uri, context) { url ->
+//                imageUrl = url
+//                registrationViewModel.updateUser(
+//                    userId = uid,
+//                    username = username,
+//                    phone = phone,
+//                    fullName = name,
+//                    firstName = firstName,
+//                    lastName = lastName,
+//                    photo = imageUrl,
+//                    profession = profession,
+//                    themeSelected = themeSelected,
+//                    gender = gender,
+//                    dob = dob,
+//                    bio = bio,
+//                    navController = navController
+//                ){}
+//            }
+//        }
+//    }
     val createUserState1 by registrationViewModel.createUserState.collectAsState()
     val userData = authenticationViewModel.getUserFromPreferences(context)
 //    Log.v("qwerty" , userData.toString())
@@ -268,9 +268,8 @@ fun HomeScreen(
                             val launcher = rememberLauncherForActivityResult(
                                 contract = ActivityResultContracts.GetContent()
                             ) { uri: Uri? ->
-
                                 uri?.let {
-                                    uriImg = it
+//                                    uriImg = it
                                     imageUri.value = it.toString()
                                 }
                             }

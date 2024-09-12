@@ -92,6 +92,7 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamil
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileScreen(navController: NavController,registrationViewModel: RegistrationViewModel = hiltViewModel(), authenticationViewModel: AuthenticationViewModel= hiltViewModel()) {
+    var uriImg: Uri? = null
 
     var uid by remember {
         mutableStateOf("")
@@ -136,11 +137,10 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
     Log.d("First Name", "$firstName")
     val context = LocalContext.current
     if (uriImg != null) {
-        uriImg?.let { uri ->
+        uriImg.let { uri ->
             uploadImageToFirebase(uri, context) { url ->
                 imageUrl = url
-//                Toast.makeText(context, "Image uploaded successfully", Toast.LENGTH_SHORT).show()
-                registrationViewModel.updateUser(
+                registrationViewModel.updat9eUser(
                     userId = uid,
                     username = username,
                     phone = phone,
@@ -233,10 +233,6 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
     var edit_profile_bio by remember {
         mutableStateOf("")
     }
-
-
-
-
 
     var colorSelected by remember {
         mutableStateOf(false)

@@ -203,20 +203,11 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
         composable(route = ScreenRoutes.WalletScreen.route) {
             WalletScreen(navController, walletViewModel, authenticationViewModel)
         }
-//        composable(route = VideoCallRoute.OngoingVideoCall.videoCallRoute) {
-//            OngoingVideoCall(videoCall = true, viewModel = videoCallViewModel, navController = navController)
-//        }
-//        composable(route = ScreenRoutes.IncomingVideoCallScreen.route) {
-//            ringingCall?.let {
-//                IncomingVideoCallScreen(call = ringingCall!!, navController = navController)
-//            }
-//        }
+
         composable(route = ScreenRoutes.IncomingAudioCallScreen.route) {
             IncomingAudioCallScreen(callerName = "Audio Call Screen", navController = navController)
         }
-//        composable(route = ScreenRoutes.InCallScreen.route) {
-//            InCallScreen(callerName = ringingCall!!.user.name, timeLeft = "10:01", callDuration = "11:11", navController = navController)
-//        }
+
         composable(route = ScreenRoutes.MainScreen.route) {
             MainScreen(navController = navController, hyperKycLauncher, registrationViewModel)
 //            LaunchedEffect(

@@ -120,17 +120,16 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
     var dateState by remember {
         mutableStateOf(false)
     }
-    if (uriImg != null) {
-        uriImg?.let { uri ->
-            uploadImageToFirebase(uri, context) { url ->
-                imageUrl = url
+//    if (uriImg != null) {
+//        uriImg?.let { uri ->
+//            uploadImageToFirebase(uri, context) { url ->
+//                imageUrl = url
 //                Toast.makeText(context, "Image uploaded successfully", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
+//            }
+//        }
+//    }
 
     val phoneNumber = authenticationViewModel.phoneNumber.value
-
     var genderMale by remember { mutableStateOf(false) }
     var genderFemale by remember { mutableStateOf(false) }
     var genderOthers by remember { mutableStateOf(false) }
@@ -220,7 +219,7 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                 ) { uri: Uri? ->
 
                     uri?.let {
-                        uriImg = it
+//                        uriImg = it
                         imageUri.value = it.toString()
                     }
                 }
