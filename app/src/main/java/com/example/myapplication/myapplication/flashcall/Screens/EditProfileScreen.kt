@@ -140,7 +140,7 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
         uriImg.let { uri ->
             uploadImageToFirebase(uri, context) { url ->
                 imageUrl = url
-                registrationViewModel.updat9eUser(
+                registrationViewModel.updateUser(
                     userId = uid,
                     username = username,
                     phone = phone,
