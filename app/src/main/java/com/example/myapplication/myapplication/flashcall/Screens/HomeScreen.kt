@@ -1,10 +1,5 @@
 package com.example.myapplication.myapplication.flashcall.Screens
 
-//import androidx.compose.foundation.layout.FlowColumnScopeInstance.align
-//import androidx.compose.foundation.layout.FlowColumnScopeInstance.align
-//import com.example.myapplication.myapplication.flashcall.bottomnav.BottomNavGraph
-//import com.example.myapplication.myapplication.flashcall.bottomnav.BottomNavGraph
-//import com.example.myapplication.myapplication.flashcall.bottomnav.BottomNavGraph
 import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -138,14 +133,11 @@ fun HomeScreen(
         if (it.size == 2) it else listOf(it[0], "")
     }
     val context = LocalContext.current
-//    val appInstance = (context.applicationContext as BaseClass)
-//    appInstance.streamRemoveClient()
-//    appInstance.streamBuilder(context)
+
     if (uriImg != null) {
         uriImg?.let { uri ->
             uploadImageToFirebase(uri, context) { url ->
                 imageUrl = url
-//                Toast.makeText(context, "Image uploaded successfully", Toast.LENGTH_SHORT).show()
                 registrationViewModel.updateUser(
                     userId = uid,
                     username = username,
@@ -359,8 +351,6 @@ fun HomeScreen(
 @Composable
 fun HomeScreenBottom(homeNavController: NavController, username: String) {
     var showShareDialog by remember { mutableStateOf(true) }
-
-
     Surface(
         modifier = Modifier
             .fillMaxSize()
@@ -423,8 +413,6 @@ fun CopyBar(homeNavController: NavController, username: String) {
         mutableStateOf("https://www.flashcall.vercel.app/expert/$creatorUserName/$creatorUid")
     }
     var showShareDialog by remember { mutableStateOf(true) }
-
-
     var context = LocalContext.current
     Row(
         modifier = Modifier

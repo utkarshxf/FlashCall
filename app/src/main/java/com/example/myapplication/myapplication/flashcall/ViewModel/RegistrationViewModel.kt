@@ -287,7 +287,6 @@ class RegistrationViewModel @Inject constructor(
                     _updateUserState.value = APIResponse.Success(response)
                     loading(false)
                     userPreferencesRepository.storeUpdateUserResponseInPreferences(response)
-                    navController.navigate(ScreenRoutes.HomeScreen.route)
                 }
             } catch (e: Exception) {
                 Log.e("error", "User update failed: ${e.message}")

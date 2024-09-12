@@ -112,7 +112,6 @@ class MainActivity : ComponentActivity() {
                 Log.d("HyperKyc", "Data: $data")
                 Log.e("HyperKyc", "Status: ${result.transactionId}")
             }
-//        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         setContent {
 
             FlashCallTheme {
@@ -128,8 +127,6 @@ class MainActivity : ComponentActivity() {
                 AppNavigation(hyperKycLauncher)
             }
         }
-
-
     }
 }
 
@@ -153,7 +150,7 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
         val token = authenticationViewModel.getTokenFromPreferences(context)
         if (!token.isNullOrEmpty()) {
             navController.navigate(ScreenRoutes.MainScreen.route) {
-                popUpTo(0) { inclusive = true } // Clear the backstack
+                popUpTo(0) { inclusive = true }
             }
         }
     }

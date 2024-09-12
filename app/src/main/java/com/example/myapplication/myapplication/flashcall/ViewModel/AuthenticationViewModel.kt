@@ -96,7 +96,6 @@ class AuthenticationViewModel @Inject constructor(
     }
 
     fun resendOTP(phone: String, loading: (Boolean) -> Unit) {
-
         _resendOTPState.value = APIResponse.Loading
         loading(true)
         viewModelScope.launch {

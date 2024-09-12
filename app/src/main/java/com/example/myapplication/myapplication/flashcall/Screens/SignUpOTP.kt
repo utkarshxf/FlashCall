@@ -93,8 +93,6 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
             BottomOTPBar(navController,viewModel, isKeyboardOpen, onKeyboardToggle = {
                 isKeyboardOpen = it
             })
-
-
         }
     }
 
@@ -324,6 +322,7 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
                                         if (otpValue.length == 6) {
                                             // Automatically call verifyOTP when otpValue is exactly 6 digits
                                             if (resendToken != null) {
+                                                //mvp
                                                 viewModel.verifyOTP(phone, otpValue, resendToken, navController){loading = it}
                                             } else {
                                                 viewModel.verifyOTP(phone, otpValue, verificationToken, navController){loading = it}

@@ -653,37 +653,13 @@ fun GenderRadioButton(
 
 
 
-    @Composable
-    fun PickImageFromGallery()
-    {
+@Composable
+fun PickImageFromGallery()
+{
         val context = LocalContext.current
         var imageUri by remember { mutableStateOf<Uri?>(null) }
     }
 
-//                        Button(
-//                            shape = RoundedCornerShape(10.dp),
-//                            modifier = Modifier.fillMaxSize(),
-//                            elevation = ButtonDefaults.buttonElevation(
-//                                defaultElevation = 1.dp,
-//                                pressedElevation = 5.dp
-//                            ),
-//                            border = BorderStroke(1.dp, color = BorderColor2),
-//                            colors = ButtonDefaults.buttonColors(Color.White),
-//                            onClick = {
-//                                selectedGender = "Male"
-//                            }
-//                        )
-//                        {
-//                            Text(text = "Male",
-//                                modifier = Modifier,
-//                                textAlign = TextAlign.Center,
-//                                style = TextStyle(
-//                                    fontFamily = arimoFontFamily,
-//                                    fontWeight = FontWeight.Black,
-//                                    fontSize = 14.sp
-//                                ),color = SecondaryText
-//                            )
-//                        }
 @Composable
 fun gender()
 {
