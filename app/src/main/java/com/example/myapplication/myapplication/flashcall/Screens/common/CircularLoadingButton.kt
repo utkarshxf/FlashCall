@@ -19,8 +19,9 @@ fun CircularLoaderButton(
     enabled: Boolean = true,
     shape: Shape = ButtonDefaults.shape,
     colors: ButtonColors = ButtonDefaults.buttonColors(),
-    text: String,
     loading: Boolean,
+    text: String,
+    textStyle: TextStyle = TextStyle.Default
 ) {
     Button(
         onClick = onClick,
@@ -41,7 +42,8 @@ fun CircularLoaderButton(
             } else {
                 Text(
                     text = text,
-                    style = TextStyle(fontSize = 14.sp)
+                    style = textStyle
+//                            \TextStyle(fontSize = 14.sp)
                 )
             }
         }

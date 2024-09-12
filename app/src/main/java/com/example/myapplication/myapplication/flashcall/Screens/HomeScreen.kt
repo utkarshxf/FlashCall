@@ -160,12 +160,10 @@ fun HomeScreen(
                     dob = dob,
                     bio = bio,
                     navController = navController
-                )
+                ){}
             }
         }
     }
-
-    val createdUserState2 by authenticationViewModel.isCreatedUserState.collectAsState()
     val createUserState1 by registrationViewModel.createUserState.collectAsState()
     val userData = authenticationViewModel.getUserFromPreferences(context)
 //    Log.v("qwerty" , userData.toString())

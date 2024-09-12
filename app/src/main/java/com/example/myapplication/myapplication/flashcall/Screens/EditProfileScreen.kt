@@ -70,6 +70,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
 import com.example.myapplication.myapplication.flashcall.R
+import com.example.myapplication.myapplication.flashcall.Screens.common.CircularLoaderButton
 import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.RegistrationViewModel
 import com.example.myapplication.myapplication.flashcall.ui.theme.BorderColor2
@@ -153,7 +154,7 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                     dob = dob,
                     bio = bio,
                     navController = navController
-                )
+                ){}
             }
         }
     }
@@ -185,7 +186,6 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
     else{
         when (createUserState1) {
             is APIResponse.Success -> {
-
                 val response = (createUserState1 as APIResponse.Success).data
                 Log.d("UserResponse", response.toString())
                 uid = response._id
@@ -273,6 +273,7 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
     }
 
     val scrollState = rememberScrollState()
+    var loading by remember { mutableStateOf(false) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -396,9 +397,6 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                     }
 
                     else {
-
-
-                        Log.d("ProfileImageofUser", "$profilePic")
                         Box(modifier = Modifier.padding(start = 200.dp, top = 70.dp))
                         {
                             Image(
@@ -695,16 +693,20 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                                 ),color = Color.White
                             )
                         }
-
-
-                        Button(
+                        CircularLoaderButton(
                             shape = RoundedCornerShape(10.dp),
                             modifier = Modifier
                                 .width(150.dp)
                                 .height(60.dp),
                             colors = ButtonDefaults.buttonColors(MainColor),
+                            loading = loading,
+                            text = "UPDATE",
+                            textStyle = TextStyle(
+                                fontFamily = arimoFontFamily,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            ),
                             onClick = {
-                                navController.navigate(ScreenRoutes.HomeScreen.route)
                                 registrationViewModel.updateUser(
                                     userId = uid,
                                     username = username,
@@ -718,22 +720,10 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                                     gender = gender,
                                     dob = dob,
                                     bio = edit_profile_bio,
-                                    navController = navController
-                                )
-                                Toast.makeText(context, "Profile Updated", Toast.LENGTH_SHORT).show()
+                                    navController = navController,
+                                ){ loading = it }
                             }
                         )
-                        {
-                            Text(text = "UPDATE",
-                                textAlign = TextAlign.Center,
-                                style = TextStyle(
-                                    fontFamily = arimoFontFamily,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp
-                                ),color = Color.White
-                            )
-                        }
-
                     }
                 }
             }

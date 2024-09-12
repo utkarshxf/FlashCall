@@ -262,9 +262,11 @@ class RegistrationViewModel @Inject constructor(
         gender: String?=null,
         dob: String?=null,
         bio: String?=null,
-        navController: NavController
+        navController: NavController,
+        loading: (Boolean) -> Unit
     ) {
         viewModelScope.launch {
+            loading(true)
             _updateUserState.value = APIResponse.Loading
             try {
                 repository.updateUser(
@@ -283,11 +285,13 @@ class RegistrationViewModel @Inject constructor(
                     username = username
                 ).collect { response ->
                     _updateUserState.value = APIResponse.Success(response)
-                    Log.v("qwerty123" , response.updatedUser.toString())
+                    loading(false)
                     userPreferencesRepository.storeUpdateUserResponseInPreferences(response)
+                    navController.navigate(ScreenRoutes.HomeScreen.route)
                 }
             } catch (e: Exception) {
                 Log.e("error", "User update failed: ${e.message}")
+                loading(false)
                 _createUserState.value = APIResponse.Error(e.message ?: "User update error")
             }
         }

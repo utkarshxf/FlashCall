@@ -14,8 +14,7 @@ import javax.inject.Singleton
 @Singleton
 class UserPreferencesRepository @Inject constructor(@ApplicationContext private val context: Context) {
 
-    private val sharedPreferences: SharedPreferences =
-        context.getSharedPreferences("user_prefs1", Context.MODE_PRIVATE)
+    private val sharedPreferences: SharedPreferences = context.getSharedPreferences("user_prefs1", Context.MODE_PRIVATE)
 
     fun getStoredUserData(key: String): String? {
         return sharedPreferences.getString(key, null)
@@ -67,7 +66,6 @@ class UserPreferencesRepository @Inject constructor(@ApplicationContext private 
             userType = sharedPreferences.getString(PreferencesKey.UserType.key, null),
             message = sharedPreferences.getString(PreferencesKey.Message.key, null)
         )
-        Log.v("qwerty123", userData.toString())
         return userData
     }
 
@@ -85,7 +83,6 @@ class UserPreferencesRepository @Inject constructor(@ApplicationContext private 
             putString(PreferencesKey.Gender.key, response.updatedUser.gender)
             putString(PreferencesKey.Dob.key, response.updatedUser.dob)
             putString(PreferencesKey.Bio.key, response.updatedUser.bio)
-            // Add other fields as needed
             apply()
         }
     }
