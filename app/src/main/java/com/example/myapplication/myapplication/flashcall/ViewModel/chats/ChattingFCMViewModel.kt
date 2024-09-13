@@ -28,5 +28,4 @@ class ChattingFCMViewModel @Inject constructor(): ViewModel() {
             messageText = message
         )
     }
-
 }

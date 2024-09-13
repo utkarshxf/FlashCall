@@ -1,5 +1,6 @@
 package com.example.myapplication.myapplication.flashcall.ViewModel.chats
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,6 +18,7 @@ class SharedChatViewModel @Inject constructor() : ViewModel() {
 
     // Function to update chatId
     fun setChatId(id: String) {
+        Log.v("qwerty" , _chatId.value.toString())
         _chatId.value = id
     }
 }

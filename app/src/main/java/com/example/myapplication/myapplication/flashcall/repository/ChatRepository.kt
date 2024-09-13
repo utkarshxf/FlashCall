@@ -95,7 +95,6 @@ class ChatRepository @Inject constructor(
                 createChat(chatId, message.senderId.toString())  // Ensure you pass the correct clientId here
                 createChatRequest(chatId, message.senderId.toString(), message.senderId.toString())
             }
-
             // Handle image and audio media upload
             if (message.img != null) {
                 val imageUrl = uploadMedia(Uri.parse(message.img), isImage = true)

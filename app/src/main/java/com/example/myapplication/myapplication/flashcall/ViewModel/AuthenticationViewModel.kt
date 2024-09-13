@@ -127,7 +127,7 @@ class AuthenticationViewModel @Inject constructor(
                 try {
                     Log.e("qwerty" , "$phone $otp" )
                     authenticationRepository.verifyOtp(
-                        "https://app.flashcall.me/api/v1/verify-otp", phone, otp
+                        "api/v1/verify-otp", phone, otp
                     ).collect {
                         _verifyOTPState.value = APIResponse.Success(it)
                         if (it.token != null) {
@@ -213,7 +213,7 @@ class AuthenticationViewModel @Inject constructor(
             try {
                 // Collect the Flow<IsUserCreatedResponse?>
                 authenticationRepository.isCreatedUser(
-                    "https://flashcall.vercel.app/api/v1/user/getUserByPhone", phone
+                    "api/v1/user/getUserByPhone", phone
                 ).collect { userData ->
                     if (userData != null) {
                         // Process the user data here
