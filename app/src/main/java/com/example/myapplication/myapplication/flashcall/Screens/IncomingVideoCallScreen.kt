@@ -1,6 +1,5 @@
 package com.example.myapplication.myapplication.flashcall.Screens
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -10,14 +9,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Data.VideoCallRoute
@@ -28,32 +23,45 @@ import io.getstream.video.android.compose.ui.components.call.controls.actions.Ac
 import io.getstream.video.android.compose.ui.components.call.controls.actions.LeaveCallAction
 import io.getstream.video.android.compose.ui.components.call.ringing.RingingCallContent
 import io.getstream.video.android.core.Call
-import io.getstream.video.android.core.RingingState
-import kotlinx.coroutines.flow.collectLatest
+
 @Composable
 fun IncomingVideoCallScreen(
     call: Call,
     navController: NavController,
     videoCallViewModel: VideoCallViewModel,
-    onEmptyCall: () -> Unit
 ) {
     CompositionLocalProvider(
         androidx.lifecycle.compose.LocalLifecycleOwner provides androidx.compose.ui.platform.LocalLifecycleOwner.current,
     ) {
-        val state = videoCallViewModel.videoMutableUiState.collectAsStateWithLifecycle(lifecycleOwner = LocalLifecycleOwner.current)
-        if(state.value == SDKResponseState.Loading)
-        {
+        val state = videoCallViewModel.state.sdkResponseState
+        if (state == SDKResponseState.Loading) {
             VideoTheme {
                 RingingCallContent(
                     call = call,
-                    controlsContent = { CallControls(call, navController, videoCallViewModel)},
+                    controlsContent = { CallControls(call, navController, videoCallViewModel) },
                     onAcceptedContent = {
                         navController.navigate(VideoCallRoute.OngoingVideoCall.videoCallRoute) {
                             popUpTo(ScreenRoutes.IncomingVideoCallScreen.route) { inclusive = true }
                         }
                     },
-                    onNoAnswerContent = { LaunchedEffect(key1 = Unit){ onEmptyCall() }},
-                    onRejectedContent = { LaunchedEffect(key1 = Unit){ onEmptyCall() }},
+                    onNoAnswerContent = {
+                        videoCallViewModel.rejectCall()
+                        {
+                            videoCallViewModel.resetCallState()
+                            navController.navigate(ScreenRoutes.MainScreen.route) {
+                                popUpTo(ScreenRoutes.IncomingVideoCallScreen.route) { inclusive = true }
+                            }
+                        }
+                    },
+                    onRejectedContent = {
+                        videoCallViewModel.rejectCall()
+                        {
+                            videoCallViewModel.resetCallState()
+                            navController.navigate(ScreenRoutes.MainScreen.route) {
+                                popUpTo(ScreenRoutes.IncomingVideoCallScreen.route) { inclusive = true }
+                            }
+                        }
+                    },
                     isVideoType = true,
                 )
             }
@@ -65,13 +73,12 @@ fun IncomingVideoCallScreen(
 private fun CallControls(
     call: Call,
     navController: NavController,
-    videoCallViewModel: VideoCallViewModel
+    videoCallViewModel: VideoCallViewModel,
 ) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(32.dp),
-        contentAlignment = Alignment.BottomEnd
+            .padding(32.dp), contentAlignment = Alignment.BottomEnd
     ) {
         Row(
             modifier = Modifier
@@ -81,25 +88,20 @@ private fun CallControls(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AcceptCallAction(
-                modifier = Modifier.size(52.dp),
+            AcceptCallAction(modifier = Modifier.size(52.dp),
                 bgColor = Color.Green,
                 onCallAction = {
                     navController.navigate(VideoCallRoute.OngoingVideoCall.videoCallRoute) {
                         popUpTo(ScreenRoutes.IncomingVideoCallScreen.route) { inclusive = true }
                     }
-                }
-            )
-            LeaveCallAction(
-                modifier = Modifier.size(52.dp),
-                onCallAction = {
-                    videoCallViewModel.leaveCall(call) {
-                        navController.navigate(ScreenRoutes.MainScreen.route) {
-                            popUpTo(ScreenRoutes.IncomingVideoCallScreen.route) { inclusive = true }
-                        }
+                })
+            LeaveCallAction(modifier = Modifier.size(52.dp), onCallAction = {
+                videoCallViewModel.rejectCall {
+                    navController.navigate(ScreenRoutes.MainScreen.route) {
+                        popUpTo(ScreenRoutes.IncomingVideoCallScreen.route) { inclusive = true }
                     }
                 }
-            )
+            })
         }
     }
 }

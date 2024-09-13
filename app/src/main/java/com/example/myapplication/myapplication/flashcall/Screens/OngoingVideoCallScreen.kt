@@ -48,9 +48,9 @@ import io.getstream.video.android.core.Call
 fun OngoingVideoCallScreen(
     videoCall : Boolean,
     viewModel: VideoCallViewModel,
-    onEmptyCall: () -> Unit
+    navController:NavController
 ){
-    val uiState by viewModel.videoMutableUiState.collectAsStateWithLifecycle(lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current)
+    val uiState = viewModel.state.sdkResponseState
     EnsureVideoCallPermissions {
         viewModel.joinCall()
     }
@@ -61,7 +61,7 @@ fun OngoingVideoCallScreen(
                 call =  (uiState as SDKResponseState.Success).data,
                 videoCall = videoCall,
                 viewModel = viewModel,
-                onEmptyCall = onEmptyCall
+                navController = navController
             )
         }
 
@@ -81,12 +81,12 @@ fun VideoCallContent(
     call : Call,
     videoCall : Boolean,
     viewModel: VideoCallViewModel,
-    onEmptyCall:()->Unit
+    navController:NavController
 ){
     val isCameraEnabled by call.camera.isEnabled.collectAsStateWithLifecycle(lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current)
     val isMicrophoneEnabled by call.microphone.isEnabled.collectAsStateWithLifecycle(lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current)
     val isSpeakerphoneEnabled by call.speaker.isEnabled.collectAsStateWithLifecycle(lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current)
-    val activeVideoCall by viewModel.activeCall.collectAsState(initial = null)
+    val activeVideoCall = viewModel.state.activeCall
     // Listen to call status changes and end call if necessary
     LaunchedEffect(call) {
         if (!videoCall) {
@@ -97,7 +97,8 @@ fun VideoCallContent(
     LaunchedEffect(activeVideoCall) {
         if(activeVideoCall==null)
         {
-            onEmptyCall()
+            viewModel.resetCallState()
+            navController.navigate(ScreenRoutes.MainScreen.route)
         }
     }
     CompositionLocalProvider(
@@ -147,10 +148,11 @@ fun VideoCallContent(
                                                 modifier = Modifier.size(52.dp),
                                                 onCallAction = {
                                                     Log.v("LeaveCallAction1" , "call")
-                                                    viewModel.leaveCall(call){}
+                                                    viewModel.endCall{
+                                                        viewModel.resetCallState()
+                                                    }
                                                 }
                                             )
-
                                         }
                                     }
                                 )
@@ -170,8 +172,9 @@ fun VideoCallContent(
                                         LeaveCallAction(
                                             modifier = Modifier.size(52.dp),
                                             onCallAction = {
-                                                Log.v("LeaveCallAction" , "call")
-                                                viewModel.leaveCall(call){}
+                                                viewModel.endCall{
+                                                    viewModel.resetCallState()
+                                                }
                                             }
                                         )
                                     }, {

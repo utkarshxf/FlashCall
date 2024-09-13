@@ -37,9 +37,8 @@ fun BottomNavGraph(
     walletViewModel: WalletViewModel = hiltViewModel(),
     videoCallViewModel: VideoCallViewModel = hiltViewModel(),
 ) {
-    val uiState by videoCallViewModel.videoMutableUiState.collectAsStateWithLifecycle(lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current)
-    val incomingCall by videoCallViewModel.incomingCall.collectAsState(initial = null)
-    val activeCall by videoCallViewModel.activeCall.collectAsState(initial = null)
+    val uiState = videoCallViewModel.state
+    val incomingCall = uiState.incomingCall
     NavHost(navController = homeNavController, startDestination = ScreenRoutes.HomeScreen.route) {
         composable(route = ScreenRoutes.IncomingVideoCallScreen.route) {
             IncomingVideoCall(call = incomingCall,
@@ -51,7 +50,7 @@ fun BottomNavGraph(
             OngoingVideoCallScreen(
                 videoCall = true,
                 viewModel = videoCallViewModel,
-                onEmptyCall = { homeNavController.navigateToHome() })
+                navController = navController)
         }
         composable(route = ScreenRoutes.InCallScreen.route) {
             InCallScreen(call = incomingCall,
@@ -91,16 +90,15 @@ private fun IncomingVideoCall(
     videoCallViewModel: VideoCallViewModel,
     onEmptyCall: () -> Unit
 ) {
-    val callAccepted = videoCallViewModel.callAccepted.collectAsState()
+    val callAccepted = videoCallViewModel.state.callAccepted
     if (call != null) {
         IncomingVideoCallScreen(
             call = call,
             navController = navController,
             videoCallViewModel,
-            onEmptyCall
         )
     } else {
-        if (!callAccepted.value) LaunchedEffect(Unit) { onEmptyCall() }
+        if (!callAccepted) LaunchedEffect(Unit) { onEmptyCall() }
     }
 }
 

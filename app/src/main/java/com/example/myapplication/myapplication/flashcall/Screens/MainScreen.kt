@@ -38,17 +38,14 @@ fun MainScreen(
 ) {
     val homeNavController = rememberNavController()
     val chatRequestCreated by chatRequestViewModel.chatRequestCreated.collectAsState()
-    val incomingCall by videoCallViewModel.incomingCall.collectAsState(initial = null)
-    val activeVideoCall by videoCallViewModel.activeCall.collectAsState(initial = null)
+    val incomingCall = videoCallViewModel.state.incomingCall
+    val activeVideoCall = videoCallViewModel.state.activeCall
     val context = LocalContext.current
 
-    LaunchedEffect(Unit) {
-        videoCallViewModel.incomingCall.collectLatest { call ->
-            call?.let {
-                homeNavController.navigate(ScreenRoutes.IncomingVideoCallScreen.route)
-            }
-        }
+    incomingCall?.let {
+        homeNavController.navigate(ScreenRoutes.IncomingVideoCallScreen.route)
     }
+
     Scaffold(modifier = Modifier.fillMaxSize(), bottomBar = {
         if (!chatRequestCreated && incomingCall == null && activeVideoCall == null) {
             BottomBar(navController = homeNavController)
