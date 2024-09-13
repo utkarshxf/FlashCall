@@ -7,7 +7,6 @@ import com.example.myapplication.myapplication.flashcall.Data.model.SDKResponseS
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.getstream.video.android.core.Call
 import io.getstream.video.android.core.ConnectionState
-import io.getstream.video.android.core.RealtimeConnection
 import io.getstream.video.android.core.StreamVideo
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,7 +20,7 @@ class VideoCallViewModel @Inject constructor() : ViewModel() {
     private val streamVideo = StreamVideo.instance()
 
     private val _videoMutableUiState = MutableStateFlow<SDKResponseState>(SDKResponseState.Loading)
-    val videoMutableUiState : StateFlow<SDKResponseState> = _videoMutableUiState
+    val videoMutableUiState: StateFlow<SDKResponseState> = _videoMutableUiState
 
     private val _incomingCall: MutableStateFlow<Call?> = MutableStateFlow(null)
     val incomingCall: StateFlow<Call?> = _incomingCall
@@ -32,10 +31,16 @@ class VideoCallViewModel @Inject constructor() : ViewModel() {
     private val _callerLeft: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val callerLeft: StateFlow<Boolean> = _callerLeft
 
+    private var _leaveCall: MutableStateFlow<Call?> = MutableStateFlow(null)
+    val leaveCall: StateFlow<Call?> = _leaveCall
+
+    private val _callAccepted: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val callAccepted: StateFlow<Boolean> = _callAccepted
+
 
     init {
         viewModelScope.launch {
-            Log.d("streamVideo.user", "streamVideo.user: ${streamVideo.user}")
+            Log.d("qwerty", "streamVideo.user: ${streamVideo.user}")
             launch { collectRingingCalls() }
             launch { collectActiveCalls() }
             launch { collectConnectionState() }
@@ -45,6 +50,7 @@ class VideoCallViewModel @Inject constructor() : ViewModel() {
 
     private suspend fun collectRingingCalls() {
         streamVideo.state.ringingCall.collectLatest { call ->
+            Log.d("VideoCall", "Ringing call detected: ${call?.id}")
             _incomingCall.value = call
         }
     }
@@ -52,59 +58,76 @@ class VideoCallViewModel @Inject constructor() : ViewModel() {
     private suspend fun collectActiveCalls() {
         streamVideo.state.activeCall.collectLatest { call ->
             _activeCall.value = call
+            if (call == null) {
+                _callAccepted.value = false
+                _incomingCall.value = null
+            }
         }
     }
 
     private suspend fun collectConnectionState() {
         streamVideo.state.connection.collectLatest { connectionState ->
-            when(connectionState)
-            {
-
+            when (connectionState) {
                 ConnectionState.Loading -> {
-                    Log.d("ConnectionState", "Connection state: Loading")
+                    Log.d("qwerty3", "Loading: {ConnectionState.Loading}")
                 }
+
                 ConnectionState.Connected -> {
-                    Log.d("ConnectionState", "Connection state: Connected")
+                    Log.d("qwerty4", "Connected: {ConnectionState.Connected}")
                 }
+
                 ConnectionState.Disconnected -> {
-                    Log.d("ConnectionState", "Connection state: Disconnected")
+                    Log.d("qwerty5", "Connected: {ConnectionState.Connected}")
                 }
-                else->{}
+
+                is ConnectionState.Failed -> {
+                    Log.d("qwerty6", "Failed: {ConnectionState.Failed}")
+                }
+
+                ConnectionState.PreConnect -> {
+                    Log.d("qwerty7", "PreConnect: {ConnectionState.PreConnect}")
+                }
+
+                ConnectionState.Reconnecting -> {
+                    Log.d("qwerty8", "Reconnecting: {ConnectionState.Reconnecting}")
+                }
             }
         }
     }
-
-
-
-
-
-    fun joinCall()
-    {
+    fun joinCall() {
+        _callAccepted.value = true
         viewModelScope.launch {
             val streamVideo = StreamVideo.instance()
             val ringingCall = streamVideo.state.ringingCall
             val call = ringingCall.value
             if (call != null) {
                 call.accept()
+                _callAccepted.value = true
             }
             val result = call?.join()
             result?.onSuccess {
                 _videoMutableUiState.value = SDKResponseState.Success(call)
-                Log.d("VideoCallViewModel", "joinCall: ${call.id.toString()}")
+                _callAccepted.value = true
             }?.onError {
                 _videoMutableUiState.value = SDKResponseState.Error
+                _callAccepted.value = false
             }
         }
     }
+
     fun leaveCall(call: Call, onComplete: () -> Unit) {
         viewModelScope.launch {
             try {
                 call.leave()
-                Log.d("VideoCallViewModel", "Call left successfully: ${call.id}")
-                delay(500) // Give some time for the SDK to process the leave action
+                _leaveCall.value = call
+                _callAccepted.value = false
+                _incomingCall.value = null
+                _activeCall.value = null
+
+                Log.d("VideoCall", "Call left: ${call.id}")
                 onComplete()
             } catch (e: Exception) {
-                Log.e("VideoCallViewModel", "Error leaving call", e)
+                Log.e("VideoCall", "Error leaving call: ${e.message}")
             }
         }
     }

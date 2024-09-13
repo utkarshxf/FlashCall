@@ -42,14 +42,16 @@ fun BottomNavGraph(
     val activeCall by videoCallViewModel.activeCall.collectAsState(initial = null)
     NavHost(navController = homeNavController, startDestination = ScreenRoutes.HomeScreen.route) {
         composable(route = ScreenRoutes.IncomingVideoCallScreen.route) {
-            IncomingVideoCall(
-                call = incomingCall,
+            IncomingVideoCall(call = incomingCall,
                 navController = homeNavController,
                 videoCallViewModel = videoCallViewModel,
                 onEmptyCall = { homeNavController.navigateToHome() })
         }
         composable(route = VideoCallRoute.OngoingVideoCall.videoCallRoute) {
-            OngoingVideoCallScreen(true ,viewModel = videoCallViewModel, navController = homeNavController)
+            OngoingVideoCallScreen(
+                videoCall = true,
+                viewModel = videoCallViewModel,
+                onEmptyCall = { homeNavController.navigateToHome() })
         }
         composable(route = ScreenRoutes.InCallScreen.route) {
             InCallScreen(call = incomingCall,
@@ -81,17 +83,24 @@ fun BottomNavGraph(
         }
     }
 }
+
 @Composable
 private fun IncomingVideoCall(
-    call: Call?, navController: NavHostController,videoCallViewModel: VideoCallViewModel, onEmptyCall: () -> Unit
+    call: Call?,
+    navController: NavHostController,
+    videoCallViewModel: VideoCallViewModel,
+    onEmptyCall: () -> Unit
 ) {
-    if(call!=null)
-    {
-        IncomingVideoCallScreen(call = call, navController = navController , videoCallViewModel)
-    }
-    else
-    {
-//        LaunchedEffect(Unit) {  onEmptyCall() }
+    val callAccepted = videoCallViewModel.callAccepted.collectAsState()
+    if (call != null) {
+        IncomingVideoCallScreen(
+            call = call,
+            navController = navController,
+            videoCallViewModel,
+            onEmptyCall
+        )
+    } else {
+        if (!callAccepted.value) LaunchedEffect(Unit) { onEmptyCall() }
     }
 }
 

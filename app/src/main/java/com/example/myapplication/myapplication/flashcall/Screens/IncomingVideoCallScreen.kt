@@ -34,7 +34,8 @@ import kotlinx.coroutines.flow.collectLatest
 fun IncomingVideoCallScreen(
     call: Call,
     navController: NavController,
-    videoCallViewModel: VideoCallViewModel
+    videoCallViewModel: VideoCallViewModel,
+    onEmptyCall: () -> Unit
 ) {
     CompositionLocalProvider(
         androidx.lifecycle.compose.LocalLifecycleOwner provides androidx.compose.ui.platform.LocalLifecycleOwner.current,
@@ -46,14 +47,17 @@ fun IncomingVideoCallScreen(
                 RingingCallContent(
                     call = call,
                     controlsContent = { CallControls(call, navController, videoCallViewModel)},
-                    onAcceptedContent = { navigateToOngoingCall(navController) },
-                    onNoAnswerContent = { navigateToMainScreen(navController) },
-                    onRejectedContent = { navigateToMainScreen(navController) },
+                    onAcceptedContent = {
+                        navController.navigate(VideoCallRoute.OngoingVideoCall.videoCallRoute) {
+                            popUpTo(ScreenRoutes.IncomingVideoCallScreen.route) { inclusive = true }
+                        }
+                    },
+                    onNoAnswerContent = { LaunchedEffect(key1 = Unit){ onEmptyCall() }},
+                    onRejectedContent = { LaunchedEffect(key1 = Unit){ onEmptyCall() }},
                     isVideoType = true,
                 )
             }
         }
-
     }
 }
 
@@ -64,7 +68,8 @@ private fun CallControls(
     videoCallViewModel: VideoCallViewModel
 ) {
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
             .padding(32.dp),
         contentAlignment = Alignment.BottomEnd
     ) {
@@ -79,40 +84,25 @@ private fun CallControls(
             AcceptCallAction(
                 modifier = Modifier.size(52.dp),
                 bgColor = Color.Green,
-                onCallAction = { navigateToOngoingCall(navController) }
+                onCallAction = {
+                    navController.navigate(VideoCallRoute.OngoingVideoCall.videoCallRoute) {
+                        popUpTo(ScreenRoutes.IncomingVideoCallScreen.route) { inclusive = true }
+                    }
+                }
             )
             LeaveCallAction(
                 modifier = Modifier.size(52.dp),
                 onCallAction = {
-                    leaveCall(call, videoCallViewModel, navController)
+                    videoCallViewModel.leaveCall(call) {
+                        navController.navigate(ScreenRoutes.MainScreen.route) {
+                            popUpTo(ScreenRoutes.IncomingVideoCallScreen.route) { inclusive = true }
+                        }
+                    }
                 }
             )
         }
     }
 }
-
-private fun navigateToOngoingCall(navController: NavController) {
-    navController.navigate(VideoCallRoute.OngoingVideoCall.videoCallRoute) {
-        popUpTo(ScreenRoutes.IncomingVideoCallScreen.route) { inclusive = true }
-    }
-}
-
-private fun navigateToMainScreen(navController: NavController) {
-    navController.navigate(ScreenRoutes.MainScreen.route) {
-        popUpTo(ScreenRoutes.IncomingVideoCallScreen.route) { inclusive = true }
-    }
-}
-
-private fun leaveCall(call: Call, videoCallViewModel: VideoCallViewModel, navController: NavController) {
-    try {
-        videoCallViewModel.leaveCall(call) {
-            navigateToMainScreen(navController)
-        }
-    } catch (e: Exception) {
-        Log.e("NavigationError", "Error navigating: ${e.message}")
-    }
-}
-
 
 
 

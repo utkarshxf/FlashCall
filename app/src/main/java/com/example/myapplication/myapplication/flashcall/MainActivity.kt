@@ -83,26 +83,17 @@ class MainActivity : ComponentActivity() {
 
                     HyperKycStatus.AUTO_APPROVED -> {
                         Log.d("HyperKyc", "Auto Approved")
-
-
                     }
 
                     HyperKycStatus.ERROR -> {
                         Log.d("HyperKyc", "Error")
-
                     }
-
                     HyperKycStatus.NEEDS_REVIEW -> {
                         Log.d("HyperKyc", "Needs Review")
-
                     }
-
                     HyperKycStatus.AUTO_DECLINED -> {
                         Log.d("HyperKyc", "AUTO_DECLINED")
-
-
                     }
-
                     HyperKycStatus.USER_CANCELLED -> {
                         Log.d("HyperKyc", "User_Declined")
 
@@ -156,15 +147,12 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
         }
     }
 
-
-
     NavHost(navController = navController, startDestination = ScreenRoutes.SignUpScreen.route) {
 
         composable(route = ScreenRoutes.SignUpScreen.route) {
             SignUpScreen(navController = navController, viewModel = viewModel)
         }
-
-        composable(route = ScreenRoutes.SignUpOTP.route,) {
+        composable(route = ScreenRoutes.SignUpOTP.route) {
             SignUpOTP(navController = navController, viewModel = viewModel)
         }
         composable(route = ScreenRoutes.RegistrationScreen.route) {
@@ -187,27 +175,8 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
             IncomingAudioCallScreen(callerName = "Audio Call Screen", navController = navController)
         }
 
-        composable(route = ScreenRoutes.MainScreen.route) {
+        composable( route = ScreenRoutes.MainScreen.route ) {
             MainScreen(navController = navController, hyperKycLauncher, registrationViewModel)
-//            LaunchedEffect(
-//                key1 = Unit
-//            ) {
-//                delay(5000)
-//                chatRequestViewModel.pendingChatRequest.collectLatest {result->
-//                    when(result) {
-//                        is Resource.Error -> {
-//                            Log.d("ChatRequestError", "Error: ${result.message}")
-//                        }
-//                        is Resource.Loading -> {
-//                            Log.d("ChatRequestLoading", "Loading: ${result.message}")
-//                        }
-//                        is Resource.Success -> {
-//                            navController.navigate(ScreenRoutes.ChatRequestNotification.route)
-//                            chatRequestViewModel.clearPendingChatRequest()
-//                        }
-//                    }
-//                }
-//            }
         }
 
         composable(route = ScreenRoutes.ChatRequestNotification.route) {
@@ -239,9 +208,6 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
         }
         composable(route = ScreenRoutes.KycScreen.route) {
             KYCScreen()
-
         }
-
-
     }
 }

@@ -5,9 +5,6 @@ import android.os.Build
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-//import androidx.compose.foundation.layout.FlowRowScopeInstance.weight
-//import androidx.compose.foundation.layout.ColumnScopeInstance.weight
-//import androidx.compose.foundation.layout.FlowRowScopeInstance.weight
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,7 +48,7 @@ import io.getstream.video.android.core.Call
 fun OngoingVideoCallScreen(
     videoCall : Boolean,
     viewModel: VideoCallViewModel,
-    navController: NavController
+    onEmptyCall: () -> Unit
 ){
     val uiState by viewModel.videoMutableUiState.collectAsStateWithLifecycle(lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current)
     EnsureVideoCallPermissions {
@@ -62,7 +60,8 @@ fun OngoingVideoCallScreen(
             VideoCallContent(
                 call =  (uiState as SDKResponseState.Success).data,
                 videoCall = videoCall,
-                navController = navController
+                viewModel = viewModel,
+                onEmptyCall = onEmptyCall
             )
         }
 
@@ -81,30 +80,26 @@ fun OngoingVideoCallScreen(
 fun VideoCallContent(
     call : Call,
     videoCall : Boolean,
-    navController: NavController,
-    viewModel: VideoCallViewModel = hiltViewModel()
+    viewModel: VideoCallViewModel,
+    onEmptyCall:()->Unit
 ){
-
     val isCameraEnabled by call.camera.isEnabled.collectAsStateWithLifecycle(lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current)
     val isMicrophoneEnabled by call.microphone.isEnabled.collectAsStateWithLifecycle(lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current)
     val isSpeakerphoneEnabled by call.speaker.isEnabled.collectAsStateWithLifecycle(lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current)
+    val activeVideoCall by viewModel.activeCall.collectAsState(initial = null)
     // Listen to call status changes and end call if necessary
-    DisposableEffect(key1 = call.id) {
+    LaunchedEffect(call) {
         if (!videoCall) {
             call.camera.setEnabled(false)
             call.microphone.setEnabled(false)
         }
-        onDispose {
-            viewModel.leaveCall(call){
-                navController.navigate(ScreenRoutes.MainScreen.route){
-                    popUpTo(VideoCallRoute.OngoingVideoCall.videoCallRoute) {
-                        inclusive = true
-                    }
-                }
-            }
+    }
+    LaunchedEffect(activeVideoCall) {
+        if(activeVideoCall==null)
+        {
+            onEmptyCall()
         }
     }
-
     CompositionLocalProvider(
         androidx.lifecycle.compose.LocalLifecycleOwner provides androidx.compose.ui.platform.LocalLifecycleOwner.current,
     ){
@@ -151,14 +146,8 @@ fun VideoCallContent(
                                             LeaveCallAction(
                                                 modifier = Modifier.size(52.dp),
                                                 onCallAction = {
-                                                    viewModel.leaveCall(call){
-                                                        navController.navigate(ScreenRoutes.MainScreen.route)
-                                                        {
-                                                            popUpTo(VideoCallRoute.OngoingVideoCall.videoCallRoute) {
-                                                                inclusive = true
-                                                            }
-                                                        }
-                                                    }
+                                                    Log.v("LeaveCallAction1" , "call")
+                                                    viewModel.leaveCall(call){}
                                                 }
                                             )
 
@@ -166,8 +155,7 @@ fun VideoCallContent(
                                     }
                                 )
                             }
-                        } else
-                        {
+                        } else {
                             ControlActions(
                                 call = call,
                                 actions = listOf(
@@ -182,19 +170,14 @@ fun VideoCallContent(
                                         LeaveCallAction(
                                             modifier = Modifier.size(52.dp),
                                             onCallAction = {
-                                                viewModel.leaveCall(call){
-                                                    navController.navigate(ScreenRoutes.MainScreen.route){
-                                                        popUpTo(VideoCallRoute.OngoingVideoCall.videoCallRoute) {
-                                                            inclusive = true
-                                                        }
-                                                    }
-                                                }
+                                                Log.v("LeaveCallAction" , "call")
+                                                viewModel.leaveCall(call){}
                                             }
                                         )
                                     }, {
                                         ToggleSpeakerphoneAction(
                                             modifier = Modifier.size(52.dp),
-                                            isSpeakerphoneEnabled = isSpeakerphoneEnabled){
+                                            isSpeakerphoneEnabled = isSpeakerphoneEnabled ){
                                                 onCallAction -> call.speaker.setEnabled(onCallAction.isEnabled)
                                         }
                                     }
@@ -233,15 +216,12 @@ private fun VideoCallLoading() {
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun EnsureVideoCallPermissions(onPermissionsGranted: () -> Unit) {
-    // While the SDK will handle the microphone permission,
-    // its not a bad idea to do it prior to entering any call UIs
     val permissionsState = rememberMultiplePermissionsState(
         permissions = buildList {
             // Access to microphone
             add(Manifest.permission.CAMERA)
             add(Manifest.permission.RECORD_AUDIO)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                // Allow for foreground service for notification on API 26+
                 add(Manifest.permission.FOREGROUND_SERVICE)
             }
         }

@@ -265,7 +265,6 @@ class AuthenticationViewModel @Inject constructor(
     }
 
     fun getUserFromPreferences(context: Context): IsUserCreatedResponse? {
-        Log.e("qwerty123" , "update")
        return userPreferencesRepository.getUser()
     }
 }

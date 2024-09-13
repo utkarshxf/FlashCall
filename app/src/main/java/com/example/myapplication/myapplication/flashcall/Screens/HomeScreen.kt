@@ -833,11 +833,11 @@ fun EditPriceDialog(
                         fontWeight = FontWeight.Bold, fontSize = 20.sp
                     ), color = Color.Black, modifier = Modifier.padding(bottom = 12.dp)
                 )
-
-                PriceInputRow(serviceName = "Video Call",
+                PriceInputRow(
+                    serviceName = "Video Call",
                     price = newVideoPrice,
-                    onPriceChange = { newVideoPrice = it })
-
+                    onPriceChange = { newVideoPrice = it }
+                )
                 PriceInputRow(serviceName = "Audio Call",
                     price = newAudioPrice,
                     onPriceChange = { newAudioPrice = it })
