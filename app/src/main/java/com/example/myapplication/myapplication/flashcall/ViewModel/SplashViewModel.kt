@@ -31,8 +31,6 @@ class SplashViewModel @Inject constructor(
     private val _navigationEvent = MutableSharedFlow<NavigationEvent>()
     val navigationEvent = _navigationEvent.asSharedFlow()
 
-
-
     init {
         viewModelScope.launch {
             delay(4000L)

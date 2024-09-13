@@ -3,6 +3,7 @@ package com.example.myapplication.myapplication.flashcall.Screens
 import android.Manifest
 import android.os.Build
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,6 +23,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -32,6 +35,7 @@ import com.example.myapplication.myapplication.flashcall.Data.model.SDKResponseS
 import com.example.myapplication.myapplication.flashcall.ViewModel.VideoCallViewModel
 import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
 import com.example.myapplication.myapplication.flashcall.utils.LoadingIndicator
+import com.example.myapplication.myapplication.flashcall.utils.formatTime
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import io.getstream.video.android.compose.theme.VideoTheme
@@ -42,6 +46,7 @@ import io.getstream.video.android.compose.ui.components.call.controls.actions.Le
 import io.getstream.video.android.compose.ui.components.call.controls.actions.ToggleCameraAction
 import io.getstream.video.android.compose.ui.components.call.controls.actions.ToggleMicrophoneAction
 import io.getstream.video.android.compose.ui.components.call.controls.actions.ToggleSpeakerphoneAction
+import io.getstream.video.android.compose.ui.components.call.renderer.FloatingParticipantVideo
 import io.getstream.video.android.core.Call
 
 @Composable
@@ -87,6 +92,8 @@ fun VideoCallContent(
     val isMicrophoneEnabled by call.microphone.isEnabled.collectAsStateWithLifecycle(lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current)
     val isSpeakerphoneEnabled by call.speaker.isEnabled.collectAsStateWithLifecycle(lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current)
     val activeVideoCall = viewModel.state.activeCall
+    val timeLeft = viewModel.timeLeft
+
     // Listen to call status changes and end call if necessary
     LaunchedEffect(call) {
         if (!videoCall) {
@@ -100,6 +107,9 @@ fun VideoCallContent(
             viewModel.resetCallState()
             navController.navigate(ScreenRoutes.MainScreen.route)
         }
+    }
+    LaunchedEffect(Unit) {
+        viewModel.observeTimeLeft(call.id)
     }
     CompositionLocalProvider(
         androidx.lifecycle.compose.LocalLifecycleOwner provides androidx.compose.ui.platform.LocalLifecycleOwner.current,
@@ -189,6 +199,19 @@ fun VideoCallContent(
                         }
                     }
                 )
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(16.dp)
+                        .background(Color.White.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                ) {
+                    Text(
+                        text = "Time Left: ${formatTime(timeLeft)}",
+                        color = Color.White,
+                        fontSize = 16.sp
+                    )
+                }
             }
         }
     }

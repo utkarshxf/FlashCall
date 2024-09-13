@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.myapplication.flashcall.Data.model.SDKResponseState
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.getstream.result.flatMap
 import io.getstream.video.android.core.Call
@@ -20,9 +21,10 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class VideoCallViewModel @Inject constructor() : ViewModel() {
+class VideoCallViewModel @Inject constructor(private val firestore: FirebaseFirestore) : ViewModel() {
     private val streamVideo = StreamVideo.instance()
-
+    var timeLeft by mutableStateOf(0.0)
+        private set
     var state by mutableStateOf(VideoCallScreenState())
         private set
 
@@ -39,6 +41,7 @@ class VideoCallViewModel @Inject constructor() : ViewModel() {
             state = state.copy(incomingCall = call)
         }
     }
+
 
     private suspend fun collectActiveCalls() {
         streamVideo.state.activeCall.collectLatest { call ->
@@ -84,6 +87,27 @@ class VideoCallViewModel @Inject constructor() : ViewModel() {
                         callAccepted = false,
                         isLoading = false
                     )
+                }
+            }
+        }
+    }
+    fun observeTimeLeft(callId: String) {
+        viewModelScope.launch {
+            val documentRef = FirebaseFirestore.getInstance()
+                .collection("calls")
+                .document(callId)
+
+            documentRef.addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    Log.w("Firestore", "Listen failed.", e)
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null && snapshot.exists()) {
+                    val newTimeLeft = snapshot.getDouble("timeLeft")
+                    newTimeLeft?.let {
+                        timeLeft = it
+                    }
                 }
             }
         }
