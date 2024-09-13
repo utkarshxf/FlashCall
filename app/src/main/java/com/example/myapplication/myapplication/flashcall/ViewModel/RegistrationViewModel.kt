@@ -124,6 +124,7 @@ class RegistrationViewModel @Inject constructor(
                     }
                 } else {
                     // Username is taken, show error message
+                    Log.e("error", "Username is already taken")
                     _createUserState.value = APIResponse.Error("Username is already taken")
                 }
             } catch (e: Exception) {

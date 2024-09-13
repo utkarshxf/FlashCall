@@ -35,6 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,6 +57,7 @@ import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.R
 import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.PrimaryBackGround
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -78,6 +80,7 @@ fun SelectSpecialityScreen(navController: NavController) {
     Surface(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .background(color = PrimaryBackGround)
     ) {
         Scaffold(
@@ -97,7 +100,6 @@ fun SelectSpecialityScreen(navController: NavController) {
                     .fillMaxSize()
                     .padding(it)
                     .padding(8.dp)
-                    .verticalScroll(rememberScrollState())
 
             ) {
                 Text(
@@ -140,11 +142,10 @@ fun SelectSpecialityScreen(navController: NavController) {
 fun ButtonSpeciality(isSelected: Boolean, navController: NavController) {
     Button(
         onClick = {
-            navController.navigate(ScreenRoutes.MainScreen.route)
+            navController.navigate(ScreenRoutes.LoginDoneScreen.route)
         },
         modifier = Modifier
-            .fillMaxWidth()
-            .height(50.dp),
+            .fillMaxWidth(),
         colors = ButtonDefaults.buttonColors(
             containerColor = if (isSelected) Color(MainColor.value) else Color.Gray,
             contentColor = Color.White

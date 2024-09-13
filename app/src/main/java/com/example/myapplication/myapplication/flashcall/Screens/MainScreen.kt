@@ -45,7 +45,6 @@ fun MainScreen(
     incomingCall?.let {
         homeNavController.navigate(ScreenRoutes.IncomingVideoCallScreen.route)
     }
-
     Scaffold(modifier = Modifier.fillMaxSize(), bottomBar = {
         if (!chatRequestCreated && incomingCall == null && activeVideoCall == null) {
             BottomBar(navController = homeNavController)

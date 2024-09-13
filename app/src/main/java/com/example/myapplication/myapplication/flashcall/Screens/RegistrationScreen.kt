@@ -120,14 +120,6 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
     var dateState by remember {
         mutableStateOf(false)
     }
-//    if (uriImg != null) {
-//        uriImg?.let { uri ->
-//            uploadImageToFirebase(uri, context) { url ->
-//                imageUrl = url
-//                Toast.makeText(context, "Image uploaded successfully", Toast.LENGTH_SHORT).show()
-//            }
-//        }
-//    }
 
     val phoneNumber = authenticationViewModel.phoneNumber.value
     var genderMale by remember { mutableStateOf(false) }
@@ -645,7 +637,6 @@ fun GenderRadioButton(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
-
         Text(text)
     }
 }

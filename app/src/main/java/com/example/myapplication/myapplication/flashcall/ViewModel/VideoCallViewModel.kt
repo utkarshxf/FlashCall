@@ -36,7 +36,6 @@ class VideoCallViewModel @Inject constructor() : ViewModel() {
 
     private suspend fun collectRingingCalls() {
         streamVideo.state.ringingCall.collectLatest { call ->
-            Log.d("VideoCall", "Ringing call detected: ${call?.id}")
             state = state.copy(incomingCall = call)
         }
     }

@@ -131,18 +131,12 @@ class AuthenticationViewModel @Inject constructor(
                     ).collect {
                         _verifyOTPState.value = APIResponse.Success(it)
                         if (it.token != null) {
-                            navController.navigate(ScreenRoutes.LoginDoneScreen.route) {
-                                popUpTo(ScreenRoutes.LoginDoneScreen.route) {
-                                    inclusive = true
-                                }
-                            }
                             loading(false)
-                            delay(2000)
                             if (isCreatedUserState.value != null) {
                                 saveTokenToPreferences(context, it.token)
                                 loading(false)
-                                navController.navigate(ScreenRoutes.MainScreen.route) {
-                                    popUpTo(ScreenRoutes.LoginDoneScreen.route) {
+                                navController.navigate(ScreenRoutes.LoginDoneScreen.route) {
+                                    popUpTo(ScreenRoutes.SignUpOTP.route) {
                                         inclusive = true
                                     }
                                 }

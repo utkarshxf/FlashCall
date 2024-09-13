@@ -201,7 +201,7 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
             SelectSpecialityScreen(navController = navController)
         }
         composable(route = ScreenRoutes.LoginDoneScreen.route) {
-            LoginDoneScreen()
+            LoginDoneScreen(navController = navController)
         }
         composable(route = ScreenRoutes.InComingChatScreen.route) {
             IncomingChatScreen(navController = navController)
