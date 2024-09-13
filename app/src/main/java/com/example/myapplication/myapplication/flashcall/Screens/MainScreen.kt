@@ -17,6 +17,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import co.hyperverge.hyperkyc.data.models.HyperKycConfig
+import com.example.myapplication.myapplication.flashcall.BaseClass
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.RegistrationViewModel
@@ -40,6 +41,7 @@ fun MainScreen(
     val incomingCall by videoCallViewModel.incomingCall.collectAsState(initial = null)
     val activeVideoCall by videoCallViewModel.activeCall.collectAsState(initial = null)
     val context = LocalContext.current
+
     LaunchedEffect(Unit) {
         videoCallViewModel.incomingCall.collectLatest { call ->
             call?.let {

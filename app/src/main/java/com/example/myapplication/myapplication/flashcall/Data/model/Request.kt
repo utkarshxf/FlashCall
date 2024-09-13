@@ -79,7 +79,6 @@ data class UserUpdateData(
     val firstName: String?=null,
     @SerializedName("lastName")
     val lastName: String?=null,
-
     @SerializedName("photo")
     val photo: String?=null,
     @SerializedName("profession")
@@ -98,5 +97,6 @@ data class UserUpdateData(
     val dob: String?=null,
     @SerializedName("bio")
     val bio: String?=null
+
 )
 

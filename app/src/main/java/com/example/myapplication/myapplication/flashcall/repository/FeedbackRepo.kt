@@ -19,14 +19,14 @@ class FeedbackRepo @Inject constructor(private val apiService: APIService) : IFe
 
         return flow {
 //            https://app.flashcall.me/api/v1/feedback/creator/selected?creatorId
-            val response = apiService.getFeedbacks("https://app.flashcall.me/api/v1/feedback/creator/selected?creatorId=66d97acd79d3bf54c8e53be0")
+            val response = apiService.getFeedbacks("https://flashcall.me/api/v1/feedback/creator/selected?creatorId=66d97acd79d3bf54c8e53be0")
             emit(safeApiRequest {response})
         }.flowOn(Dispatchers.IO)
     }
 
     override suspend fun updateFeedback(url: String, updateFeedback: UpdateFeedback): Flow<UpdateFeedbackResponse> {
         return flow {
-            val response = apiService.updateFeedback("https://app.flashcall.me/api/v1/feedback/creator/setFeedback", updateFeedback)
+            val response = apiService.updateFeedback("https://flashcall.me/api/v1/feedback/creator/setFeedback", updateFeedback)
             emit(safeApiRequest { response } )
         }.flowOn(Dispatchers.IO)
     }

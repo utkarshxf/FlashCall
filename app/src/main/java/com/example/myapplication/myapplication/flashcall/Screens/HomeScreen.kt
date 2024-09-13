@@ -1005,7 +1005,7 @@ fun ShareTextButton(textToShare: String, homeNavController: NavController, usern
         }
 
     var shareText by remember {
-        mutableStateOf("https://app.flashcall.me/creator/$username")
+        mutableStateOf("https://flashcall.me/creator/$username")
     }
     Image(
         painter = painterResource(id = R.drawable.share_icon),

@@ -154,6 +154,6 @@ class CreateRepository @Inject constructor(private val apiService: APIService):S
         }
     }
     suspend fun checkUsernameAvailability(username: String): UsernameAvailabilityResponse {
-        return safeApiRequest {  apiService.checkUsernameAvailability("https://app.flashcall.me/api/v1/user/getAllUsernames?username=$username")}
+        return safeApiRequest {  apiService.checkUsernameAvailability("https://flashcall.me/api/v1/user/getAllUsernames?username=$username")}
     }
 }

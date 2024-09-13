@@ -149,33 +149,12 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
     LaunchedEffect(key1 = Unit) {
         val token = authenticationViewModel.getTokenFromPreferences(context)
         if (!token.isNullOrEmpty()) {
+            (context.applicationContext as? BaseClass)?.streamBuilder(context)
             navController.navigate(ScreenRoutes.MainScreen.route) {
                 popUpTo(0) { inclusive = true }
             }
         }
     }
-
-//    LaunchedEffect(Unit) {
-//        videoCallViewModel.incomingCall.collectLatest { call ->
-//            if (call != null) {
-//                navController.navigate(ScreenRoutes.IncomingVideoCallScreen.route)
-//            }
-//
-//    }
-//    LaunchedEffect(
-//        key1 =Unit
-//    ) {
-//        splashViewModel.navigationEvent.collectLatest { event ->
-//            when (event) {
-//                SplashViewModel.NavigationEvent.NavigateToHome -> {
-//                    navController.navigate(ScreenRoutes.MainScreen.route)
-//                }
-//                SplashViewModel.NavigationEvent.NavigateToRegistration -> {
-//
-//                }
-//            }
-//        }
-//    }
 
 
 

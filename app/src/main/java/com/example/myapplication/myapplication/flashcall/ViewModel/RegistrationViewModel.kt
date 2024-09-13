@@ -79,7 +79,7 @@ class RegistrationViewModel @Inject constructor(
                 if (isUsernameAvailable) {
                     // Proceed with user creation in the repository
                     repository.createUser(
-                        "https://flashcall.vercel.app/api/v1/creator/createUser",
+                        "/api/v1/creator/createUser",
                         username,           // Default value
                         phone ?: "+910000000000",          // Ensure non-null value
                         fullName ?: "fullName",             // Ensure non-null value
@@ -270,7 +270,7 @@ class RegistrationViewModel @Inject constructor(
             _updateUserState.value = APIResponse.Loading
             try {
                 repository.updateUser(
-                    url = "https://flashcall.vercel.app/api/v1/creator/updateUser", // Replace with actual update endpoint
+                    url = "api/v1/creator/updateUser",
                     userId = userId,
                     fullName = fullName,
                     firstName = firstName,

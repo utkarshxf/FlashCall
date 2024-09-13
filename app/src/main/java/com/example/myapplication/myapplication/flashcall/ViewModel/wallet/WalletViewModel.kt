@@ -42,7 +42,7 @@ class WalletViewModel @Inject constructor(
     {
         viewModelScope.launch {
             try {
-                walletRepo.userDetails("https://app.flashcall.me/api/v1/creator/getUserById" , userId = UserId(uid)).collect {
+                walletRepo.userDetails("https://flashcall.me/api/v1/creator/getUserById" , userId = UserId(uid)).collect {
                     _userDetails.value = it
                     Log.d("userDetails", "userDetails: $it")
                 }

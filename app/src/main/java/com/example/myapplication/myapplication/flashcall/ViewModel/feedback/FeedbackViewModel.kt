@@ -43,7 +43,7 @@ class FeedbackViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 feedbackRepo.updateFeedback(
-                    "https://app.flashcall.me/api/v1/feedback/creator/setFeedback",
+                    "https://flashcall.me/api/v1/feedback/creator/setFeedback",
                     updateFeedback
                 ).collect {
                     _updateFeedback.value = it
