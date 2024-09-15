@@ -64,7 +64,7 @@ fun OngoingVideoCallScreen(
             Log.d("VideoCall", "VideoCall:${(uiState as SDKResponseState.Success).data} ")
             VideoCallContent(
                 call =  (uiState as SDKResponseState.Success).data,
-                videoCall = videoCall,
+                videoCall = true,
                 viewModel = viewModel,
                 navController = navController
             )
@@ -146,13 +146,6 @@ fun VideoCallContent(
                                                     .padding(horizontal = 20.dp),
                                                 isMicrophoneEnabled = isMicrophoneEnabled,
                                                 onCallAction = { call.microphone.setEnabled(it.isEnabled) }
-                                            )
-
-                                            FlipCameraAction(
-                                                modifier = Modifier
-                                                    .size(52.dp)
-                                                    .padding(horizontal = 20.dp),
-                                                onCallAction = { call.camera.flip() }
                                             )
                                             LeaveCallAction(
                                                 modifier = Modifier.size(52.dp),
