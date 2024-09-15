@@ -120,7 +120,7 @@ class RegistrationViewModel @Inject constructor(
 
 //                        storeResponseInPreferences(response)
                         userPreferencesRepository.storeResponseInPreferences(response)
-                        navController.navigate(ScreenRoutes.SelectSpeciality.route){
+                        navController.navigate(ScreenRoutes.LoginDoneScreen.route){
                             popUpTo(ScreenRoutes.RegistrationScreen.route){inclusive = true}
                         }
                     }
