@@ -145,17 +145,20 @@ fun BottomBar(navController: NavController) {
         modifier = Modifier
             .fillMaxWidth(0.98f)
             .padding(start = 10.dp)
+            .padding(bottom = 12.dp)
             .background(Color.Black, RoundedCornerShape(30.dp))
             .clip(RoundedCornerShape(30.dp))
+
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.Black, RoundedCornerShape(20.dp))
+                .background(Color.Black, RoundedCornerShape(30.dp))
                 .clip(RoundedCornerShape(20.dp))
-                .padding(10.dp),
+                .padding(5.dp),
+
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceAround
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             screens.forEach { screen ->
                 AddItem(
@@ -183,7 +186,7 @@ fun AddItem(
 
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(30.dp))
             .background(background)
             .clickable(onClick = {
                 navController.navigate(screen.id) {
@@ -194,7 +197,8 @@ fun AddItem(
     ) {
         Row(
             modifier = Modifier
-                .padding(12.dp),
+                .padding(horizontal = 12.dp, vertical = 5.dp),
+
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {

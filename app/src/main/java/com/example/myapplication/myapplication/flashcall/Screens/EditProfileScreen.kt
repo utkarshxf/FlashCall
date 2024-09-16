@@ -181,8 +181,6 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
         profession = userData.profession ?: ""
         profilePic = userData.photo ?: ""
     }
-
-
     else{
         when (createUserState1) {
             is APIResponse.Success -> {
@@ -221,6 +219,29 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
         uri?.let {
             uriImg = it
             imageUri.value = it.toString()
+
+            if (uriImg != null) {
+                uriImg.let { uri ->
+                    uploadImageToFirebase(uri, context) { url ->
+                        imageUrl = url
+                        registrationViewModel.updateUser(
+                            userId = uid,
+                            username = username,
+                            phone = phone,
+                            fullName = name,
+                            firstName = firstName,
+                            lastName = lastName,
+                            photo = imageUrl,
+                            profession = profession,
+                            themeSelected = themeSelected,
+                            gender = gender,
+                            dob = dob,
+                            bio = bio,
+                            navController = navController
+                        ){}
+                    }
+                }
+            }
         }
     }
 

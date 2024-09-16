@@ -1,6 +1,12 @@
 package com.example.myapplication.myapplication.flashcall.Screens
 
+import android.content.Context
+import android.content.Intent
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -13,12 +19,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import co.hyperverge.hyperkyc.HyperKyc
 import co.hyperverge.hyperkyc.data.models.HyperKycConfig
+import co.hyperverge.hyperkyc.data.models.result.HyperKycStatus
 import com.example.myapplication.myapplication.flashcall.BaseClass
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
+import com.example.myapplication.myapplication.flashcall.MainActivity
 import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.RegistrationViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.VideoCallViewModel
@@ -70,5 +80,6 @@ fun MainScreen(
         }
     }
 }
+
 
 

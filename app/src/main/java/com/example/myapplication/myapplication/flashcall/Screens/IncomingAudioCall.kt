@@ -289,6 +289,8 @@ fun InCallScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+
+
                 Image(
                     painter = painterResource(id = R.drawable.home_image), // Placeholder image
                     contentDescription = "Caller Image",
@@ -306,12 +308,12 @@ fun InCallScreen(
                 )
 
                 Image(
-                    painter = painterResource(id = R.drawable.home_image), // Placeholder image
+                    painter = painterResource(id = R.drawable.vector_1), // Placeholder image
                     contentDescription = "Caller Image",
                     modifier = Modifier
                         .size(80.dp)
                         .clip(CircleShape)
-                        .background(Color.Gray)
+                        .background(Color.White)
                 )
             }
 
@@ -353,22 +355,25 @@ fun InCallScreen(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Mute Button
+
+                // Speaker Button
                 IconButton(
                     onClick = {
-                        // Handle mute action
+                        // Handle speaker action
                     },
                     modifier = Modifier
                         .size(92.dp)
 
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.mic), // Placeholder for mute icon
-                        contentDescription = "Mute",
+                        painter = painterResource(id = R.drawable.speaker), // Placeholder for speaker icon
+                        contentDescription = "Speaker",
                         tint = Color.White,
                         modifier = Modifier.size(48.dp)
                     )
                 }
+
+
 
                 // End Call Button
                 IconButton(
@@ -387,18 +392,21 @@ fun InCallScreen(
                     )
                 }
 
-                // Speaker Button
+
+
+
+                // Mute Button
                 IconButton(
                     onClick = {
-                        // Handle speaker action
+                        // Handle mute action
                     },
                     modifier = Modifier
                         .size(92.dp)
 
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.speaker), // Placeholder for speaker icon
-                        contentDescription = "Speaker",
+                        painter = painterResource(id = R.drawable.mic), // Placeholder for mute icon
+                        contentDescription = "Mute",
                         tint = Color.White,
                         modifier = Modifier.size(48.dp)
                     )
@@ -409,8 +417,9 @@ fun InCallScreen(
 }
 
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun AudioCallPreview(){
     InCallScreen(callerName = "Ram", timeLeft = "19:11", callDuration ="12:29" , navController = rememberNavController() )
+    //IncomingAudioCallScreen(callerName = "Mohd Gauri", navController = rememberNavController())
 }

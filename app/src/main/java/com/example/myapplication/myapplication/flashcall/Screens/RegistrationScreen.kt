@@ -674,6 +674,7 @@ fun gender()
 }
 
 fun uploadImageToFirebase(uri: Uri?, context: Context, onSuccess: (String) -> Unit) {
+    Log.d("UploadingImageToFirebase","Image Url: ${uri.toString()}")
     val storage = FirebaseStorage.getInstance()
     val storageRef = storage.reference
     val imageRef = storageRef.child("images/${uri!!.lastPathSegment}")

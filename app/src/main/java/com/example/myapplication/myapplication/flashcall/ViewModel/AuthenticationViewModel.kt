@@ -124,12 +124,15 @@ class AuthenticationViewModel @Inject constructor(
         loading(true)
         try {
             viewModelScope.launch {
+
                 try {
                     Log.e("qwerty" , "$phone $otp" )
+
                     authenticationRepository.verifyOtp(
                         "api/v1/verify-otp", phone, otp
                     ).collect {
                         _verifyOTPState.value = APIResponse.Success(it)
+
                         if (it.token != null) {
                             loading(false)
                             if (isCreatedUserState.value != null) {
@@ -187,7 +190,6 @@ class AuthenticationViewModel @Inject constructor(
 
         eventMutableState.value = Events(message)
         inProcess.value = false
-
     }
 
     val userToken = userPref.getToken().stateIn(

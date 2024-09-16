@@ -103,7 +103,6 @@ class CreateRepository @Inject constructor(private val apiService: APIService):S
                     kyc_status = kyc_status
                 )
             )
-
             emit(safeApiRequest { response})
         }
     }
@@ -122,6 +121,9 @@ class CreateRepository @Inject constructor(private val apiService: APIService):S
         videoRate: String?=null,
         audioRate: String?=null,
         chatRate: String?=null,
+        videoService: Boolean?=null,
+        audioService: Boolean?=null,
+        chatService: Boolean?=null,
         gender: String?=null,
         dob: String?=null,
         bio: String?=null
@@ -143,6 +145,9 @@ class CreateRepository @Inject constructor(private val apiService: APIService):S
                         videoRate = videoRate,
                         audioRate = audioRate,
                         chatRate = chatRate,
+                        videoAllowed = videoService,
+                        audioAllowed = audioService,
+                        chatAllowed = chatService,
                         gender = gender,
                         dob = dob,
                         bio = bio
