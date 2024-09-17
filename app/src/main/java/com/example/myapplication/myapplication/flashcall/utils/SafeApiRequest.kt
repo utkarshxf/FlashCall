@@ -1,6 +1,7 @@
 package com.example.myapplication.myapplication.flashcall.utils
 
 import android.util.Log
+import okhttp3.ResponseBody
 import org.json.JSONException
 import org.json.JSONObject
 import retrofit2.Response
@@ -9,7 +10,12 @@ abstract class SafeApiRequest {
     suspend fun <T : Any> safeApiRequest(call: suspend () -> Response<T>): T {
         val response = call.invoke()
         if (response.isSuccessful) {
-            return response.body()!!
+            if(response.body() != null){
+                return response.body()!!
+            }else{
+                throw Exception("Base Url Error")
+            }
+
         } else {
             val responseErr = response.errorBody()?.string()
             val message = StringBuilder()

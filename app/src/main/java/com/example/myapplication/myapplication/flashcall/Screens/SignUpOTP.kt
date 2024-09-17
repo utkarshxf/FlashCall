@@ -78,17 +78,17 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
                 // Only show image slider and texts when the keyboard is closed
                 ImageSlider()
                 Spacer(modifier = Modifier.height(20.dp))
-                TitleText()
-                Spacer(modifier = Modifier.height(15.dp))
-                SubTitleText()
-                Spacer(modifier = Modifier.height(30.dp))
+//                TitleText()
+//                Spacer(modifier = Modifier.height(15.dp))
+//                SubTitleText()
+//                Spacer(modifier = Modifier.height(30.dp))
             }
             if(isKeyboardOpen){
                 Spacer(modifier = Modifier.height(50.dp))
-                TitleText()
-                Spacer(modifier = Modifier.height(15.dp))
-                SubTitleText()
-                Spacer(modifier = Modifier.height(30.dp))
+//                TitleText()
+//                Spacer(modifier = Modifier.height(15.dp))
+//                SubTitleText()
+//                Spacer(modifier = Modifier.height(30.dp))
             }
             BottomOTPBar(navController,viewModel, isKeyboardOpen, onKeyboardToggle = {
                 isKeyboardOpen = it
@@ -229,6 +229,22 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
 //                        }
 //                        APIResponse.Empty -> Log.e("ERROR", "ERROR CODE")
 //                    }
+
+//                    when(verifyOTPState) {
+//                        APIResponse.Empty -> {
+//                            Log.d("OtpApiResponse", "Api response is empty")
+//                        }
+//                        is APIResponse.Error -> {
+//                            Log.d("OtpApiResponse", "Api response is Error")
+//                        }
+//                        APIResponse.Loading -> {
+//                            Log.d("OtpApiResponse", "Api response is Loading")
+//                        }
+//                        is APIResponse.Success -> {
+//                            Log.d("OtpApiResponse", "Api response is Success")
+//                        }
+//                    }
+
                     if (verifyOTPState is APIResponse.Error) {
                         Log.e("verifyOtp state", "is showing error")
                         Column(verticalArrangement = Arrangement.Center,

@@ -91,6 +91,12 @@ data class UserUpdateData(
     val audioRate: String?=null,
     @SerializedName("chatRate")
     val chatRate: String?=null,
+    @SerializedName("videoAllowed")
+    val videoAllowed: Boolean?=null,
+    @SerializedName("audioAllowed")
+    val audioAllowed: Boolean?=null,
+    @SerializedName("chatAllowed")
+    val chatAllowed: Boolean?=null,
     @SerializedName("gender")
     val gender: String?=null,
     @SerializedName("dob")
