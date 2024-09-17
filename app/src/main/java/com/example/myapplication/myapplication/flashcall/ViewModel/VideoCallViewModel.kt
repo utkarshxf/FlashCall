@@ -1,6 +1,7 @@
 package com.example.myapplication.myapplication.flashcall.ViewModel
 
 import android.util.Log
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -38,7 +39,9 @@ class VideoCallViewModel @Inject constructor(private val firestore: FirebaseFire
 
     private suspend fun collectRingingCalls() {
         streamVideo.state.ringingCall.collectLatest { call ->
-            state = state.copy(incomingCall = call)
+            state = state.copy( incomingCall = call,
+//                callType = if (streamVideo == true) "Video" else "Audio"
+            )
         }
     }
 
@@ -223,5 +226,6 @@ data class VideoCallScreenState(
     val callerLeft: Boolean = false,
     val leaveCall: Call? = null,
     val callAccepted: Boolean = false,
-    val connectionState: ConnectionState = ConnectionState.Loading
+    val connectionState: ConnectionState = ConnectionState.Loading,
+    val callType: String = "Audio"
 )

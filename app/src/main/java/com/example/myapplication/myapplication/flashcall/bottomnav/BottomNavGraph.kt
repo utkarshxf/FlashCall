@@ -3,10 +3,7 @@ package com.example.myapplication.myapplication.flashcall.bottomnav
 import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -17,7 +14,7 @@ import com.example.myapplication.myapplication.flashcall.Data.VideoCallRoute
 import com.example.myapplication.myapplication.flashcall.Screens.EditProfileScreen
 import com.example.myapplication.myapplication.flashcall.Screens.HomeScreen
 import com.example.myapplication.myapplication.flashcall.Screens.InCallScreen
-import com.example.myapplication.myapplication.flashcall.Screens.IncomingVideoCallScreen
+import com.example.myapplication.myapplication.flashcall.Screens.IncomingCallScreen
 import com.example.myapplication.myapplication.flashcall.Screens.OngoingVideoCallScreen
 import com.example.myapplication.myapplication.flashcall.Screens.ProfileScreen
 import com.example.myapplication.myapplication.flashcall.Screens.wallet.WalletScreen
@@ -40,7 +37,7 @@ fun BottomNavGraph(
     val uiState = videoCallViewModel.state
     val incomingCall = uiState.incomingCall
     NavHost(navController = homeNavController, startDestination = ScreenRoutes.HomeScreen.route) {
-        composable(route = ScreenRoutes.IncomingVideoCallScreen.route) {
+        composable(route = ScreenRoutes.IncomingCallScreen.route) {
             IncomingVideoCall(call = incomingCall,
                 navController = homeNavController,
                 videoCallViewModel = videoCallViewModel,
@@ -48,9 +45,8 @@ fun BottomNavGraph(
         }
         composable(route = VideoCallRoute.OngoingVideoCall.videoCallRoute) {
             OngoingVideoCallScreen(
-                videoCall = true,
-                viewModel = videoCallViewModel,
-                navController = navController)
+                videoCall = true, viewModel = videoCallViewModel, navController = navController
+            )
         }
         composable(route = ScreenRoutes.InCallScreen.route) {
             InCallScreen(call = incomingCall,
@@ -92,7 +88,7 @@ private fun IncomingVideoCall(
 ) {
     val callAccepted = videoCallViewModel.state.callAccepted
     if (call != null) {
-        IncomingVideoCallScreen(
+        IncomingCallScreen(
             call = call,
             navController = navController,
             videoCallViewModel,

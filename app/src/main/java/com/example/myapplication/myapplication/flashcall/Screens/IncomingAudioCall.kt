@@ -42,7 +42,7 @@ import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.R
 
 @Composable
-fun IncomingAudioCallScreen(
+fun IncomingCallScreen(
     callerName: String,
     navController: NavController
 ) {
@@ -421,5 +421,5 @@ fun InCallScreen(
 @Composable
 fun AudioCallPreview(){
     InCallScreen(callerName = "Ram", timeLeft = "19:11", callDuration ="12:29" , navController = rememberNavController() )
-    //IncomingAudioCallScreen(callerName = "Mohd Gauri", navController = rememberNavController())
+
 }

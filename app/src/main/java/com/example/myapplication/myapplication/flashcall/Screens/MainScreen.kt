@@ -12,11 +12,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,7 +32,6 @@ import com.example.myapplication.myapplication.flashcall.ViewModel.VideoCallView
 import com.example.myapplication.myapplication.flashcall.ViewModel.chats.ChatRequestViewModel
 import com.example.myapplication.myapplication.flashcall.bottomnav.BottomBar
 import com.example.myapplication.myapplication.flashcall.bottomnav.BottomNavGraph
-import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun MainScreen(
@@ -53,7 +49,7 @@ fun MainScreen(
     val context = LocalContext.current
 
     incomingCall?.let {
-        homeNavController.navigate(ScreenRoutes.IncomingVideoCallScreen.route)
+        homeNavController.navigate(ScreenRoutes.IncomingCallScreen.route)
     }
     Scaffold(modifier = Modifier.fillMaxSize(), bottomBar = {
         if (!chatRequestCreated && incomingCall == null && activeVideoCall == null) {
