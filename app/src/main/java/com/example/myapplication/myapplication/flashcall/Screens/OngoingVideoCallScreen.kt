@@ -101,7 +101,9 @@ fun VideoCallContent(
         if(activeVideoCall==null)
         {
             viewModel.resetCallState()
-            navController.navigate(ScreenRoutes.MainScreen.route)
+            navController.navigate(ScreenRoutes.MainScreen.route){
+                popUpTo(ScreenRoutes.InCallScreen.route) { inclusive = true }
+            }
         }
     }
     LaunchedEffect(Unit) {
@@ -133,7 +135,7 @@ fun VideoCallContent(
                                                     .size(52.dp)
                                                     .padding(start = 10.dp),
                                                 isCameraEnabled = isCameraEnabled,
-                                                onCallAction = { call.camera.setEnabled(it.isEnabled) }
+                                                onCallAction = { viewModel.toggleCamera(it.isEnabled) }
                                             )
 
                                             ToggleMicrophoneAction(
@@ -141,7 +143,7 @@ fun VideoCallContent(
                                                     .size(52.dp)
                                                     .padding(horizontal = 20.dp),
                                                 isMicrophoneEnabled = isMicrophoneEnabled,
-                                                onCallAction = { call.microphone.setEnabled(it.isEnabled) }
+                                                onCallAction = {viewModel.toggleMicrophone(it.isEnabled)}
                                             )
                                             LeaveCallAction(
                                                 modifier = Modifier.size(52.dp),
@@ -213,7 +215,9 @@ fun VideoCallError(viewModel: VideoCallViewModel,navController:NavController)
         delay(1000)
         Log.e("VideoCallError" , "VideoCallError")
         viewModel.resetCallState()
-        navController.navigate(ScreenRoutes.MainScreen.route)
+        navController.navigate(ScreenRoutes.MainScreen.route){
+            popUpTo(ScreenRoutes.InCallScreen.route) { inclusive = true }
+        }
     }
     Box(modifier = Modifier.fillMaxSize())
     {
