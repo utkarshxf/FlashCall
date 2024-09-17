@@ -206,20 +206,22 @@ class RegistrationViewModel @Inject constructor(
 
             // Check if the document exists first
             documentRef.get().addOnSuccessListener { document ->
+
                 if (document.exists()) {
                     // If the document exists, use update
                     documentRef.update(updateMap)
                         .addOnSuccessListener {
-                            updateUserBackend(userId, videoRate, audioRate, chatRate)
+                            updateUserBackend(userId, videoRate, audioRate, chatRate, servicesVideo, servicesAudio, servicesChat)
                         }
                         .addOnFailureListener { e ->
                             Log.w("Firestore", "Error updating document", e)
                         }
                 } else {
                     // If the document doesn't exist, use set to create it
+
                     documentRef.set(updateMap)
                         .addOnSuccessListener {
-                            updateUserBackend(userId, videoRate, audioRate, chatRate)
+                            updateUserBackend(userId, videoRate, audioRate, chatRate, servicesVideo, servicesAudio, servicesChat)
                         }
                         .addOnFailureListener { e ->
                             Log.w("Firestore", "Error creating document", e)
@@ -231,7 +233,10 @@ class RegistrationViewModel @Inject constructor(
         }
     }
 
-    private fun updateUserBackend(userId: String, videoRate: String?, audioRate: String?, chatRate: String?) {
+
+
+    private fun updateUserBackend(userId: String, videoRate: String?, audioRate: String?, chatRate: String?
+                                  , videoService: Boolean?, audioService: Boolean?, chatService: Boolean?) {
         viewModelScope.launch {
             _updateUserState.value = APIResponse.Loading
             try {
@@ -241,6 +246,9 @@ class RegistrationViewModel @Inject constructor(
                     videoRate = videoRate,
                     audioRate = audioRate,
                     chatRate = chatRate,
+                    videoService = videoService,
+                    audioService = audioService,
+                    chatService = chatService,
                 ).collect { response ->
                     _updateUserState.value = APIResponse.Success(response)
                     userPreferencesRepository.storeUpdateUserResponseInPreferences(response)

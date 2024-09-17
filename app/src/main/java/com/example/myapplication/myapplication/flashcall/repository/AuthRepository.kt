@@ -1,6 +1,7 @@
 package com.example.myapplication.myapplication.flashcall.repository
 
 import android.util.Log
+import android.util.Patterns
 import com.example.myapplication.myapplication.flashcall.Data.SendOTP
 import com.example.myapplication.myapplication.flashcall.Data.VerifyOTP
 import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
@@ -40,7 +41,6 @@ class AuthRepository @Inject constructor(private val apiService: APIService) : I
 //                emit(null)
 //            }
         }.flowOn(Dispatchers.IO)
-
     }
 
     override suspend fun resendOtp(url:String,number: String): Flow<ResendOTPResponse>{
@@ -53,15 +53,14 @@ class AuthRepository @Inject constructor(private val apiService: APIService) : I
     }
 
     override suspend fun verifyOtp(url:String,number: String, otp: String): Flow<VerifyOTPResponse>{
-
         return flow{
-            val response = safeApiRequest {  apiService.verifyOTP(url, VerifyRequest(number,otp))}
+            val response = safeApiRequest {
+                apiService.verifyOTP(url, VerifyRequest(number,otp)) }
             emit(response)
         }.flowOn(Dispatchers.IO)
     }
 
     override suspend fun validateUser(url:String, token: String): Flow<ValidateResponse>{
-
         return flow {
             val response = safeApiRequest {  apiService.validateUser(url, ValidateRequest(token))}
             emit(response)

@@ -12,8 +12,11 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Data.VideoCallRoute
 import com.example.myapplication.myapplication.flashcall.Data.model.SDKResponseState
@@ -105,3 +108,12 @@ private fun CallControls(
         }
     }
 }
+
+
+@Preview(showBackground = true)
+@Composable
+fun VideoCallPreview(){
+    //IncomingVideoCallScreen(call = hiltViewModel(), navController = rememberNavController(), videoCallViewModel = hiltViewModel() )
+}
+
+

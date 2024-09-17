@@ -16,6 +16,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.DefaultLifecycleObserver
@@ -86,7 +87,6 @@ class MainActivity : ComponentActivity() {
         )
         val hyperKycLauncher: ActivityResultLauncher<HyperKycConfig> =
             registerForActivityResult(HyperKyc.Contract()) { result ->
-
                 // handle result post workflow finish/exit
 
                 when (result.status) {
@@ -116,6 +116,7 @@ class MainActivity : ComponentActivity() {
                 Log.d("HyperKyc", "Data: $data")
                 Log.e("HyperKyc", "Status: ${result.transactionId}")
             }
+
         setContent {
 
             FlashCallTheme {
@@ -170,7 +171,6 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
     }
 
     NavHost(navController = navController, startDestination = ScreenRoutes.SignUpScreen.route) {
-
         composable(route = ScreenRoutes.SignUpScreen.route) {
             SignUpScreen(navController = navController, viewModel = viewModel)
         }
@@ -242,3 +242,5 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
         }
     }
 }
+
+

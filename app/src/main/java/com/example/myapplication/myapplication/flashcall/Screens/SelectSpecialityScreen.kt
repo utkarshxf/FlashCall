@@ -7,6 +7,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.rememberScrollState
@@ -22,6 +24,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material3.Button
@@ -33,6 +36,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -80,14 +84,13 @@ fun SelectSpecialityScreen(navController: NavController) {
     Surface(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
             .background(color = PrimaryBackGround)
     ) {
         Scaffold(
             topBar = {
                 TopAppBar(
                     colors = TopAppBarDefaults.topAppBarColors(),
-                    title = { },
+                    title = { Text(text = "Back") },
                     navigationIcon = {
                         IconButton(onClick = { }) {
                             Icon(Icons.Default.KeyboardArrowLeft, contentDescription = "Back")
@@ -95,47 +98,58 @@ fun SelectSpecialityScreen(navController: NavController) {
                     })
             }
         ) {
-            Column(
+            // Using BoxWithConstraints to control the height of LazyVerticalGrid
+            BoxWithConstraints(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(it)
                     .padding(8.dp)
-
             ) {
-                Text(
-                    text = "Select Your Speciality",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 30.sp,
-                    modifier = Modifier.padding(start = 10.dp)
-                )
-                Spacer(modifier = Modifier.height(20.dp))
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(3),
-                    modifier = Modifier.padding(10.dp)
-                ) {
-                    items(items.size) { index ->
-                        SpecialityItem(
-                            index = index,
-                            items = items,
-                            imageRes = images[index],
-                            isSelected = index == selectedIndex, // Check if the current item is selected
-                            onClick = { selectedIndex = index } // Update the selected item on click
-                        )
+                val maxHeight = maxHeight
+
+                Column {
+                    Text(
+                        text = "Select Your Speciality",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 30.sp,
+                        modifier = Modifier.padding(start = 10.dp)
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Constraining the height of LazyVerticalGrid
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(3),
+                        modifier = Modifier
+                            .height(maxHeight * 0.7f) // Give LazyVerticalGrid a fixed height relative to available space
+                            .padding(10.dp)
+                    ) {
+                        items(items.size) { index ->
+                            SpecialityItem(
+                                index = index,
+                                items = items,
+                                imageRes = images[index],
+                                isSelected = index == selectedIndex, // Check if the current item is selected
+                                onClick = { selectedIndex = index } // Update the selected item on click
+                            )
+                        }
                     }
-                }
-                Spacer(modifier = Modifier.height(60.dp))
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            if (selectedIndex != -1) Color(MainColor.value) else Color.Gray // Change color based on selection
-                        )
-                ) {
-                    ButtonSpeciality(isSelected = selectedIndex != -1, navController)
+
+                    Spacer(modifier = Modifier.height(60.dp))
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                if (selectedIndex != -1) Color(MainColor.value) else Color.Gray // Change color based on selection
+                            )
+                    ) {
+                        ButtonSpeciality(isSelected = selectedIndex != -1, navController)
+                    }
                 }
             }
         }
     }
+
 }
 
 @Composable
