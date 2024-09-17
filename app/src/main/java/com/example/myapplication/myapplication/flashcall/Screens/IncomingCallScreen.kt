@@ -132,10 +132,6 @@ fun IncomingCallScreen(
                         )
 
                         Spacer(modifier = Modifier.height(8.dp))
-                        Log.d(
-                            "IncomingCallScreen",
-
-                         )
                         Text(
                             text = call.user.type.toString(),
                             color = Color.White,
