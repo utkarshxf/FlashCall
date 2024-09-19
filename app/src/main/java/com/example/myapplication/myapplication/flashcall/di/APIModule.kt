@@ -42,7 +42,7 @@ object APIModule {
     fun providesRetrofit() : Retrofit {
         val moshi = GsonConverterFactory.create()
         return Retrofit.Builder()
-            .baseUrl("https://flashcall.me/")
+            .baseUrl("https://flashcall.vercel.app/")
             .client(OkHttpClient())
             .addConverterFactory(moshi)
             .build()

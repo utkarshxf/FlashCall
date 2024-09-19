@@ -13,6 +13,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.viewModels
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
@@ -71,6 +72,7 @@ class MainActivity : ComponentActivity() {
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         installSplashScreen().apply {
             setKeepOnScreenCondition {
                 !viewModel.isReady.value
@@ -235,9 +237,10 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
             IncomingChatScreen(navController = navController)
         }
         composable(route = ScreenRoutes.KycScreen.route) {
-            KYCScreen()
+            KYCScreen(navController = navController)
         }
     }
 }
+
 
 

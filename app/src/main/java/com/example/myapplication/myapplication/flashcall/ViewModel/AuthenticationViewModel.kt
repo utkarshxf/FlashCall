@@ -131,9 +131,8 @@ class AuthenticationViewModel @Inject constructor(
                     authenticationRepository.verifyOtp(
                         "api/v1/verify-otp", phone, otp
                     ).collect {
-                        _verifyOTPState.value = APIResponse.Success(it)
-
                         if (it.token != null) {
+                            _verifyOTPState.value = APIResponse.Success(it)
                             loading(false)
                             if (isCreatedUserState.value != null) {
                                 saveTokenToPreferences(context, it.token)
@@ -152,6 +151,12 @@ class AuthenticationViewModel @Inject constructor(
                                     }
                                 }
                             }
+                        }else{
+                            _verifyOTPState.value = APIResponse.Error("Invalid OTP or Bad Request")
+                            loading(false)
+                            Toast.makeText(
+                                navController.context, "Invalid OTP. Please try again.", Toast.LENGTH_LONG
+                            ).show()
                         }
                     }
                 } catch (e: HttpException) {
@@ -264,3 +269,13 @@ class AuthenticationViewModel @Inject constructor(
        return userPreferencesRepository.getUser()
     }
 }
+
+//
+//{
+//    "message": "OTP verified successfully",
+//    "sessionToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwaG9uZSI6IjgxOTI5MjM5OTUiLCJ1c2VyIjp7Il9pZCI6IjY2ZWFhODIzNjRkYWJhYmRmNTgzNWRjNCIsInVzZXJuYW1lIjoiZ2F1cmkxMjMiLCJwaG9uZSI6Iis5MTgxOTI5MjM5OTUiLCJmdWxsTmFtZSI6Ik1vaGQgR2F1cmkiLCJmaXJzdE5hbWUiOiJ1cGRhdGUiLCJsYXN0TmFtZSI6Im5hbWUiLCJwaG90byI6Imh0dHBzOi8vZmlyZWJhc2VzdG9yYWdlLmdvb2dsZWFwaXMuY29tL3YwL2IvZmxhc2hjYWxsY2hhdC5hcHBzcG90LmNvbS9vL2ltYWdlcyUyRjEwMDAwMDU0NzY_YWx0PW1lZGlhJnRva2VuPWEwZTFhOGE3LTBiNTAtNGFkYi05YjBlLTc2NWYyN2YzYzU1ZCIsInByb2Zlc3Npb24iOiJBc3Ryb2xvZ2VyIiwidGhlbWVTZWxlY3RlZCI6IiM1MEE2NUMiLCJ2aWRlb1JhdGUiOiIyNSIsImF1ZGlvUmF0ZSI6IjI1IiwiY2hhdFJhdGUiOiIyNSIsInZpZGVvQWxsb3dlZCI6dHJ1ZSwiYXVkaW9BbGxvd2VkIjp0cnVlLCJjaGF0QWxsb3dlZCI6dHJ1ZSwiZ2VuZGVyIjoiTWFsZSIsImRvYiI6IjE4LTA5LTIwMjQiLCJiaW8iOiJ0aGlzIGlzIGJpbyB0ZXh0Iiwia3ljX3N0YXR1cyI6IkluY29tcGxldGUiLCJ3YWxsZXRCYWxhbmNlIjowLCJyZWZlcnJlZEJ5IjpudWxsLCJyZWZlcnJhbEFtb3VudCI6MCwibGlua3MiOlt7InRpdGxlIjoieW91dHViZSIsInVybCI6Imh0dHA6Ly95b3V0dWJlLmNvbSIsImlzQWN0aXZlIjp0cnVlfSx7InRpdGxlIjoieW91dHViZSIsInVybCI6Imh0dHBzOi8veW91dHViZS5jb20iLCJpc0FjdGl2ZSI6dHJ1ZX0seyJ0aXRsZSI6Imluc3RhZ3JhbSIsInVybCI6Imh0dHBzOi8vaW5zdGFncmFtLmNvbSIsImlzQWN0aXZlIjp0cnVlfSx7InRpdGxlIjoiVGVzdCIsInVybCI6InRlc3QuY29tIiwiaXNBY3RpdmUiOnRydWV9XSwiY3JlYXRlZEF0IjoiMjAyNC0wOS0xOFQxMDoxNDo1OS4yNzFaIiwidXBkYXRlZEF0IjoiMjAyNC0wOS0xOVQwNTozMjowMy4wNDRaIiwiX192IjowLCJ1c2VyVHlwZSI6ImNyZWF0b3IifSwiaWF0IjoxNzI2NzI4OTc5LCJleHAiOjE3MjczMzM3Nzl9.qcXWtgHRJILQtpV3LM2vhIdfcb6ARQMbrle4kbgZ6kI"
+//}
+//{
+//    "error": "OTP Mismatch"
+//}
+
