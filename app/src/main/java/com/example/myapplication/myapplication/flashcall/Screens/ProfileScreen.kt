@@ -1,9 +1,8 @@
 package com.example.myapplication.myapplication.flashcall.Screens
 
+//import com.example.myapplication.myapplication.flashcall.hyperKycLauncher
 import android.app.Activity
-import android.content.Intent
 import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -19,12 +18,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.HorizontalDivider
@@ -45,26 +42,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat.startActivity
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import co.hyperverge.hyperkyc.HyperKyc
 import co.hyperverge.hyperkyc.data.models.HyperKycConfig
-import co.hyperverge.hyperkyc.data.models.result.HyperKycResult
-import coil.compose.AsyncImage
-import coil.compose.AsyncImagePainter
-import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.R
 import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.RegistrationViewModel
-//import com.example.myapplication.myapplication.flashcall.hyperKycLauncher
-import com.example.myapplication.myapplication.flashcall.kyc_package.KycActivity
 import com.example.myapplication.myapplication.flashcall.ui.theme.BorderColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.BorderColor2
 import com.example.myapplication.myapplication.flashcall.ui.theme.ProfileBackground
@@ -92,8 +78,7 @@ fun ProfileScreen(
     var profilePicState by remember { mutableStateOf(profilePic) }
 
     Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = ProfileBackground
+        modifier = Modifier.fillMaxSize(), color = ProfileBackground
     ) {
         Column(
             modifier = Modifier
@@ -106,14 +91,13 @@ fun ProfileScreen(
                     .height(180.dp)
             ) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize()
+                    modifier = Modifier.fillMaxSize()
                 ) {
                     IconButton(onClick = {
-//                        navController.popBackStack()
+                        // navController.popBackStack()
                     }) {
                         Icon(
-                            Icons.Default.KeyboardArrowLeft,
+                            Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                             contentDescription = "Back",
                             tint = Color.Black,
                             modifier = Modifier.size(28.dp)
@@ -122,39 +106,36 @@ fun ProfileScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(8.dp)
-
+                            .padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Box(
                             modifier = Modifier
                                 .size(100.dp)
-                                .padding(6.dp)  // Adjust the size as per your requirement
+                                .padding(6.dp)
                         ) {
                             ImageFromUrl(imageUrl = profilePic!!)
                         }
+                        Spacer(modifier = Modifier.width(16.dp))
                         Column(
                             verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
+                            horizontalAlignment = Alignment.Start,
+                            modifier = Modifier.padding(start = 6.dp)
                         ) {
                             Text(
-                                text = name.toString(),
-                                color = Color.Black,
-                                style = TextStyle(
+                                text = name.toString(), color = Color.Black, style = TextStyle(
                                     fontFamily = arimoFontFamily,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 24.sp,
-                                ),
-                                modifier = Modifier.padding(top = 50.dp, start = 6.dp)
+                                )
                             )
 
                             Text(
-                                text = "Astrologer",
-                                style = TextStyle(
+                                text = "Astrologer", style = TextStyle(
                                     fontFamily = arimoFontFamily,
                                     fontWeight = FontWeight.Black,
                                     fontSize = 16.sp,
-                                ),
-                                color = SecondaryText
+                                ), color = SecondaryText
                             )
                         }
                     }
@@ -163,8 +144,7 @@ fun ProfileScreen(
 
 
             HorizontalDivider(
-                thickness = 10.dp,
-                color = BorderColor2
+                thickness = 10.dp, color = BorderColor2
             )
 
             Spacer(modifier = Modifier.height(30.dp))
@@ -176,30 +156,20 @@ fun ProfileScreen(
                 transactionId = "TestTransact1"
             )
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(if (isKyc) 75.dp else 60.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color.White)
-                    .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
-                    .clickable {
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .height(if (isKyc) 75.dp else 60.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(Color.White)
+                .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
+                .clickable {
+                    navController.navigate(ScreenRoutes.KycScreen.route)
 
-                        navController.navigate(ScreenRoutes.KycScreen.route)
-
-//                        val updatedConfig = HyperKycConfig(
-//                            appId = "muzdob",
-//                            appKey = "2ns9u1evoeugbrydykl7",
-//                            workflowId = "workflow_9KW4mUl",
-//                            transactionId = "TestTransact6"
-//                        )
-//                        hyperKycLauncher.launch(updatedConfig)
-                    }
-            ) {
+                }) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    verticalArrangement = Arrangement.Center
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Row(
                         modifier = Modifier
@@ -236,7 +206,7 @@ fun ProfileScreen(
                         }
 
                         Icon(
-                            Icons.Default.KeyboardArrowRight,
+                            Icons.AutoMirrored.Filled.KeyboardArrowRight,
                             contentDescription = "Next",
                             tint = Color.Black,
                             modifier = Modifier.size(36.dp)
@@ -246,7 +216,7 @@ fun ProfileScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
 
-                    }
+                }
                 if (isKyc) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
@@ -297,7 +267,7 @@ fun ProfileScreen(
                     Spacer(modifier = Modifier.weight(1f))
 
                     Icon(
-                        Icons.Default.KeyboardArrowRight,
+                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
                         contentDescription = "Next",
                         tint = Color.Black,
                         modifier = Modifier.size(36.dp)
@@ -306,17 +276,15 @@ fun ProfileScreen(
             }
             Spacer(modifier = Modifier.height(15.dp))
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(60.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color.White)
-                    .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
-                    .clickable {
-                        navController.navigate(ScreenRoutes.FeedbackScreen.route)
-                    }
-            ) {
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(Color.White)
+                .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
+                .clickable {
+                    navController.navigate(ScreenRoutes.FeedbackScreen.route)
+                }) {
                 Row(
                     modifier = Modifier
                         .fillMaxSize()
@@ -341,7 +309,7 @@ fun ProfileScreen(
                     Spacer(modifier = Modifier.weight(1f))
 
                     Icon(
-                        Icons.Default.KeyboardArrowRight,
+                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
                         contentDescription = "Next",
                         tint = Color.Black,
                         modifier = Modifier.size(36.dp)
@@ -351,17 +319,15 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(15.dp))
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(60.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color.White)
-                    .clickable {
-                        navController.navigate(ScreenRoutes.PaymentSettings.route)
-                    }
-                    .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
-            ) {
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(Color.White)
+                .clickable {
+                    navController.navigate(ScreenRoutes.PaymentSettings.route)
+                }
+                .border(1.dp, BorderColor, RoundedCornerShape(10.dp))) {
                 Row(
                     modifier = Modifier
                         .fillMaxSize()
@@ -386,7 +352,7 @@ fun ProfileScreen(
                     Spacer(modifier = Modifier.weight(1f))
 
                     Icon(
-                        Icons.Default.KeyboardArrowRight,
+                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
                         contentDescription = "Next",
                         tint = Color.Black,
                         modifier = Modifier.size(36.dp)
@@ -428,7 +394,7 @@ fun ProfileScreen(
                     Spacer(modifier = Modifier.weight(1f))
 
                     Icon(
-                        Icons.Default.KeyboardArrowRight,
+                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
                         contentDescription = "Next",
                         tint = Color.Black,
                         modifier = Modifier.size(36.dp)
@@ -439,23 +405,21 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(15.dp))
 
             val activity = (LocalContext.current as? Activity)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(60.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color.White)
-                    .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
-                    .clickable {
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(Color.White)
+                .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
+                .clickable {
 //                        activity?.finish()
-                        authenticationViewModel.deleteTokenFromPreferences()
+                    authenticationViewModel.deleteTokenFromPreferences()
 
-                        // Navigate to the login screen or some other screen
-                        navController.navigate(ScreenRoutes.SignUpScreen.route) {
-                            popUpTo(0) { inclusive = true } // Clear the backstack
-                        }
+                    // Navigate to the login screen or some other screen
+                    navController.navigate(ScreenRoutes.SignUpScreen.route) {
+                        popUpTo(0) { inclusive = true } // Clear the backstack
                     }
-            ) {
+                }) {
                 Row(
                     modifier = Modifier
                         .fillMaxSize()
@@ -480,7 +444,7 @@ fun ProfileScreen(
                     Spacer(modifier = Modifier.weight(1f))
 
                     Icon(
-                        Icons.Default.KeyboardArrowRight,
+                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
                         contentDescription = "Next",
                         tint = Color.Black,
                         modifier = Modifier.size(36.dp)
@@ -490,7 +454,6 @@ fun ProfileScreen(
         }
     }
 }
-
 
 
 //@Preview
