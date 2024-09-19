@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -62,6 +63,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
@@ -91,6 +93,7 @@ import com.example.myapplication.myapplication.flashcall.Data.model.LinkData
 import com.example.myapplication.myapplication.flashcall.Data.model.firestore.UserServicesResponse
 import com.example.myapplication.myapplication.flashcall.R
 import com.example.myapplication.myapplication.flashcall.Screens.common.CircularLoaderButton
+import com.example.myapplication.myapplication.flashcall.Screens.common.WideSwitch
 import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.RegistrationViewModel
 import com.example.myapplication.myapplication.flashcall.ui.theme.BorderColor2
@@ -371,19 +374,7 @@ fun HomeScreenBottom(homeNavController: NavController, username: String, walletB
                     .padding(10.dp)
             ) {
                 Row(modifier = Modifier.fillMaxWidth()) {
-
-//                    var createdAt = System.currentTimeMillis()
-//                    Text(text = "$createdAt")
-
                     CopyBar(homeNavController, username = username)
-//                    if (showShareDialog) {
-//                        ShareTextButton(
-//                            textToShare = "https://www.flashcall.me/nitra-sahgal-55-consultant",
-//                            homeNavController = homeNavController
-//                        )
-//                    }
-
-
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -395,9 +386,6 @@ fun HomeScreenBottom(homeNavController: NavController, username: String, walletB
                 ServicesSection()
 
                 Spacer(modifier = Modifier.height(20.dp))
-
-
-
 
                 if(addedAdditionalLink){
                     addedLinkLayout {
@@ -449,10 +437,6 @@ fun HomeScreenBottom(homeNavController: NavController, username: String, walletB
                     }
                 }
 
-
-
-
-
                 Spacer(modifier = Modifier.height(40.dp))
 
                 DemoText()
@@ -503,80 +487,36 @@ fun addExtraLink(
     }
 }
 
-
-//@Composable
-//fun addExtraLink(){
-//    Box(
-//
-//        modifier = Modifier
-//            .padding(20.dp)
-//            .fillMaxWidth(1f)
-//            .height(64.dp)
-//            .background(
-//                color = Color.White,
-//                shape = RoundedCornerShape(10.dp)
-//            )
-//            .drawBehind {
-//                drawRoundRect(color = Color.Gray, style = Stroke(width = 3f,
-//                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
-//                )
-//                )
-//            }
-//    ) {
-//
-//        Row(modifier = Modifier
-//            .fillMaxWidth(1f)
-//            .padding(horizontal = 10.dp)
-//            .height(64.dp)
-//            .background(Color.White)
-//            .clip(shape = RoundedCornerShape(10.dp)),
-//            verticalAlignment = Alignment.CenterVertically,
-//            horizontalArrangement = Arrangement.Center
-//        ) {
-//
-//
-//            Icon(painter = painterResource(id = R.drawable.add_circle_outline_24dp_1),
-//                contentDescription = "addIcon",
-//                tint = Color.Black)
-//            Text(text = "Add Your Link",
-//                color = Color.Black,
-//                modifier = Modifier.padding(start = 10.dp),
-//                style = TextStyle(
-//                    fontSize = 17.sp,
-//                    fontFamily = helveticaFontFamily,
-//                    fontWeight = FontWeight.Bold
-//                )
-//            )
-//        }
-//
-//    }
-//}
-
 @Composable
 fun CopyBar(homeNavController: NavController, username: String) {
     var copyText by remember {
         mutableStateOf("https://www.flashcall.vercel.app/expert/$creatorUserName/$creatorUid")
     }
-    var showShareDialog by remember { mutableStateOf(true) }
     var context = LocalContext.current
+
     Row(
         modifier = Modifier
-            .wrapContentWidth()
-            .height(50.dp)
-            .clip(RoundedCornerShape(24.dp))
+            .fillMaxWidth()
+            .height(50.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
-                .wrapContentSize()
-                .background(color = Color.White, shape = RoundedCornerShape(24.dp))
+                .weight(1f)
+                .height(50.dp)
+                .clip(RoundedCornerShape(24.dp))
+                .background(color = Color.White)
                 .border(1.dp, BorderColor2, shape = RoundedCornerShape(24.dp))
-        )
-        {
-            Row(modifier = Modifier.wrapContentSize()) {
+        ) {
+            Row(
+                modifier = Modifier.fillMaxSize(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Image(
                     painter = painterResource(id = R.drawable.link_icon),
-                    modifier = Modifier.padding(16.dp),
-                    contentDescription = null
+                    modifier = Modifier.padding(start = 16.dp, end = 8.dp),
+                    contentDescription = "Link Icon"
                 )
 
                 Text(
@@ -584,8 +524,8 @@ fun CopyBar(homeNavController: NavController, username: String) {
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
-                        .width(200.dp)
-                        .align(Alignment.CenterVertically),
+                        .weight(1f)
+                        .padding(end = 8.dp),
                     style = TextStyle(
                         fontFamily = arimoFontFamily,
                         fontWeight = FontWeight.Black,
@@ -597,24 +537,22 @@ fun CopyBar(homeNavController: NavController, username: String) {
                 Image(
                     painter = painterResource(id = R.drawable.copy_icon),
                     modifier = Modifier
-                        .padding(16.dp)
+                        .padding(end = 16.dp)
                         .clickable {
-                            copyToClipboard(
-                                context = context, copyText
-                            )
+                            copyToClipboard(context = context, copyText)
                         },
-                    contentDescription = null
+                    contentDescription = "Copy Icon"
                 )
             }
         }
 
-        if (showShareDialog) {
-            ShareTextButton(
-                textToShare = "https://www.flashcall.me/nitra-sahgal-55-consultant",
-                homeNavController = homeNavController,
-                username = username
-            )
-        }
+        Spacer(modifier = Modifier.width(8.dp))
+
+        ShareTextButton(
+            textToShare = "https://www.flashcall.me/nitra-sahgal-55-consultant",
+            homeNavController = homeNavController,
+            username = username
+        )
     }
 }
 
@@ -627,20 +565,26 @@ fun WalletBar(navController: NavController, walletBalance: Double) {
             .background(color = Color.White, shape = RoundedCornerShape(10.dp))
             .border(1.dp, BorderColor2, shape = RoundedCornerShape(10.dp))
     ) {
-        Row(modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
-
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 10.dp), // Padding to add some space between borders and content
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Wallet icon
             walletIcon()
 
-            Column(modifier = Modifier
-                .fillMaxHeight()
-                .padding(start = 7.dp, bottom = 5.dp),
+            // Column containing text for "Today's Earning" and balance
+            Column(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .padding(start = 7.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.Start
-                ) {
-
+            ) {
                 Text(
                     text = "Today's Earning",
-                    modifier = Modifier.padding(top = 10.dp),
+                    modifier = Modifier.padding(bottom = 2.dp),
                     style = TextStyle(
                         fontFamily = helveticaFontFamily,
                         fontWeight = FontWeight.Black,
@@ -649,18 +593,22 @@ fun WalletBar(navController: NavController, walletBalance: Double) {
                     )
                 )
 
-                Row {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
-                        text = "Rs.", modifier = Modifier.padding(top = 5.dp)
-                        , style = TextStyle(
+                        text = "Rs.",
+                        style = TextStyle(
                             fontFamily = arimoFontFamily,
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
                             color = Color.Black
-                        )
+                        ),
+                        modifier = Modifier.padding(end = 2.dp)
                     )
                     Text(
-                        text = "$walletBalance", modifier = Modifier.padding(top = 5.dp), style = TextStyle(
+                        text = String.format("%.2f", walletBalance),
+                        style = TextStyle(
                             fontFamily = arimoFontFamily,
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp,
@@ -668,34 +616,35 @@ fun WalletBar(navController: NavController, walletBalance: Double) {
                         )
                     )
                 }
-
             }
 
             Spacer(Modifier.weight(1f))
-            Button(modifier = Modifier
-                .padding(end = 10.dp)
-                .width(120.dp)
-                .height(36.dp),
+
+            Button(
+                modifier = Modifier,
                 shape = RoundedCornerShape(10.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MainColor, contentColor = Color.White
+                    containerColor = MainColor,
+                    contentColor = Color.White
                 ),
                 onClick = {
                     navController.navigate(ScreenRoutes.WalletScreen.route)
-                }) {
-
+                }
+            ) {
                 Text(
-                    text = "View Wallet", style = TextStyle(
+                    text = "View Wallet",
+                    style = TextStyle(
                         fontFamily = arimoFontFamily,
                         fontWeight = FontWeight.Black,
                         fontSize = 13.sp,
-                    )
+                    ),
+                    maxLines = 1
                 )
-
             }
         }
     }
 }
+
 
 @Composable
 fun ServicesSection(
@@ -740,7 +689,6 @@ fun ServicesSection(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(240.dp)
             .background(color = Color.White, shape = RoundedCornerShape(10.dp))
             .border(1.dp, BorderColor2, shape = RoundedCornerShape(10.dp))
     ) {
@@ -748,23 +696,22 @@ fun ServicesSection(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(40.dp)
-                    .padding(10.dp)
+                    .padding(10.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = "My Services",
-                    modifier = Modifier.padding(start = 5.dp),
                     style = TextStyle(
                         fontFamily = arimoFontFamily,
                         fontWeight = FontWeight.SemiBold,
-                        fontSize = 18.sp,
+                        fontSize = 20.sp,
                         color = Color.Black
                     )
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                Switch(
+                WideSwitch(
                     checked = serviceSelected, onCheckedChange = {
-//                        if(it){
                             serviceSelected = it
                             registrationViewModel.updateServices(userId = creatorUid, masterToggle = it)
 
@@ -772,39 +719,17 @@ fun ServicesSection(
                             registrationViewModel.updateServices(
                                 userId = creatorUid, servicesVideo = it
                             )
-
                             audioService = it
                             registrationViewModel.updateServices(
                                 userId = creatorUid, servicesAudio = it
                             )
-
                             chatService = it
                             registrationViewModel.updateServices(
                                 userId = creatorUid, servicesChat = it
                             )
-
-//                        }else{
-//
-//                            serviceSelected = it
-//                            registrationViewModel.updateServices(userId = creatorUid, masterToggle = it)
-//
-//                            videoService = it
-//                            registrationViewModel.updateServices(
-//                                userId = creatorUid, servicesVideo = it
-//                            )
-//
-//                        }
-                    }, colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color.White,
-                        checkedTrackColor = MainColor,
-                        uncheckedThumbColor = Color.White,
-                        uncheckedTrackColor = SwitchColor
-                    ), modifier = Modifier
-                        .width(50.dp)
-                        .padding(top = 5.dp)
+                    }
                 )
             }
-
             Spacer(modifier = Modifier.height(5.dp))
 
             HorizontalDivider(
@@ -918,7 +843,6 @@ fun ServicesSection(
                             )
                         }
                     },
-//                    serviceSelected = serviceSelected,
                     textColor = textColor
                 )
             }
@@ -953,13 +877,8 @@ fun ServiceRow(
     serviceEnabled: Boolean,
     onEditClick: () -> Unit,
     onCheckedChange: (Boolean) -> Unit,
-//    serviceSelected: Boolean,
     textColor: Color // Dynamic text color based on main toggle state
 ) {
-    // Text and icon color should be grey if the service is disabled
-//    val rowTextColor = if (serviceEnabled && serviceSelected) textColor else Color.Gray
-//    val iconAlpha = if (serviceEnabled && serviceSelected) 1f else 0.5f
-
     val rowTextColor = if (serviceEnabled ) textColor else Color.Gray
     val iconAlpha = if (serviceEnabled) 1f else 0.5f
 
@@ -986,7 +905,7 @@ fun ServiceRow(
                         fontFamily = arimoFontFamily,
                         fontWeight = FontWeight.Black,
                         fontSize = 14.sp,
-                        color = rowTextColor // Apply dynamic color
+                        color = rowTextColor
                     )
                 )
 
@@ -1002,20 +921,11 @@ fun ServiceRow(
         }
 
         Spacer(modifier = Modifier.weight(1f))
-
-        Switch(
+        WideSwitch(
             checked = serviceEnabled,
             onCheckedChange = { onCheckedChange(it) },
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = Color.White,
-                checkedTrackColor = MainColor,
-                uncheckedThumbColor = Color.White,
-                uncheckedTrackColor = SwitchColor
-            ),
             modifier = Modifier
-                .width(50.dp)
-                .padding(bottom = 15.dp),
-//            enabled = serviceSelected
+                .padding(bottom = 15.dp)
         )
     }
 }
@@ -1156,12 +1066,6 @@ fun PriceInputRow(
     }
 }
 
-
-@Composable
-fun TutorialSlide() {
-
-}
-
 @Composable
 fun CustomToggleButton(selected: Boolean, onChangeValue: (Boolean) -> Unit) {
     Card(
@@ -1265,8 +1169,6 @@ fun ShareTextButton(textToShare: String, homeNavController: NavController, usern
                     )
                     type = "text/plain"
                 }
-
-
                 val shareIntent = Intent.createChooser(sendIntent, null)
                 launcher.launch(shareIntent)
             },
@@ -1287,10 +1189,7 @@ fun DemoText() {
                 Text(
                     text = "If you are Interested in Learning how to create an ",
                     modifier = Modifier.align(Alignment.CenterHorizontally),
-                    style = TextStyle(
-//                        textDecoration = TextDecoration.Underline,
-                        color = Color.Black,
-//                        fontWeight = FontWeight.Bold,
+                    style = TextStyle(color = Color.Black,
                         fontSize = 14.sp
                     )
                 )
@@ -1434,8 +1333,6 @@ fun addedLinkLayout(onCancel: () -> Unit) {
             }
         }
     }
-
-
 }
 
 
@@ -1507,9 +1404,6 @@ fun addLinkLayout(registrationViewModel: RegistrationViewModel = hiltViewModel()
                 Icon(painter = painterResource(id = R.drawable.link_24dp_2), contentDescription = "")
             }
         )
-
-
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()

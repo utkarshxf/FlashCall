@@ -123,9 +123,7 @@ fun IncomingCallScreen(
 
                             )
                         }
-
                         Spacer(modifier = Modifier.height(35.dp))
-
                         Text(
                             text = "Call from",
                             color = Color.White,

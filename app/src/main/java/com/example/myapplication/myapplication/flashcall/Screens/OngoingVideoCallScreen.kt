@@ -118,7 +118,7 @@ fun VideoCallContent(
             ){
                 CallContent(
                     call = call,
-                    enableInPictureInPicture = true,
+                    enableInPictureInPicture = false,
                     controlsContent = {
                         if(videoCall) {
                             Box(modifier = Modifier.fillMaxWidth(),
