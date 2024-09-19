@@ -440,7 +440,6 @@ fun BottomSignUpBar(
                                 val response = (sendOTPState as APIResponse.Success).data
                                 sendtoken = response.token
                             }
-
                             APIResponse.Empty -> Log.e("ERROR", "ERROR CODE")
                             is APIResponse.Error -> {
                                 Toast.makeText(context, "Something Went Wrong", Toast.LENGTH_SHORT).show()

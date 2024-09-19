@@ -15,7 +15,6 @@ abstract class SafeApiRequest {
             }else{
                 throw Exception("Base Url Error")
             }
-
         } else {
             val responseErr = response.errorBody()?.string()
             val message = StringBuilder()
@@ -29,5 +28,4 @@ abstract class SafeApiRequest {
             throw Exception(message.toString())
         }
     }
-
 }

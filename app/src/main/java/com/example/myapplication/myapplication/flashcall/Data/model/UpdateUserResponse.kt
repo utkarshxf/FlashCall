@@ -30,5 +30,6 @@ data class UpdatedUser(
     val referralAmount: Int,
     val createdAt: String,
     val updatedAt: String,
-    val __v: Int
+    val __v: Int,
+    val links: List<LinkData>?
 )

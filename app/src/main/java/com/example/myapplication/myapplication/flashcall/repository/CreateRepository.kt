@@ -3,6 +3,7 @@ package com.example.myapplication.myapplication.flashcall.repository
 import android.util.Log
 import com.example.myapplication.myapplication.flashcall.Data.model.CreateUser
 import com.example.myapplication.myapplication.flashcall.Data.model.CreateUserResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.LinkData
 import com.example.myapplication.myapplication.flashcall.Data.model.UpdateUserRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.UpdateUserResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.UserUpdateData
@@ -126,7 +127,8 @@ class CreateRepository @Inject constructor(private val apiService: APIService):S
         chatService: Boolean?=null,
         gender: String?=null,
         dob: String?=null,
-        bio: String?=null
+        bio: String?=null,
+        link: LinkData?=null
     ): Flow<UpdateUserResponse> {
         return flow {
             val response = apiService.updateUser(
@@ -150,7 +152,8 @@ class CreateRepository @Inject constructor(private val apiService: APIService):S
                         chatAllowed = chatService,
                         gender = gender,
                         dob = dob,
-                        bio = bio
+                        bio = bio,
+                        link = link
                     )
                 )
             )

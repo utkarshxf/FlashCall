@@ -9,6 +9,7 @@ import androidx.navigation.NavController
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.CreateUserResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.LinkData
 import com.example.myapplication.myapplication.flashcall.Data.model.UpdateUserResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.firestore.UserServicesResponse
 import com.example.myapplication.myapplication.flashcall.repository.CreateRepository
@@ -239,7 +240,7 @@ class RegistrationViewModel @Inject constructor(
             _updateUserState.value = APIResponse.Loading
             try {
                 repository.updateUser(
-                    "https://flashcall.vercel.app/api/v1/creator/updateUser", // Replace with actual update endpoint
+                    "api/v1/creator/updateUser", // Replace with actual update endpoint
                     userId = userId,
                     videoRate = videoRate,
                     audioRate = audioRate,
@@ -271,6 +272,7 @@ class RegistrationViewModel @Inject constructor(
         gender: String?=null,
         dob: String?=null,
         bio: String?=null,
+        link: LinkData?=null,
         navController: NavController,
         loading: (Boolean) -> Unit
     ) {
@@ -296,7 +298,8 @@ class RegistrationViewModel @Inject constructor(
                     _updateUserState.value = APIResponse.Success(response)
                     loading(false)
                     userPreferencesRepository.storeUpdateUserResponseInPreferences(response)
-                    navController.navigate(ScreenRoutes.HomeScreen.route)
+//                    navController.navigate(ScreenRoutes.HomeScreen.route)
+                    navController.popBackStack()
                 }
             } catch (e: Exception) {
                 Log.e("error", "User update failed: ${e.message}")
@@ -336,6 +339,29 @@ class RegistrationViewModel @Inject constructor(
 
     fun getStoredUserData(preferencesKey: String): String? {
         return userPreferencesRepository.getStoredUserData(preferencesKey)
+    }
+
+    fun updateUserLinks(link: LinkData?, loading: (Boolean) -> Unit) {
+        val userId = userPreferencesRepository.getUser()?._id?:""
+        viewModelScope.launch {
+            loading(true)
+            _updateUserState.value = APIResponse.Loading
+            try {
+                repository.updateUser(
+                    "api/v1/creator/updateUser", // Replace with actual update endpoint
+                    userId = userId,
+                    link = link,
+                ).collect { response ->
+                    loading(false)
+                    _updateUserState.value = APIResponse.Success(response)
+                    userPreferencesRepository.storeUpdateUserResponseInPreferences(response)
+                }
+            } catch (e: Exception) {
+                loading(false)
+                Log.e("error", "User update failed Links: ${e.message}")
+                _createUserState.value = APIResponse.Error(e.message ?: "User update error")
+            }
+        }
     }
 }
 

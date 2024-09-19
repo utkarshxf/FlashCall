@@ -7,8 +7,10 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -36,7 +38,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -57,12 +63,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -71,21 +82,24 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.LinkData
 import com.example.myapplication.myapplication.flashcall.Data.model.firestore.UserServicesResponse
 import com.example.myapplication.myapplication.flashcall.R
+import com.example.myapplication.myapplication.flashcall.Screens.common.CircularLoaderButton
 import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.RegistrationViewModel
 import com.example.myapplication.myapplication.flashcall.ui.theme.BorderColor2
 import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.PrimaryBackGround
+import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryBackGround
 import com.example.myapplication.myapplication.flashcall.ui.theme.SwitchColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
+import com.example.myapplication.myapplication.flashcall.ui.theme.helveticaFontFamily
 
 //var uriImg: Uri? = null
 var creatorUid: String = ""
@@ -98,39 +112,20 @@ fun HomeScreen(
     registrationViewModel: RegistrationViewModel = hiltViewModel(),
     authenticationViewModel: AuthenticationViewModel = hiltViewModel()
 ) {
-    var uid by remember {
-        mutableStateOf("")
-    }
-    var name by remember {
-        mutableStateOf("")
-    }
-    var username by remember {
-        mutableStateOf("")
-    }
-    var userId by remember {
-        mutableStateOf("")
-    }
-    var phone by remember {
-        mutableStateOf("")
-    }
-    var profession by remember {
-        mutableStateOf("")
-    }
-    var gender by remember {
-        mutableStateOf("")
-    }
-    var themeSelected by remember {
-        mutableStateOf("")
-    }
-    var profilePic by remember {
-        mutableStateOf("")
-    }
-    var dob by remember {
-        mutableStateOf("")
-    }
-    var bio by remember {
-        mutableStateOf("")
-    }
+    var uid by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf("") }
+    var username by remember { mutableStateOf("") }
+    var userId by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
+    var profession by remember { mutableStateOf("") }
+    var gender by remember { mutableStateOf("") }
+    var themeSelected by remember { mutableStateOf("") }
+    var profilePic by remember { mutableStateOf("") }
+    var dob by remember { mutableStateOf("") }
+    var bio by remember { mutableStateOf("") }
+    var walletBalance by remember { mutableStateOf(0.0) }
+
+
     val (firstName, lastName) = name.split(" ", limit = 2).let {
         if (it.size == 2) it else listOf(it[0], "")
     }
@@ -170,6 +165,7 @@ fun HomeScreen(
         gender = userData.gender ?: ""
         dob = userData.dob ?: ""
         bio = userData.bio ?: ""
+        walletBalance = userData.walletBalance ?: 0.0
         themeSelected = userData.themeSelected ?: ""
         profession = userData.profession ?: ""
         profilePic = userData.photo ?: ""
@@ -341,7 +337,7 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 Box(modifier = Modifier.fillMaxSize()) {
-                    HomeScreenBottom(navController, username)
+                    HomeScreenBottom(navController, username, walletBalance)
                 }
             }
         }
@@ -350,8 +346,10 @@ fun HomeScreen(
 
 
 @Composable
-fun HomeScreenBottom(homeNavController: NavController, username: String) {
+fun HomeScreenBottom(homeNavController: NavController, username: String, walletBalance: Double) {
     var showShareDialog by remember { mutableStateOf(true) }
+    var addAdditionalLink by remember { mutableStateOf(false) }
+    var addedAdditionalLink by remember { mutableStateOf(true) }
     Surface(
         modifier = Modifier
             .fillMaxSize()
@@ -390,11 +388,70 @@ fun HomeScreenBottom(homeNavController: NavController, username: String) {
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                WalletBar(navController = homeNavController)
+                WalletBar(navController = homeNavController, walletBalance)
 
                 Spacer(modifier = Modifier.height(20.dp))
 
                 ServicesSection()
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+
+
+
+                if(addedAdditionalLink){
+                    addedLinkLayout {
+
+                    }
+                }
+
+                if(addAdditionalLink){
+                    addLinkLayout {
+                        addAdditionalLink = false
+                    }
+                }
+
+
+                addExtraLink(
+                    modifier = Modifier
+                        .height(84.dp)
+                        .fillMaxWidth()
+                        .padding(vertical = 10.dp, horizontal = 5.dp)
+                        .background(Color.White)
+                        .clickable {
+                            addAdditionalLink = true
+                        },
+                    borderColor = BorderColor2,
+                    dashLength = 10f,
+                    gapLength = 10f,
+                    cornerRadius = 16f,
+                    borderWidth = 4f
+                ) {
+                    Row(modifier = Modifier
+                        .background(color = Color.White, shape = RoundedCornerShape(16.dp)),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+
+
+                        Icon(painter = painterResource(id = R.drawable.add_circle_outline_24dp_1),
+                            contentDescription = "addIcon",
+                            tint = Color.Black)
+                        Text(text = "Add Your Link",
+                            color = Color.Black,
+                            modifier = Modifier.padding(start = 10.dp),
+                            style = TextStyle(
+                                fontSize = 17.sp,
+                                fontFamily = helveticaFontFamily,
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                    }
+                }
+
+
+
+
 
                 Spacer(modifier = Modifier.height(40.dp))
 
@@ -407,6 +464,93 @@ fun HomeScreenBottom(homeNavController: NavController, username: String) {
         }
     }
 }
+
+
+@Composable
+fun addExtraLink(
+    modifier: Modifier = Modifier,
+    borderColor: Color = Color.Red,
+    dashLength: Float = 10f,
+    gapLength: Float = 10f,
+    cornerRadius: Float = 16f,
+    borderWidth: Float = 4f,
+    content: @Composable () -> Unit
+) {
+    Box(
+        modifier = modifier
+            .background(
+                color = Color.Transparent,
+                shape = RoundedCornerShape(cornerRadius.dp)
+            ),
+        contentAlignment = Alignment.Center
+
+    ) {
+        // Draw the dashed border
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val pathEffect = PathEffect.dashPathEffect(floatArrayOf(dashLength, gapLength), 0f)
+            drawRoundRect(
+                color = borderColor,
+                size = size,
+                cornerRadius = androidx.compose.ui.geometry.CornerRadius(cornerRadius),
+                style = Stroke(
+                    width = borderWidth,
+                    pathEffect = pathEffect,
+                    cap = StrokeCap.Round
+                )
+            )
+        }
+        content()
+    }
+}
+
+
+//@Composable
+//fun addExtraLink(){
+//    Box(
+//
+//        modifier = Modifier
+//            .padding(20.dp)
+//            .fillMaxWidth(1f)
+//            .height(64.dp)
+//            .background(
+//                color = Color.White,
+//                shape = RoundedCornerShape(10.dp)
+//            )
+//            .drawBehind {
+//                drawRoundRect(color = Color.Gray, style = Stroke(width = 3f,
+//                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+//                )
+//                )
+//            }
+//    ) {
+//
+//        Row(modifier = Modifier
+//            .fillMaxWidth(1f)
+//            .padding(horizontal = 10.dp)
+//            .height(64.dp)
+//            .background(Color.White)
+//            .clip(shape = RoundedCornerShape(10.dp)),
+//            verticalAlignment = Alignment.CenterVertically,
+//            horizontalArrangement = Arrangement.Center
+//        ) {
+//
+//
+//            Icon(painter = painterResource(id = R.drawable.add_circle_outline_24dp_1),
+//                contentDescription = "addIcon",
+//                tint = Color.Black)
+//            Text(text = "Add Your Link",
+//                color = Color.Black,
+//                modifier = Modifier.padding(start = 10.dp),
+//                style = TextStyle(
+//                    fontSize = 17.sp,
+//                    fontFamily = helveticaFontFamily,
+//                    fontWeight = FontWeight.Bold
+//                )
+//            )
+//        }
+//
+//    }
+//}
 
 @Composable
 fun CopyBar(homeNavController: NavController, username: String) {
@@ -424,10 +568,9 @@ fun CopyBar(homeNavController: NavController, username: String) {
         Box(
             modifier = Modifier
                 .wrapContentSize()
-                .background(color = Color.White)
+                .background(color = Color.White, shape = RoundedCornerShape(24.dp))
                 .border(1.dp, BorderColor2, shape = RoundedCornerShape(24.dp))
         )
-
         {
             Row(modifier = Modifier.wrapContentSize()) {
                 Image(
@@ -476,47 +619,48 @@ fun CopyBar(homeNavController: NavController, username: String) {
 }
 
 @Composable
-fun WalletBar(navController: NavController) {
-
-
+fun WalletBar(navController: NavController, walletBalance: Double) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(76.dp)
-            .background(color = Color.White)
+            .height(70.dp)
+            .background(color = Color.White, shape = RoundedCornerShape(10.dp))
             .border(1.dp, BorderColor2, shape = RoundedCornerShape(10.dp))
     ) {
-        Row(modifier = Modifier.fillMaxSize()) {
-            Image(
-                painter = painterResource(id = R.drawable.wallet_icon),
-                modifier = Modifier.padding(16.dp),
-                contentDescription = null
-            )
+        Row(modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
 
-            Column(modifier = Modifier.fillMaxHeight()) {
+            walletIcon()
+
+            Column(modifier = Modifier
+                .fillMaxHeight()
+                .padding(start = 7.dp, bottom = 5.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.Start
+                ) {
 
                 Text(
                     text = "Today's Earning",
                     modifier = Modifier.padding(top = 10.dp),
                     style = TextStyle(
-                        fontFamily = arimoFontFamily,
+                        fontFamily = helveticaFontFamily,
                         fontWeight = FontWeight.Black,
-                        fontSize = 10.sp,
+                        fontSize = 12.sp,
                         color = Color.Black
                     )
                 )
 
                 Row {
                     Text(
-                        text = "Rs.", modifier = Modifier.padding(top = 8.dp), style = TextStyle(
+                        text = "Rs.", modifier = Modifier.padding(top = 5.dp)
+                        , style = TextStyle(
                             fontFamily = arimoFontFamily,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp,
+                            fontSize = 18.sp,
                             color = Color.Black
                         )
                     )
                     Text(
-                        text = "10000", modifier = Modifier.padding(top = 8.dp), style = TextStyle(
+                        text = "$walletBalance", modifier = Modifier.padding(top = 5.dp), style = TextStyle(
                             fontFamily = arimoFontFamily,
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp,
@@ -529,9 +673,9 @@ fun WalletBar(navController: NavController) {
 
             Spacer(Modifier.weight(1f))
             Button(modifier = Modifier
-                .padding(top = 8.dp, end = 10.dp)
-                .width(140.dp)
-                .height(55.dp),
+                .padding(end = 10.dp)
+                .width(120.dp)
+                .height(36.dp),
                 shape = RoundedCornerShape(10.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MainColor, contentColor = Color.White
@@ -597,7 +741,7 @@ fun ServicesSection(
         modifier = Modifier
             .fillMaxWidth()
             .height(240.dp)
-            .background(color = Color.White)
+            .background(color = Color.White, shape = RoundedCornerShape(10.dp))
             .border(1.dp, BorderColor2, shape = RoundedCornerShape(10.dp))
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -620,8 +764,36 @@ fun ServicesSection(
                 Spacer(modifier = Modifier.weight(1f))
                 Switch(
                     checked = serviceSelected, onCheckedChange = {
-                        serviceSelected = it
-                        registrationViewModel.updateServices(userId = creatorUid, masterToggle = it)
+//                        if(it){
+                            serviceSelected = it
+                            registrationViewModel.updateServices(userId = creatorUid, masterToggle = it)
+
+                            videoService = it
+                            registrationViewModel.updateServices(
+                                userId = creatorUid, servicesVideo = it
+                            )
+
+                            audioService = it
+                            registrationViewModel.updateServices(
+                                userId = creatorUid, servicesAudio = it
+                            )
+
+                            chatService = it
+                            registrationViewModel.updateServices(
+                                userId = creatorUid, servicesChat = it
+                            )
+
+//                        }else{
+//
+//                            serviceSelected = it
+//                            registrationViewModel.updateServices(userId = creatorUid, masterToggle = it)
+//
+//                            videoService = it
+//                            registrationViewModel.updateServices(
+//                                userId = creatorUid, servicesVideo = it
+//                            )
+//
+//                        }
                     }, colors = SwitchDefaults.colors(
                         checkedThumbColor = Color.White,
                         checkedTrackColor = MainColor,
@@ -657,13 +829,26 @@ fun ServicesSection(
                     },
                     onCheckedChange = {
                         if (serviceSelected) {
+                            if(it == false && audioService == false && chatService == false){
+                                serviceSelected = it
+                                registrationViewModel.updateServices(userId = creatorUid, masterToggle = it)
+                            }
+                            videoService = it
+                            registrationViewModel.updateServices(
+                                userId = creatorUid, servicesVideo = it
+                            )
+
+                        }
+                        else{
+                            serviceSelected = it
+                            registrationViewModel.updateServices(userId = creatorUid, masterToggle = it)
                             videoService = it
                             registrationViewModel.updateServices(
                                 userId = creatorUid, servicesVideo = it
                             )
                         }
                     },
-                    serviceSelected = serviceSelected,
+//                    serviceSelected = serviceSelected,
                     textColor = textColor
                 )
 
@@ -681,13 +866,24 @@ fun ServicesSection(
                     },
                     onCheckedChange = {
                         if (serviceSelected) {
+                            if(it == false && videoService == false && chatService == false){
+                                serviceSelected = it
+                                registrationViewModel.updateServices(userId = creatorUid, masterToggle = it)
+                            }
+                            audioService = it
+                            registrationViewModel.updateServices(
+                                userId = creatorUid, servicesAudio = it
+                            )
+                        }else{
+                            serviceSelected = it
+                            registrationViewModel.updateServices(userId = creatorUid, masterToggle = it)
                             audioService = it
                             registrationViewModel.updateServices(
                                 userId = creatorUid, servicesAudio = it
                             )
                         }
                     },
-                    serviceSelected = serviceSelected,
+//                    serviceSelected = serviceSelected,
                     textColor = textColor
                 )
 
@@ -705,13 +901,24 @@ fun ServicesSection(
                     },
                     onCheckedChange = {
                         if (serviceSelected) {
+                            if(it == false && audioService == false && videoService == false){
+                                serviceSelected = it
+                                registrationViewModel.updateServices(userId = creatorUid, masterToggle = it)
+                            }
+                            chatService = it
+                            registrationViewModel.updateServices(
+                                userId = creatorUid, servicesChat = it
+                            )
+                        }else{
+                            serviceSelected = it
+                            registrationViewModel.updateServices(userId = creatorUid, masterToggle = it)
                             chatService = it
                             registrationViewModel.updateServices(
                                 userId = creatorUid, servicesChat = it
                             )
                         }
                     },
-                    serviceSelected = serviceSelected,
+//                    serviceSelected = serviceSelected,
                     textColor = textColor
                 )
             }
@@ -746,12 +953,15 @@ fun ServiceRow(
     serviceEnabled: Boolean,
     onEditClick: () -> Unit,
     onCheckedChange: (Boolean) -> Unit,
-    serviceSelected: Boolean,
+//    serviceSelected: Boolean,
     textColor: Color // Dynamic text color based on main toggle state
 ) {
     // Text and icon color should be grey if the service is disabled
-    val rowTextColor = if (serviceEnabled && serviceSelected) textColor else Color.Gray
-    val iconAlpha = if (serviceEnabled && serviceSelected) 1f else 0.5f
+//    val rowTextColor = if (serviceEnabled && serviceSelected) textColor else Color.Gray
+//    val iconAlpha = if (serviceEnabled && serviceSelected) 1f else 0.5f
+
+    val rowTextColor = if (serviceEnabled ) textColor else Color.Gray
+    val iconAlpha = if (serviceEnabled) 1f else 0.5f
 
     Row(
         modifier = Modifier.height(50.dp)
@@ -761,7 +971,7 @@ fun ServiceRow(
         ) {
             Text(
                 text = serviceName,
-                modifier = Modifier.clickable(enabled = serviceEnabled && serviceSelected) { onEditClick() },
+                modifier = Modifier.clickable(enabled = serviceEnabled) { onEditClick() },
                 style = TextStyle(
                     fontFamily = arimoFontFamily,
                     fontWeight = FontWeight.Bold,
@@ -785,7 +995,7 @@ fun ServiceRow(
                     modifier = Modifier
                         .padding(start = 5.dp)
                         .size(16.dp)
-                        .clickable(enabled = serviceEnabled && serviceSelected) { onEditClick() }
+                        .clickable(enabled = serviceEnabled) { onEditClick() }
                         .alpha(iconAlpha) // Reduce opacity if disabled
                 )
             }
@@ -805,7 +1015,7 @@ fun ServiceRow(
             modifier = Modifier
                 .width(50.dp)
                 .padding(bottom = 15.dp),
-            enabled = serviceSelected
+//            enabled = serviceSelected
         )
     }
 }
@@ -822,6 +1032,10 @@ fun EditPriceDialog(
     var newVideoPrice by remember { mutableStateOf(videoPrice) }
     var newAudioPrice by remember { mutableStateOf(audioPrice) }
     var newChatPrice by remember { mutableStateOf(chatPrice) }
+
+    var isError by remember {
+        mutableStateOf("")
+    }
 
     Dialog(onDismissRequest = { onDismiss() }) {
         Surface(
@@ -848,6 +1062,13 @@ fun EditPriceDialog(
                     price = newChatPrice,
                     onPriceChange = { newChatPrice = it })
 
+
+                if(!isError.isEmpty()){
+                    Text(text = "Error: ${isError}",
+                        color = Color.Red,
+                        style = TextStyle(fontSize = 12.sp)
+                    )
+                }
                 Spacer(modifier = Modifier.height(20.dp))
 
                 Row(
@@ -864,7 +1085,29 @@ fun EditPriceDialog(
 
                     Button(
                         onClick = {
-                            onConfirm(newVideoPrice, newAudioPrice, newChatPrice)
+                            val videoPriceInt = newVideoPrice.toIntOrNull()
+                            val audioPriceInt = newAudioPrice.toIntOrNull()
+                            val chatPriceInt = newChatPrice.toIntOrNull()
+
+                            val minPrice = 10
+
+                            if (videoPriceInt != null && audioPriceInt != null && chatPriceInt != null) {
+                                if(videoPriceInt >= minPrice && audioPriceInt >= minPrice && chatPriceInt >= minPrice) {
+                                    onConfirm(newVideoPrice, newAudioPrice, newChatPrice)
+                                }else{
+                                    if(videoPriceInt < minPrice){
+                                        isError = "video call price should be more than 10 RS"
+                                    }
+                                    if(audioPriceInt < minPrice){
+                                        isError = "audio call price should be more than 10 RS"
+                                    }
+                                    if(chatPriceInt < minPrice){
+                                        isError = "chat price should be more than 10 RS"
+                                    }
+                                }
+                            }else{
+                                isError = "price should be more than 10 RS"
+                            }
                         }, shape = RoundedCornerShape(50), colors = ButtonDefaults.buttonColors(
                             Color(0xFF00A862) // Green color for Save button
                         )
@@ -1080,8 +1323,256 @@ fun DemoText() {
     }
 }
 
-@Preview(showBackground = true)
+@Composable
+fun walletIcon(){
+    Box(modifier = Modifier.padding(start = 5.dp), contentAlignment = Alignment.Center){
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(shape = RoundedCornerShape(6.dp))
+                .background(
+                    Color(
+                        0x1F50A65C
+                    )
+                )
+        )
+
+        Image(
+            painter = painterResource(id = R.drawable.wallet_icon),
+            modifier = Modifier.padding(16.dp),
+            contentDescription = null
+        )
+    }
+}
+
+@Composable
+fun addedLinkLayout(onCancel: () -> Unit) {
+    var checkedLink by remember {
+        mutableStateOf(true)
+    }
+    var mDisplayMenu by remember { mutableStateOf(false) }
+    val mContext = LocalContext.current
+
+    Box(modifier = Modifier.padding(bottom = 10.dp)) {
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp)
+            .background(color = Color.White, shape = RoundedCornerShape(8.dp))
+            .border(width = 1.dp, color = BorderColor2, shape = RoundedCornerShape(8.dp)),
+            verticalAlignment = Alignment.CenterVertically
+
+        ){
+
+            Icon(painter = painterResource(id = R.drawable.drag_indicator_24dp),
+                contentDescription = "",
+                modifier = Modifier.padding(start = 10.dp)
+            )
+
+
+            Text(text = "Twiter",
+                color = Color.Black,
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                modifier = Modifier
+                    .padding(start = 10.dp)
+                    .weight(1f)
+            )
+
+
+            Switch(checked = checkedLink, onCheckedChange = {
+                checkedLink = it
+            }, colors = SwitchDefaults.colors(
+                checkedThumbColor = Color.White,
+                checkedTrackColor = MainColor,
+                uncheckedThumbColor = Color.White,
+                uncheckedTrackColor = SwitchColor
+            ), modifier = Modifier
+                .width(50.dp)
+                .padding(top = 5.dp)
+            )
+
+            //More vert
+            Box {
+                Icon(painter = painterResource(id = R.drawable.more_vert_24dp),
+                    contentDescription = "",
+                    modifier = Modifier
+                        .padding(horizontal = 10.dp)
+                        .clickable {
+                            mDisplayMenu = !mDisplayMenu
+                        }
+                )
+                DropdownMenu(
+                    expanded = mDisplayMenu,
+                    onDismissRequest = { mDisplayMenu = false },
+                    modifier = Modifier
+                        .background(color = Color.White, shape = RoundedCornerShape(10.dp))
+
+                ) {
+
+                    DropdownMenuItem(text = {
+                        Text(text = "Edit Link") },
+                        onClick = {
+                            mDisplayMenu = !mDisplayMenu
+                            Toast.makeText(mContext, "Under Development", Toast.LENGTH_SHORT).show()
+                        }, leadingIcon = {
+                            Icon(painter = painterResource(id = R.drawable.edit_24dp__2), contentDescription = "")
+                        }
+                    )
+
+                    Divider(modifier = Modifier.padding(horizontal = 10.dp), color = Color.Gray)
+
+                    DropdownMenuItem(text = {
+                        Text(text = "Delete Link")
+                    }, onClick = {
+                        mDisplayMenu = !mDisplayMenu
+                        Toast.makeText(mContext, "Under Development", Toast.LENGTH_SHORT).show()
+                    }, leadingIcon = {
+                        Icon(painter = painterResource(id = R.drawable.delete_24dp_2), contentDescription = "")
+                    }
+                    )
+                }    
+            }
+        }
+    }
+
+
+}
+
+
+@Composable
+fun addLinkLayout(registrationViewModel: RegistrationViewModel = hiltViewModel(), onCancel: () -> Unit) {
+    var linkTitle by remember {
+        mutableStateOf("")
+    }
+    var link by remember {
+        mutableStateOf("")
+    }
+    var loading by remember { mutableStateOf(false) }
+
+
+    Column(modifier = Modifier
+        .background(color = Color.White, shape = RoundedCornerShape(10.dp))
+        .border(width = 1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp))
+        .padding(15.dp)
+        ) {
+
+        OutlinedTextField(
+            shape = RoundedCornerShape(10.dp),
+            value = linkTitle,
+            onValueChange = {linkTitle = it},
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(color = Color.White, shape = RoundedCornerShape(10.dp))
+                .border(1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp)),
+            placeholder = {
+                Text(
+                    text="Enter Title Here",
+                    color = Color.Black,
+                    style = TextStyle(
+                        fontFamily = arimoFontFamily,
+                        fontWeight = FontWeight.Normal,
+                    )
+                )
+            },
+            maxLines = 1,
+        )
+
+        OutlinedTextField(
+            shape = RoundedCornerShape(10.dp),
+            value = link,
+            onValueChange = {link = it},
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 10.dp)
+                .background(color = Color.White, shape = RoundedCornerShape(10.dp))
+                .border(1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp)),
+            placeholder = {
+                Text(
+                    text="Past URL link here",
+                    color = Color.Black,
+                    style = TextStyle(
+                        fontFamily = arimoFontFamily,
+                        fontWeight = FontWeight.Normal,
+                    )
+                )
+            },
+            maxLines = 1,
+            trailingIcon = {
+                Icon(painter = painterResource(id = R.drawable.link_24dp_2), contentDescription = "")
+            }
+        )
+
+
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        )
+        {
+            Button(
+                shape = RoundedCornerShape(10.dp),
+                modifier = Modifier
+                    .width(150.dp)
+                    .height(48.dp),
+                colors = ButtonDefaults.buttonColors(SecondaryBackGround),
+                onClick = {
+                    onCancel()
+                }
+            )
+            {
+                Text(text = "Cancel",
+                    textAlign = TextAlign.Center,
+                    style = TextStyle(
+                        fontFamily = arimoFontFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    ),color = Color.White
+                )
+            }
+
+            CircularLoaderButton(
+                shape = RoundedCornerShape(10.dp),
+                modifier = Modifier
+                    .width(150.dp)
+                    .height(48.dp),
+                colors = ButtonDefaults.buttonColors(MainColor),
+                loading = loading,
+                text = "SAVE",
+                textStyle = TextStyle(
+                    fontFamily = arimoFontFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                ),
+                onClick = {
+                    registrationViewModel.updateUserLinks(link = LinkData(linkTitle, link,true)){
+                        loading = it
+                        if(!it){
+                            onCancel()
+                        }
+                    }
+                }
+            )
+        }
+
+    }
+}
+
+
+
+@Preview(showBackground = false)
 @Composable
 fun HomeScreenPreview(){
-    HomeScreen(navController = rememberNavController(), registrationViewModel = hiltViewModel(), authenticationViewModel = hiltViewModel() )
+//    addedLinkLayout{
+//    }
+//    addLinkLayout {
+//    }
+    //HomeScreen(navController = rememberNavController(), registrationViewModel = hiltViewModel(), authenticationViewModel = hiltViewModel() )
 }

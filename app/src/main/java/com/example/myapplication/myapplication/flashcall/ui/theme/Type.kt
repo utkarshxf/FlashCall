@@ -38,11 +38,17 @@ val Typography = Typography(
 
 
 val arimoFontFamily = FontFamily(
-
     Font(R.font.arimo_bold, FontWeight.Bold),
     Font(R.font.arimo_regular, FontWeight.Black),
     Font(R.font.arimo_semibold, FontWeight.SemiBold),
     Font(R.font.arimo_italic, FontWeight.Light),
     Font(R.font.arimo_medium, FontWeight.Medium),
+)
 
+val helveticaFontFamily = FontFamily(
+    Font(R.font.helvetica_bold, FontWeight.Bold),
+    Font(R.font.helvetica, FontWeight.Black),
+    Font(R.font.helvetica_bold_oblique, FontWeight.SemiBold),
+    Font(R.font.helvetica_compressed_5871d14b6903a, FontWeight.Light),
+    Font(R.font.helvetica_oblique, FontWeight.Medium),
 )

@@ -20,8 +20,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
@@ -77,7 +79,7 @@ fun ProfileScreen(
     authenticationViewModel: AuthenticationViewModel = hiltViewModel()
 
 ) {
-    val isKyc = false
+    val isKyc = true
     val context = LocalContext.current
     val uid = registrationViewModel.getStoredUserData("_id")
     val userData = authenticationViewModel.getUserFromPreferences(context)
@@ -121,10 +123,12 @@ fun ProfileScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(8.dp)
+
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(100.dp).padding(6.dp)  // Adjust the size as per your requirement
+                                .size(100.dp)
+                                .padding(6.dp)  // Adjust the size as per your requirement
                         ) {
                             ImageFromUrl(imageUrl = profilePic!!)
                         }
@@ -157,7 +161,6 @@ fun ProfileScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
 
             HorizontalDivider(
                 thickness = 10.dp,
@@ -181,17 +184,21 @@ fun ProfileScreen(
                     .background(Color.White)
                     .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
                     .clickable {
-                        val updatedConfig = HyperKycConfig(
-                            appId = "muzdob",
-                            appKey = "2ns9u1evoeugbrydykl7",
-                            workflowId = "workflow_9KW4mUl",
-                            transactionId = "TestTransact6"
-                        )
-                        hyperKycLauncher.launch(updatedConfig)
+
+                        navController.navigate(ScreenRoutes.KycScreen.route)
+
+//                        val updatedConfig = HyperKycConfig(
+//                            appId = "muzdob",
+//                            appKey = "2ns9u1evoeugbrydykl7",
+//                            workflowId = "workflow_9KW4mUl",
+//                            transactionId = "TestTransact6"
+//                        )
+//                        hyperKycLauncher.launch(updatedConfig)
                     }
             ) {
                 Column(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize(),
                     verticalArrangement = Arrangement.Center
                 ) {
                     Row(
@@ -222,8 +229,8 @@ fun ProfileScreen(
                                 painter = painterResource(id = R.drawable.exclamation1),
                                 contentDescription = null,
                                 modifier = Modifier
-                                    .height(26.dp)
-                                    .width(26.dp)
+                                    .height(24.dp)
+                                    .width(24.dp)
                             )
 
                         }
@@ -245,9 +252,11 @@ fun ProfileScreen(
                     Text(
                         text = "Please complete your KYC",
                         color = Color.Red,
+                        fontSize = 12.sp,
                         modifier = Modifier
                             .padding(start = 45.dp, top = 50.dp)
                             .fillMaxWidth()
+
                     )
                 }
             }

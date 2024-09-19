@@ -51,8 +51,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -62,10 +65,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
@@ -83,6 +88,7 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryText
 import com.example.myapplication.myapplication.flashcall.ui.theme.ThemeColorDarkBlue
 import com.example.myapplication.myapplication.flashcall.ui.theme.ThemeColorGray
 import com.example.myapplication.myapplication.flashcall.ui.theme.ThemeColorLightBlue
+import com.example.myapplication.myapplication.flashcall.ui.theme.ThemeColorLightMaroon
 import com.example.myapplication.myapplication.flashcall.ui.theme.ThemeColorMaroon
 import com.example.myapplication.myapplication.flashcall.ui.theme.ThemeColorOrange
 import com.example.myapplication.myapplication.flashcall.ui.theme.ThemeColorPurple
@@ -91,7 +97,8 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamil
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditProfileScreen(navController: NavController,registrationViewModel: RegistrationViewModel = hiltViewModel(), authenticationViewModel: AuthenticationViewModel= hiltViewModel()) {
+fun EditProfileScreen(navController: NavController,registrationViewModel: RegistrationViewModel = hiltViewModel(), authenticationViewModel: AuthenticationViewModel= hiltViewModel())
+{
     var uriImg: Uri? = null
 
     var uid by remember {
@@ -180,6 +187,7 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
         themeSelected = userData.themeSelected ?: ""
         profession = userData.profession ?: ""
         profilePic = userData.photo ?: ""
+
     }
     else{
         when (createUserState1) {
@@ -264,7 +272,7 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
     }
 
     var blackTheme by remember {
-        mutableStateOf(false)
+        mutableStateOf(true)
     }
 
     var grayTheme by remember {
@@ -277,6 +285,9 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
         mutableStateOf(false)
     }
     var maroonTheme by remember {
+        mutableStateOf(false)
+    }
+    var lightMaroonTheme by remember {
         mutableStateOf(false)
     }
     var purpleTheme by remember {
@@ -479,7 +490,7 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                                 }else{
                                     "Enter Yor Name"
                                 },
-                                color = SecondaryText,
+                                color = Color.Black,
                                 style = TextStyle(
                                     fontFamily = arimoFontFamily,
                                     fontWeight = FontWeight.Bold,
@@ -538,151 +549,424 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
 
                     Column {
 
+
+                        // Theme First Row
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(top = 10.dp)
+                                .padding(horizontal = 10.dp)
                         ) {
 
-                            Button(
-                                shape = RoundedCornerShape(46.dp),
-                                onClick = { greenTheme = !greenTheme },
-                                colors = ButtonDefaults.buttonColors(MainColor),
-                                modifier = Modifier
-                            )
-                            {
-                                if(greenTheme)
-                                {
-                                    Icon(painter =  painterResource(id = R.drawable.selected_check_icon), contentDescription = null )
-                                }
-                            }
-                            Spacer(modifier = Modifier.width(7.dp))
 
-                            Button(
-                                shape = RoundedCornerShape(26.dp),
-                                onClick = { grayTheme = !grayTheme },
-                                colors = ButtonDefaults.buttonColors(ThemeColorGray),
-                                modifier = Modifier
-                            )
-                            {
-                                if(grayTheme)
-                                {
-                                    Icon(painter =  painterResource(id = R.drawable.selected_check_icon), contentDescription = null )
-                                }
-                            }
-                            Spacer(modifier = Modifier.width(7.dp))
+                            // Black theme circle
+                            Box(contentAlignment = Alignment.Center) {
 
-                            Button(
-                                shape = RoundedCornerShape(26.dp),
-                                onClick = { blackTheme = !blackTheme },
-                                colors = ButtonDefaults.buttonColors(Color.Black),
-                                modifier = Modifier
-                            )
-                            {
+                                Button(onClick = {
+                                    blackTheme = true
+                                    grayTheme = false
+                                    darkBlueTheme = false
+                                    lightBlueTheme = false
+                                    maroonTheme = false
+                                    lightMaroonTheme = false
+                                    greenTheme = false
+                                    purpleTheme = false
+                                    yellowTheme = false
+                                    orangeTheme = false
+
+                                },
+                                    shape = CircleShape,
+                                    colors = ButtonDefaults.buttonColors(Color.Black),
+                                    modifier = Modifier.size(36.dp)) {
+                                }
+
                                 if(blackTheme)
                                 {
-                                    Icon(painter =  painterResource(id = R.drawable.selected_check_icon), contentDescription = null )
+                                    Icon(painter =  painterResource(id = R.drawable.selected_check_icon),
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(36.dp)
+                                            .drawBehind {
+                                                drawCircle(color = Color.Black, style = Stroke(width = 5f,
+                                                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
+                                                )
+                                                )
+                                            }
+                                    )
                                 }
                             }
 
-                            Spacer(modifier = Modifier.width(7.dp))
+                            Spacer(modifier = Modifier.width(15.dp))
 
-                            Button(
-                                shape = RoundedCornerShape(26.dp),
-                                onClick = { darkBlueTheme = !darkBlueTheme },
-                                colors = ButtonDefaults.buttonColors(ThemeColorDarkBlue),
-                                modifier = Modifier
-                            )
-                            {
+
+                            // Gray theme circle
+                            Box(contentAlignment = Alignment.Center) {
+
+                                Button(onClick = {
+                                    blackTheme = false
+                                    grayTheme = true
+                                    darkBlueTheme = false
+                                    lightBlueTheme = false
+                                    maroonTheme = false
+                                    lightMaroonTheme = false
+                                    greenTheme = false
+                                    purpleTheme = false
+                                    yellowTheme = false
+                                    orangeTheme = false
+                                },
+                                    shape = CircleShape,
+                                    colors = ButtonDefaults.buttonColors(ThemeColorGray),
+                                    modifier = Modifier.size(36.dp)) {
+                                }
+
+                                if(grayTheme)
+                                {
+                                    Icon(painter =  painterResource(id = R.drawable.selected_check_icon),
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(36.dp)
+                                            .drawBehind {
+                                                drawCircle(color = ThemeColorGray, style = Stroke(width = 5f,
+                                                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
+                                                )
+                                                )
+                                            }
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.width(15.dp))
+
+
+                            // Dark Blue theme circle
+                            Box(contentAlignment = Alignment.Center) {
+
+                                Button(onClick = {
+                                    blackTheme = false
+                                    grayTheme = false
+                                    darkBlueTheme = true
+                                    lightBlueTheme = false
+                                    maroonTheme = false
+                                    lightMaroonTheme = false
+                                    greenTheme = false
+                                    purpleTheme = false
+                                    yellowTheme = false
+                                    orangeTheme = false
+                                },
+                                    shape = CircleShape,
+                                    colors = ButtonDefaults.buttonColors(ThemeColorDarkBlue),
+                                    modifier = Modifier.size(36.dp)) {
+                                }
+
                                 if(darkBlueTheme)
                                 {
-                                    Icon(painter =  painterResource(id = R.drawable.selected_check_icon), contentDescription = null )
+                                    Icon(painter =  painterResource(id = R.drawable.selected_check_icon),
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(36.dp)
+                                            .drawBehind {
+                                                drawCircle(color = ThemeColorDarkBlue, style = Stroke(width = 5f,
+                                                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
+                                                )
+                                                )
+                                            }
+                                    )
                                 }
                             }
 
-                            Spacer(modifier = Modifier.width(7.dp))
+                            Spacer(modifier = Modifier.width(15.dp))
 
-                            Button(
-                                shape = RoundedCornerShape(26.dp),
-                                onClick = { lightBlueTheme = !lightBlueTheme },
-                                colors = ButtonDefaults.buttonColors(ThemeColorLightBlue),
-                                modifier = Modifier
-                            )
-                            {
+                            // Light Blue theme circle
+                            Box(contentAlignment = Alignment.Center) {
+
+                                Button(onClick = {
+                                    blackTheme = false
+                                    grayTheme = false
+                                    darkBlueTheme = false
+                                    lightBlueTheme = true
+                                    maroonTheme = false
+                                    lightMaroonTheme = false
+                                    greenTheme = false
+                                    purpleTheme = false
+                                    yellowTheme = false
+                                    orangeTheme = false
+                                },
+                                    shape = CircleShape,
+                                    colors = ButtonDefaults.buttonColors(ThemeColorLightBlue),
+                                    modifier = Modifier.size(36.dp)) {
+                                }
+
                                 if(lightBlueTheme)
                                 {
-                                    Icon(painter =  painterResource(id = R.drawable.selected_check_icon), contentDescription = null )
+                                    Icon(painter =  painterResource(id = R.drawable.selected_check_icon),
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(36.dp)
+                                            .drawBehind {
+                                                drawCircle(color = ThemeColorLightBlue, style = Stroke(width = 5f,
+                                                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
+                                                )
+                                                )
+                                            }
+                                    )
                                 }
                             }
+
+                            Spacer(modifier = Modifier.width(15.dp))
+
+
+                            //Maroon theme circle
+                            Box(contentAlignment = Alignment.Center) {
+
+                                Button(onClick = {
+                                    blackTheme = false
+                                    grayTheme = false
+                                    darkBlueTheme = false
+                                    lightBlueTheme = false
+                                    maroonTheme = true
+                                    lightMaroonTheme = false
+                                    greenTheme = false
+                                    purpleTheme = false
+                                    yellowTheme = false
+                                    orangeTheme = false
+                                },
+                                    shape = CircleShape,
+                                    colors = ButtonDefaults.buttonColors(ThemeColorMaroon),
+                                    modifier = Modifier.size(36.dp)) {
+                                }
+
+                                if(maroonTheme)
+                                {
+                                    Icon(painter =  painterResource(id = R.drawable.selected_check_icon),
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(36.dp)
+                                            .drawBehind {
+                                                drawCircle(color = ThemeColorMaroon, style = Stroke(width = 5f,
+                                                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
+                                                )
+                                                )
+                                            }
+                                    )
+                                }
+                            }
+
+
+                            Spacer(modifier = Modifier.width(15.dp))
+
+
+                            //Light Maroon theme circle
+                            Box(contentAlignment = Alignment.Center) {
+
+                                Button(onClick = {
+                                    blackTheme = false
+                                    grayTheme = false
+                                    darkBlueTheme = false
+                                    lightBlueTheme = false
+                                    maroonTheme = false
+                                    lightMaroonTheme = true
+                                    greenTheme = false
+                                    purpleTheme = false
+                                    yellowTheme = false
+                                    orangeTheme = false
+                                },
+                                    shape = CircleShape,
+                                    colors = ButtonDefaults.buttonColors(ThemeColorLightMaroon),
+                                    modifier = Modifier.size(36.dp)) {
+                                }
+
+                                if(lightMaroonTheme)
+                                {
+                                    Icon(painter =  painterResource(id = R.drawable.selected_check_icon),
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(36.dp)
+                                            .drawBehind {
+                                                drawCircle(color = ThemeColorLightMaroon, style = Stroke(width = 5f,
+                                                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
+                                                )
+                                                )
+                                            }
+                                    )
+                                }
+                            }
+
 
 
                         }
 
+
+                        // Themes Second Row
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(top = 10.dp)
+                                .padding(horizontal = 10.dp)
                         ){
-                            Button(
-                                shape = RoundedCornerShape(26.dp),
-                                onClick = { maroonTheme = !maroonTheme },
-                                colors = ButtonDefaults.buttonColors(ThemeColorMaroon),
-                                modifier = Modifier
-                            )
-                            {
-                                if(maroonTheme)
+
+
+                            // Green theme circle
+                            Box(contentAlignment = Alignment.Center) {
+
+                                Button(onClick = {
+                                    blackTheme = false
+                                    grayTheme = false
+                                    darkBlueTheme = false
+                                    lightBlueTheme = false
+                                    maroonTheme = false
+                                    lightMaroonTheme = false
+                                    greenTheme = true
+                                    purpleTheme = false
+                                    yellowTheme = false
+                                    orangeTheme = false
+                                },
+                                    shape = CircleShape,
+                                    colors = ButtonDefaults.buttonColors(MainColor),
+                                    modifier = Modifier.size(36.dp)) {
+                                }
+
+                                if(greenTheme)
                                 {
-                                    Icon(painter =  painterResource(id = R.drawable.selected_check_icon), contentDescription = null )
+                                    Icon(painter =  painterResource(id = R.drawable.selected_check_icon),
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(36.dp)
+                                            .drawBehind {
+                                                drawCircle(color = MainColor, style = Stroke(width = 5f,
+                                                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
+                                                )
+                                                )
+                                            }
+                                    )
                                 }
                             }
-                            Spacer(modifier = Modifier.width(7.dp))
+                            Spacer(modifier = Modifier.width(15.dp))
 
-                            Button(
-                                shape = RoundedCornerShape(26.dp),
-                                onClick = { purpleTheme = !purpleTheme },
-                                colors = ButtonDefaults.buttonColors(ThemeColorPurple),
-                                modifier = Modifier
-                            )
-                            {
+
+                            //Purple theme circle
+                            Box(contentAlignment = Alignment.Center) {
+
+                                Button(onClick = {
+                                    blackTheme = false
+                                    grayTheme = false
+                                    darkBlueTheme = false
+                                    lightBlueTheme = false
+                                    maroonTheme = false
+                                    lightMaroonTheme = false
+                                    greenTheme = false
+                                    purpleTheme = true
+                                    yellowTheme = false
+                                    orangeTheme = false
+                                },
+                                    shape = CircleShape,
+                                    colors = ButtonDefaults.buttonColors(ThemeColorPurple),
+                                    modifier = Modifier.size(36.dp)) {
+                                }
+
                                 if(purpleTheme)
                                 {
-                                    Icon(painter =  painterResource(id = R.drawable.selected_check_icon), contentDescription = null )
+                                    Icon(painter =  painterResource(id = R.drawable.selected_check_icon),
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(36.dp)
+                                            .drawBehind {
+                                                drawCircle(color = ThemeColorPurple, style = Stroke(width = 5f,
+                                                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
+                                                )
+                                                )
+                                            }
+                                    )
                                 }
                             }
-                            Spacer(modifier = Modifier.width(7.dp))
 
-                            Button(
-                                shape = RoundedCornerShape(26.dp),
-                                onClick = { yellowTheme = !yellowTheme },
-                                colors = ButtonDefaults.buttonColors(ThemeColorYellow),
-                                modifier = Modifier
-                            )
-                            {
+                            Spacer(modifier = Modifier.width(15.dp))
+
+
+                            //Yellow theme circle
+                            Box(contentAlignment = Alignment.Center) {
+
+                                Button(onClick = {
+                                    blackTheme = false
+                                    grayTheme = false
+                                    darkBlueTheme = false
+                                    lightBlueTheme = false
+                                    maroonTheme = false
+                                    lightMaroonTheme = false
+                                    greenTheme = false
+                                    purpleTheme = false
+                                    yellowTheme = true
+                                    orangeTheme = false
+                                },
+                                    shape = CircleShape,
+                                    colors = ButtonDefaults.buttonColors(ThemeColorYellow),
+                                    modifier = Modifier.size(36.dp)) {
+                                }
+
                                 if(yellowTheme)
                                 {
-                                    Icon(painter =  painterResource(id = R.drawable.selected_check_icon), contentDescription = null )
+                                    Icon(painter =  painterResource(id = R.drawable.selected_check_icon),
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(36.dp)
+                                            .drawBehind {
+                                                drawCircle(color = ThemeColorYellow, style = Stroke(width = 5f,
+                                                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
+                                                )
+                                                )
+                                            }
+                                    )
                                 }
                             }
-                            Spacer(modifier = Modifier.width(7.dp))
 
-                            Button(
-                                shape = RoundedCornerShape(26.dp),
-                                onClick = { orangeTheme = !orangeTheme },
-                                colors = ButtonDefaults.buttonColors(ThemeColorOrange),
-                                modifier = Modifier
-                            )
-                            {
+                            Spacer(modifier = Modifier.width(15.dp))
+
+
+                            //Orange theme circle
+                            Box(contentAlignment = Alignment.Center) {
+
+                                Button(onClick = {
+                                    blackTheme = false
+                                    grayTheme = false
+                                    darkBlueTheme = false
+                                    lightBlueTheme = false
+                                    maroonTheme = false
+                                    lightMaroonTheme = false
+                                    greenTheme = false
+                                    purpleTheme = false
+                                    yellowTheme = false
+                                    orangeTheme = true
+                                },
+                                    shape = CircleShape,
+                                    colors = ButtonDefaults.buttonColors(ThemeColorOrange),
+                                    modifier = Modifier.size(36.dp)) {
+                                }
+
                                 if(orangeTheme)
                                 {
-                                    Icon(painter =  painterResource(id = R.drawable.selected_check_icon), contentDescription = null )
+                                    Icon(painter =  painterResource(id = R.drawable.selected_check_icon),
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(36.dp)
+                                            .drawBehind {
+                                            drawCircle(color = ThemeColorOrange, style = Stroke(width = 5f,
+                                                pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
+                                            )
+                                            )
+                                        }
+                                    )
+
                                 }
                             }
+
+
+
                         }
 
                     }
 
                     Spacer(modifier = Modifier.height(40.dp))
 
+                    // Bottom Cancel And Update Buttons
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -694,7 +978,7 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                             shape = RoundedCornerShape(10.dp),
                             modifier = Modifier
                                 .width(150.dp)
-                                .height(60.dp),
+                                .height(48.dp),
                             colors = ButtonDefaults.buttonColors(SecondaryBackGround),
                             onClick = {
                                 navController.navigate(ScreenRoutes.HomeScreen.route)
@@ -714,7 +998,7 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                             shape = RoundedCornerShape(10.dp),
                             modifier = Modifier
                                 .width(150.dp)
-                                .height(60.dp),
+                                .height(48.dp),
                             colors = ButtonDefaults.buttonColors(MainColor),
                             loading = loading,
                             text = "UPDATE",
@@ -774,20 +1058,22 @@ fun MyTextField(
         ),
         decorationBox = { innerTextField ->
 
-                Column(
+                Box(
                     Modifier
                         .padding(12.dp)
                         .verticalScroll(scrollState)
                 ) {
+                    innerTextField()
                     if (value.isEmpty())
                     {
                         Text(
                             text = hintText,
-                            color = SecondaryText,
+                            color = Color.Black,
                             fontSize = 16.sp
                         )
                     }
-                innerTextField()
+
+
                 Spacer(Modifier.height(50.dp))
                 Row(modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.Bottom) {
                     Spacer(Modifier.weight(1f))
@@ -797,3 +1083,12 @@ fun MyTextField(
         }
     )
 }
+
+
+//@Preview(showBackground = true)
+//@Composable
+//private fun PreviewEditProfile() {
+//    val resistrationViewModel: RegistrationViewModel = hiltViewModel()
+//    val authenticationViewModel: AuthenticationViewModel = hiltViewModel()
+//    EditProfileScreen(navController = rememberNavController(),registrationViewModel = resistrationViewModel, authenticationViewModel = authenticationViewModel)
+//}

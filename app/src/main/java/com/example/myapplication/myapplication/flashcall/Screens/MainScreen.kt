@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import co.hyperverge.hyperkyc.HyperKyc
 import co.hyperverge.hyperkyc.data.models.HyperKycConfig
@@ -35,6 +36,7 @@ import com.example.myapplication.myapplication.flashcall.ViewModel.VideoCallView
 import com.example.myapplication.myapplication.flashcall.ViewModel.chats.ChatRequestViewModel
 import com.example.myapplication.myapplication.flashcall.bottomnav.BottomBar
 import com.example.myapplication.myapplication.flashcall.bottomnav.BottomNavGraph
+import com.example.myapplication.myapplication.flashcall.bottomnav.Screen
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
@@ -56,8 +58,19 @@ fun MainScreen(
         homeNavController.navigate(ScreenRoutes.IncomingVideoCallScreen.route)
     }
     Scaffold(modifier = Modifier.fillMaxSize(), bottomBar = {
+        val screens = listOf(
+            ScreenRoutes.WalletScreen,
+            ScreenRoutes.ProfileScreen,
+            ScreenRoutes.HomeScreen,
+        )
+        val navBackStackEntry by homeNavController.currentBackStackEntryAsState()
+        val currentDestination = navBackStackEntry?.destination
+        val bottomBarDestination = screens.any { it.route == currentDestination?.route }
+
         if (!chatRequestCreated && incomingCall == null && activeVideoCall == null) {
-            BottomBar(navController = homeNavController)
+            if(bottomBarDestination){
+                BottomBar(navController = homeNavController)
+            }
         }
     }) {
         Column(

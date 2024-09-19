@@ -25,4 +25,5 @@ sealed class PreferencesKey(val key: String) {
     data object VideoRate : PreferencesKey("videoRate")
     data object AudioRate : PreferencesKey("audioRate")
     data object ChatRate : PreferencesKey("chatRate")
+    data object AdditionalLinks : PreferencesKey("AdditionalLinks")
 }

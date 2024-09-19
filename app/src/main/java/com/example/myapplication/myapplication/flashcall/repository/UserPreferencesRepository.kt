@@ -5,8 +5,11 @@ import android.content.SharedPreferences
 import android.util.Log
 import com.example.myapplication.myapplication.flashcall.Data.model.CreateUserResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.IsUserCreatedResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.LinkData
 import com.example.myapplication.myapplication.flashcall.Data.model.UpdateUserResponse
 import com.example.myapplication.myapplication.flashcall.utils.PreferencesKey
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -83,6 +86,7 @@ class UserPreferencesRepository @Inject constructor(@ApplicationContext private 
             putString(PreferencesKey.Gender.key, response.updatedUser.gender)
             putString(PreferencesKey.Dob.key, response.updatedUser.dob)
             putString(PreferencesKey.Bio.key, response.updatedUser.bio)
+            putString(PreferencesKey.AdditionalLinks.key, convertingListIntoString(response.updatedUser.links))
             apply()
         }
     }
@@ -110,4 +114,20 @@ class UserPreferencesRepository @Inject constructor(@ApplicationContext private 
             apply()
         }
     }
+
+    private fun convertingListIntoString(list: List<LinkData>?): String {
+        val gson = Gson()
+        val jsonString = gson.toJson(list)
+        return jsonString
+    }
+
+    private fun convertingStringIntoList(stringList: String): List<LinkData> {
+        val gson = Gson()
+        val listType = object : TypeToken<List<LinkData>>() {}.type
+        val list: List<LinkData> = gson.fromJson(stringList, listType)
+        return list
+    }
+
+
+
 }
