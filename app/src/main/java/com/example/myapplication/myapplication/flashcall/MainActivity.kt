@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.DefaultLifecycleObserver
@@ -40,6 +41,7 @@ import com.example.myapplication.myapplication.flashcall.Screens.RegistrationScr
 import com.example.myapplication.myapplication.flashcall.Screens.SelectSpecialityScreen
 import com.example.myapplication.myapplication.flashcall.Screens.SignUpOTP
 import com.example.myapplication.myapplication.flashcall.Screens.SignUpScreen
+import com.example.myapplication.myapplication.flashcall.Screens.SplashScreen
 import com.example.myapplication.myapplication.flashcall.Screens.chats.ChatRequestScreen
 import com.example.myapplication.myapplication.flashcall.Screens.chats.ChatRoomScreen
 import com.example.myapplication.myapplication.flashcall.Screens.feedback.FeedbackScreen
@@ -67,17 +69,12 @@ class MainActivity : ComponentActivity() {
             UserStatusTracker(this.application, authenticationViewModel)
         }
     }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         installSplashScreen().apply {
             setKeepOnScreenCondition {
                 !viewModel.isReady.value
             }
-        }
-        val userId = authenticationViewModel.getUserFromPreferences(this)?._id
-        userId?.let {
-
         }
         var config = HyperKycConfig(
             appId = "muzdob",

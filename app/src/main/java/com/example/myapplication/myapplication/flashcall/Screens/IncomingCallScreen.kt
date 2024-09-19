@@ -133,7 +133,7 @@ fun IncomingCallScreen(
 
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = call.user.type.toString(),
+                            text = call.user.name.toString(),
                             color = Color.White,
                             style = TextStyle(
                                 fontWeight = FontWeight.Bold, fontSize = 25.sp

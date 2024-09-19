@@ -35,7 +35,6 @@ class SplashViewModel @Inject constructor(
         viewModelScope.launch {
             delay(4000L)
             _isReady.value = true
-
             try{
 
                     userToken.stateIn(
@@ -69,7 +68,6 @@ class SplashViewModel @Inject constructor(
                 Log.e("validateUser", "validateUser: $e")
 
             }
-
         }
     }
 
