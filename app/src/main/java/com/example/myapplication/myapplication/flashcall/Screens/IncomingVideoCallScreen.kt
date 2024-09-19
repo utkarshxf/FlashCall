@@ -44,7 +44,7 @@ fun IncomingVideoCallScreen(
                     controlsContent = { CallControls(call, navController, videoCallViewModel) },
                     onAcceptedContent = {
                         navController.navigate(VideoCallRoute.OngoingVideoCall.videoCallRoute) {
-                            popUpTo(ScreenRoutes.IncomingVideoCallScreen.route) { inclusive = true }
+                            popUpTo(ScreenRoutes.IncomingCallScreen.route) { inclusive = true }
                         }
                     },
                     onNoAnswerContent = {
@@ -52,7 +52,7 @@ fun IncomingVideoCallScreen(
                         {
                             videoCallViewModel.resetCallState()
                             navController.navigate(ScreenRoutes.MainScreen.route) {
-                                popUpTo(ScreenRoutes.IncomingVideoCallScreen.route) { inclusive = true }
+                                popUpTo(ScreenRoutes.IncomingCallScreen.route) { inclusive = true }
                             }
                         }
                     },
@@ -61,7 +61,7 @@ fun IncomingVideoCallScreen(
                         {
                             videoCallViewModel.resetCallState()
                             navController.navigate(ScreenRoutes.MainScreen.route) {
-                                popUpTo(ScreenRoutes.IncomingVideoCallScreen.route) { inclusive = true }
+                                popUpTo(ScreenRoutes.IncomingCallScreen.route) { inclusive = true }
                             }
                         }
                     },
@@ -95,20 +95,19 @@ private fun CallControls(
                 bgColor = Color.Green,
                 onCallAction = {
                     navController.navigate(VideoCallRoute.OngoingVideoCall.videoCallRoute) {
-                        popUpTo(ScreenRoutes.IncomingVideoCallScreen.route) { inclusive = true }
+                        popUpTo(ScreenRoutes.IncomingCallScreen.route) { inclusive = true }
                     }
                 })
             LeaveCallAction(modifier = Modifier.size(52.dp), onCallAction = {
                 videoCallViewModel.rejectCall {
                     navController.navigate(ScreenRoutes.MainScreen.route) {
-                        popUpTo(ScreenRoutes.IncomingVideoCallScreen.route) { inclusive = true }
+                        popUpTo(ScreenRoutes.IncomingCallScreen.route) { inclusive = true }
                     }
                 }
             })
         }
     }
 }
-
 
 
 @Preview(showBackground = true)

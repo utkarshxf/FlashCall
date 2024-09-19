@@ -17,20 +17,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
-import com.example.myapplication.myapplication.flashcall.Data.VideoCallRoute
 import com.example.myapplication.myapplication.flashcall.Data.model.SDKResponseState
 import com.example.myapplication.myapplication.flashcall.ViewModel.VideoCallViewModel
 import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
@@ -41,13 +37,13 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import io.getstream.video.android.compose.theme.VideoTheme
 import io.getstream.video.android.compose.ui.components.call.activecall.CallContent
 import io.getstream.video.android.compose.ui.components.call.controls.ControlActions
-import io.getstream.video.android.compose.ui.components.call.controls.actions.FlipCameraAction
 import io.getstream.video.android.compose.ui.components.call.controls.actions.LeaveCallAction
 import io.getstream.video.android.compose.ui.components.call.controls.actions.ToggleCameraAction
 import io.getstream.video.android.compose.ui.components.call.controls.actions.ToggleMicrophoneAction
 import io.getstream.video.android.compose.ui.components.call.controls.actions.ToggleSpeakerphoneAction
-import io.getstream.video.android.compose.ui.components.call.renderer.FloatingParticipantVideo
 import io.getstream.video.android.core.Call
+import kotlinx.coroutines.Delay
+import kotlinx.coroutines.delay
 
 @Composable
 fun OngoingVideoCallScreen(
@@ -64,14 +60,14 @@ fun OngoingVideoCallScreen(
             Log.d("VideoCall", "VideoCall:${(uiState as SDKResponseState.Success).data} ")
             VideoCallContent(
                 call =  (uiState as SDKResponseState.Success).data,
-                videoCall = videoCall,
+                videoCall = true,
                 viewModel = viewModel,
                 navController = navController
             )
         }
 
         is SDKResponseState.Error -> {
-            VideoCallError()
+            VideoCallError(viewModel , navController)
         }
         is SDKResponseState.Loading -> {
             VideoCallLoading()
@@ -105,7 +101,9 @@ fun VideoCallContent(
         if(activeVideoCall==null)
         {
             viewModel.resetCallState()
-            navController.navigate(ScreenRoutes.MainScreen.route)
+            navController.navigate(ScreenRoutes.MainScreen.route){
+                popUpTo(ScreenRoutes.InCallScreen.route) { inclusive = true }
+            }
         }
     }
     LaunchedEffect(Unit) {
@@ -137,7 +135,7 @@ fun VideoCallContent(
                                                     .size(52.dp)
                                                     .padding(start = 10.dp),
                                                 isCameraEnabled = isCameraEnabled,
-                                                onCallAction = { call.camera.setEnabled(it.isEnabled) }
+                                                onCallAction = { viewModel.toggleCamera(it.isEnabled) }
                                             )
 
                                             ToggleMicrophoneAction(
@@ -145,14 +143,7 @@ fun VideoCallContent(
                                                     .size(52.dp)
                                                     .padding(horizontal = 20.dp),
                                                 isMicrophoneEnabled = isMicrophoneEnabled,
-                                                onCallAction = { call.microphone.setEnabled(it.isEnabled) }
-                                            )
-
-                                            FlipCameraAction(
-                                                modifier = Modifier
-                                                    .size(52.dp)
-                                                    .padding(horizontal = 20.dp),
-                                                onCallAction = { call.camera.flip() }
+                                                onCallAction = {viewModel.toggleMicrophone(it.isEnabled)}
                                             )
                                             LeaveCallAction(
                                                 modifier = Modifier.size(52.dp),
@@ -218,8 +209,16 @@ fun VideoCallContent(
 }
 
 @Composable
-fun VideoCallError()
+fun VideoCallError(viewModel: VideoCallViewModel,navController:NavController)
 {
+    LaunchedEffect(Unit) {
+        delay(1000)
+        Log.e("VideoCallError" , "VideoCallError")
+        viewModel.resetCallState()
+        navController.navigate(ScreenRoutes.MainScreen.route){
+            popUpTo(ScreenRoutes.InCallScreen.route) { inclusive = true }
+        }
+    }
     Box(modifier = Modifier.fillMaxSize())
     {
         Text(

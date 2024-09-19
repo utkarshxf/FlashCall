@@ -3,6 +3,8 @@ package com.example.myapplication.myapplication.flashcall
 //import com.example.myapplication.myapplication.flashcall.Screens.HomeScreenDemo
 
 //import com.example.myapplication.myapplication.flashcall.navigation.RootNavGraph
+import android.app.Application
+import android.content.ComponentCallbacks2
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -18,6 +20,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -27,7 +31,7 @@ import co.hyperverge.hyperkyc.data.models.result.HyperKycStatus
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Screens.EditProfileScreen
 import com.example.myapplication.myapplication.flashcall.Screens.HomeScreen
-import com.example.myapplication.myapplication.flashcall.Screens.IncomingAudioCallScreen
+import com.example.myapplication.myapplication.flashcall.Screens.IncomingCallScreen
 import com.example.myapplication.myapplication.flashcall.Screens.IncomingChatScreen
 import com.example.myapplication.myapplication.flashcall.Screens.KYCScreen
 import com.example.myapplication.myapplication.flashcall.Screens.LoginDoneScreen
@@ -58,6 +62,13 @@ class MainActivity : ComponentActivity() {
     private val viewModel by viewModels<SplashViewModel>()
     private val authenticationViewModel by viewModels<AuthenticationViewModel>()
     private val chatRequestViewModel by viewModels<ChatRequestViewModel>()
+    override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+        if (level == ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN) {
+            UserStatusTracker(this.application, authenticationViewModel)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -76,7 +87,6 @@ class MainActivity : ComponentActivity() {
             workflowId = "workflow_9KW4mUl",
             transactionId = "TestTransact8",
         )
-//        val state = chattingFCMViewModel.state
         val hyperKycLauncher: ActivityResultLauncher<HyperKycConfig> =
             registerForActivityResult(HyperKyc.Contract()) { result ->
                 // handle result post workflow finish/exit
@@ -90,12 +100,15 @@ class MainActivity : ComponentActivity() {
                     HyperKycStatus.ERROR -> {
                         Log.d("HyperKyc", "Error")
                     }
+
                     HyperKycStatus.NEEDS_REVIEW -> {
                         Log.d("HyperKyc", "Needs Review")
                     }
+
                     HyperKycStatus.AUTO_DECLINED -> {
                         Log.d("HyperKyc", "AUTO_DECLINED")
                     }
+
                     HyperKycStatus.USER_CANCELLED -> {
                         Log.d("HyperKyc", "User_Declined")
 
@@ -123,10 +136,20 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+class UserStatusTracker(private val application: Application, private val authenticationViewModel: AuthenticationViewModel) : DefaultLifecycleObserver {
+    private var isAppInForeground = false
+
+    override fun onStop(owner: LifecycleOwner) {
+        isAppInForeground = false
+        (this.application as? BaseClass)?.updateUserStatus(
+            authenticationViewModel.getUserFromPreferences(application)?.phone.toString(),
+            false
+        )
+    }
+}
 
 @Composable
 fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
-
     val navController = rememberNavController()
     var viewModel = hiltViewModel<AuthenticationViewModel>()
     var registrationViewModel = hiltViewModel<RegistrationViewModel>()
@@ -157,7 +180,11 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
             SignUpOTP(navController = navController, viewModel = viewModel)
         }
         composable(route = ScreenRoutes.RegistrationScreen.route) {
-            RegistrationScreen(navController = navController, registrationViewModel = registrationViewModel, viewModel)
+            RegistrationScreen(
+                navController = navController,
+                registrationViewModel = registrationViewModel,
+                viewModel
+            )
         }
         composable(route = ScreenRoutes.HomeScreen.route) {
             HomeScreen(navController = navController, registrationViewModel, viewModel)
@@ -166,17 +193,22 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
             EditProfileScreen(navController = navController)
         }
         composable(route = ScreenRoutes.ProfileScreen.route) {
-            ProfileScreen(navController = navController, hyperKycLauncher, registrationViewModel, authenticationViewModel)
+            ProfileScreen(
+                navController = navController,
+                hyperKycLauncher,
+                registrationViewModel,
+                authenticationViewModel
+            )
         }
         composable(route = ScreenRoutes.WalletScreen.route) {
             WalletScreen(navController, walletViewModel, authenticationViewModel)
         }
 
         composable(route = ScreenRoutes.IncomingAudioCallScreen.route) {
-            IncomingAudioCallScreen(callerName = "Audio Call Screen", navController = navController)
+            IncomingCallScreen(callerName = "Audio Call Screen", navController = navController)
         }
 
-        composable( route = ScreenRoutes.MainScreen.route ) {
+        composable(route = ScreenRoutes.MainScreen.route) {
             MainScreen(navController = navController, hyperKycLauncher, registrationViewModel)
         }
 

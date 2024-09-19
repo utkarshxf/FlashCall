@@ -7,6 +7,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
 import android.util.Log
+import com.example.myapplication.myapplication.flashcall.utils.PreferencesKey
 import com.example.myapplication.myapplication.flashcall.utils.TimestampConverter
 import com.google.firebase.FirebaseApp
 import com.google.firebase.Timestamp
@@ -44,17 +45,17 @@ class BaseClass : Application() {
         var userId = "user_Id"
         var userName = "Unknown User"
         var profileImage = ""
+        var phoneNumber = ""
 
         // Attempt to retrieve values from SharedPreferences with proper error handling
         try {
-            userId = sharedPreferences.getString("user_id", "user_Id") ?: "user_Id"
-            userName = sharedPreferences.getString("full_name", "Unknown User") ?: "Unknown User"
-            profileImage = sharedPreferences.getString("photo", "") ?: ""
+            userId = sharedPreferences.getString(PreferencesKey.UserId.key, "user_Id") ?: "user_Id"
+            userName = sharedPreferences.getString(PreferencesKey.FirstName.key, "Unknown User") ?: "Unknown User"
+            profileImage = sharedPreferences.getString(PreferencesKey.Photo.key, "") ?: ""
+            phoneNumber = sharedPreferences.getString(PreferencesKey.Phone.key , "") ?: ""
         } catch (e: Exception) {
             Log.e("BaseClass", "Error reading SharedPreferences: ${e.message}")
         }
-
-
         // Log retrieved values for debugging
         Log.d("BaseClass", "userId: $userId, userName: $userName, profileImage: $profileImage")
 
@@ -75,6 +76,7 @@ class BaseClass : Application() {
         } catch (e: Exception) {
             Log.e("BaseClass", "Error initializing StreamVideo: ${e.message}")
         }
+        updateUserStatus(phoneNumber, true)
     }
     fun streamRemoveClient()
     {
@@ -97,4 +99,24 @@ class BaseClass : Application() {
     companion object {
         const val CHANNEL_ID = "CHAT_REQUEST_CHANNEL"
     }
+    fun updateUserStatus(phoneNumber: String, isOnline: Boolean) {
+        // Get Firestore instance
+        val db = FirebaseFirestore.getInstance()
+
+        // Reference to the user document in the "userStatus" collection
+        val userRef = db.collection("userStatus").document(phoneNumber)
+
+        // Set the status to either "Online" or "Offline"
+        val status = if (isOnline) "Online" else "Offline"
+
+        // Update the status field
+        userRef.update("status", status)
+            .addOnSuccessListener {
+                println("Status updated to $status for user: $phoneNumber")
+            }
+            .addOnFailureListener { e ->
+                println("Error updating status: $e")
+            }
+    }
 }
+
