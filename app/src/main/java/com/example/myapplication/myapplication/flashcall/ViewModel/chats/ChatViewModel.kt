@@ -56,7 +56,7 @@ class ChatViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val chatId = savedStateHandle.get<String>("chatId") ?: ""
+    private var chatId = savedStateHandle.get<String>("chatId") ?: ""
     val senderId = savedStateHandle.get<String>("userId") ?: ""
 
     private val _messages = MutableStateFlow<Resource<List<MessageDataClass>>>(Resource.Loading())
@@ -88,6 +88,7 @@ class ChatViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            chatId = getChatIdFromPreferences() ?: chatId
             if (chatId.isNotBlank()) {
                 fetchChatData(chatId)
                 observeMessages(chatId)
@@ -131,6 +132,7 @@ class ChatViewModel @Inject constructor(
             val document = firestore.collection("chats").document(chatId).get().await()
             if (document.exists()) {
                 val chat = document.toObject(ChatDataClass::class.java)
+                Log.e("qwerty", chat.toString())
                 _chatData.value = chat
             }
         } catch (e: Exception) {
@@ -156,7 +158,6 @@ class ChatViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 if (messageContent.isNotBlank() || messageType == MessageType.IMAGE) {
-                    val chatId = getChatIdFromPreferences() ?: return@launch
                     val userId = userPreferencesRepository.getStoredUserData(PreferencesKey.UserId.key) ?: return@launch
                     sendMessageUseCase(chatId, messageContent, messageType, userId)
                     _messageText.value = ""

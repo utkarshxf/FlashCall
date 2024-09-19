@@ -262,6 +262,7 @@ fun panVerification(vm: KycViewModel) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun aadharVerification(){
     OutlinedTextField(

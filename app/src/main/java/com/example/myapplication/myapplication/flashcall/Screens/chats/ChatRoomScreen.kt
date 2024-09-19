@@ -116,7 +116,7 @@ private const val REQUEST_RECORD_AUDIO_PERMISSION = 200
 @Composable
 fun ChatRoomScreen(
     chatViewModel: ChatViewModel = hiltViewModel(),
-    chatRequestViewModel: ChatRequestViewModel = hiltViewModel(),
+//    chatRequestViewModel: ChatRequestViewModel = hiltViewModel(),
     authenticationViewModel: AuthenticationViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -124,7 +124,7 @@ fun ChatRoomScreen(
     val uid = userData?._id
     val name = userData?.fullName
     val messages = chatViewModel.messages.collectAsState().value
-
+    Log.v("qwerty" , messages.toString())
     var messageText by remember { mutableStateOf("") }
     var imagePicker by remember { mutableStateOf(false) }
     var chatImageUri by rememberSaveable { mutableStateOf("") }

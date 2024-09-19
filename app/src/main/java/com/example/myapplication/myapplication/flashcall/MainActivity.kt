@@ -221,7 +221,7 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
             PaymentSettings(navController = navController)
         }
         composable(route = ScreenRoutes.ChatRoomScreen.route) {
-            ChatRoomScreen(chatViewModel, chatRequestViewModel, authenticationViewModel)
+            ChatRoomScreen(chatViewModel, authenticationViewModel)
         }
 
         composable(route = ScreenRoutes.FeedbackScreen.route) {

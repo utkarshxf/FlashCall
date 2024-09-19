@@ -24,6 +24,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Data.VideoCallRoute
@@ -133,7 +134,7 @@ fun IncomingCallScreen(
 
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = call.user.name.toString(),
+                            text = videoCallViewModel.state.incomingCall?.user?.name.toString(),
                             color = Color.White,
                             style = TextStyle(
                                 fontWeight = FontWeight.Bold, fontSize = 25.sp
