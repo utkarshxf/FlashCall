@@ -38,16 +38,13 @@ class VideoCallViewModel @Inject constructor(private val firestore: FirebaseFire
             launch { collectConnectionState() }
         }
     }
-
     private suspend fun collectRingingCalls() {
         streamVideo.state.ringingCall.collectLatest { call ->
             state = state.copy( incomingCall = call,
-//                callType = if (streamVideo == true) "Video" else "Audio"
+                callType = if (call?.type == "default") "Video" else "Audio"
             )
         }
     }
-
-
     private suspend fun collectActiveCalls() {
         streamVideo.state.activeCall.collectLatest { call ->
             state = state.copy(
