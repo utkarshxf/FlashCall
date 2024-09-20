@@ -37,7 +37,6 @@ class BaseClass : Application() {
         }
         FirebaseFirestore.getInstance().firestoreSettings = firestoreSettings
 
-//        streamBuilder(this)
     }
 
     fun streamBuilder(context: Context) {

@@ -69,15 +69,9 @@ fun WalletScreen(navController: NavController, walletViewModel: WalletViewModel 
         userData?._id.let {
             walletViewModel.fetchTransactions(it.toString())
         }
-        userData?._id.let {
-            walletViewModel.getUserDetails(it.toString())
-        }
     }
     val transactions = walletViewModel.transactions.collectAsState()
-    val userDetails = walletViewModel.userDetails.collectAsState()
     val listOfTransactions = transactions.value.transactions
-
-
 
     Surface(
         modifier = Modifier.wrapContentSize(),
@@ -116,7 +110,7 @@ fun WalletScreen(navController: NavController, walletViewModel: WalletViewModel 
                     )
 
                     Text(
-                        text = userDetails.value.fullName?:"User",
+                        text = userData?.fullName?:"User",
                         modifier = Modifier.padding(top = 10.dp),
                         style = TextStyle(
                             fontFamily = arimoFontFamily,
@@ -161,7 +155,7 @@ fun WalletScreen(navController: NavController, walletViewModel: WalletViewModel 
                     Spacer(modifier = Modifier.height(20.dp))
 
                     Text(
-                        text = "₹${userDetails.value.walletBalance}",
+                        text = String.format("₹%.2f", userData?.walletBalance?.toDouble()),
                         style = TextStyle(
                             fontFamily = arimoFontFamily,
                             fontSize = 32.sp,
