@@ -166,6 +166,7 @@ fun ProfileScreen(
                     navController.navigate(ScreenRoutes.KycScreen.route)
 
                 }) {
+
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,

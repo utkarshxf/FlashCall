@@ -103,6 +103,7 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryBackG
 import com.example.myapplication.myapplication.flashcall.ui.theme.SwitchColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
 import com.example.myapplication.myapplication.flashcall.ui.theme.helveticaFontFamily
+import kotlin.math.roundToInt
 
 //var uriImg: Uri? = null
 var creatorUid: String = ""
@@ -127,6 +128,7 @@ fun HomeScreen(
     var dob by remember { mutableStateOf("") }
     var bio by remember { mutableStateOf("") }
     var walletBalance by remember { mutableStateOf(0.0) }
+
 
 
     val (firstName, lastName) = name.split(" ", limit = 2).let {
@@ -349,10 +351,14 @@ fun HomeScreen(
 
 
 @Composable
-fun HomeScreenBottom(homeNavController: NavController, username: String, walletBalance: Double) {
+fun HomeScreenBottom(
+    homeNavController: NavController, username: String,
+    walletBalance: Double, viewModel: RegistrationViewModel = hiltViewModel()
+) {
     var showShareDialog by remember { mutableStateOf(true) }
-    var addAdditionalLink by remember { mutableStateOf(false) }
-    var addedAdditionalLink by remember { mutableStateOf(true) }
+
+
+
     Surface(
         modifier = Modifier
             .fillMaxSize()
@@ -387,53 +393,99 @@ fun HomeScreenBottom(homeNavController: NavController, username: String, walletB
 
                 Spacer(modifier = Modifier.height(20.dp))
 
+
                 if(addedAdditionalLink){
                     addedLinkLayout {
 
+
+                var data = viewModel.getLinksList()
+                var list by remember {
+                    mutableStateOf(data)
+                }
+
+
+
+                val showAdditionalLinks = viewModel.showAdditionalLinkState.collectAsState()
+                when (showAdditionalLinks.value) {
+                    APIResponse.Empty -> {
+
+                    }
+
+                    is APIResponse.Error -> {
+
+
+                    }
+
+                    APIResponse.Loading -> {
+
+                    }
+
+                    is APIResponse.Success -> {
+                        list =
+                            (showAdditionalLinks.value as APIResponse.Success<List<LinkData>>).data
                     }
                 }
 
-                if(addAdditionalLink){
+
+
+                for (i in 0..list.size - 1) {
+                    addedLinkLayout(list.get(i), { ->
+
+                        Log.d("addedLinkLayout", "Changing State ")
+                    }, { ->
+                        viewModel.updateUserLinks(list.get(i)){
+
+                        }
+
+                        Log.d("addedLinkLayout", "Edit State ")
+                    }, { ->
+                        Log.d("addedLinkLayout", "Delete State ")
+                    })
+                }
+
+                val addAditionalLinkState = viewModel.addAditionalLinkState
+                if (addAditionalLinkState.showAddLinkLayout) {
                     addLinkLayout {
-                        addAdditionalLink = false
+                        viewModel.showLayoutForAddLinks(false)
                     }
-                }
-
-
-                addExtraLink(
-                    modifier = Modifier
-                        .height(84.dp)
-                        .fillMaxWidth()
-                        .padding(vertical = 10.dp, horizontal = 5.dp)
-                        .background(Color.White)
-                        .clickable {
-                            addAdditionalLink = true
-                        },
-                    borderColor = BorderColor2,
-                    dashLength = 10f,
-                    gapLength = 10f,
-                    cornerRadius = 16f,
-                    borderWidth = 4f
-                ) {
-                    Row(modifier = Modifier
-                        .background(color = Color.White, shape = RoundedCornerShape(16.dp)),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                } else {
+                    addExtraLink(
+                        modifier = Modifier
+                            .height(84.dp)
+                            .fillMaxWidth()
+                            .padding(vertical = 10.dp, horizontal = 5.dp)
+                            .background(Color.White)
+                            .clickable {
+                                viewModel.showLayoutForAddLinks(true)
+                            },
+                        borderColor = BorderColor2,
+                        dashLength = 10f,
+                        gapLength = 10f,
+                        cornerRadius = 16f,
+                        borderWidth = 4f
                     ) {
-
-
-                        Icon(painter = painterResource(id = R.drawable.add_circle_outline_24dp_1),
-                            contentDescription = "addIcon",
-                            tint = Color.Black)
-                        Text(text = "Add Your Link",
-                            color = Color.Black,
-                            modifier = Modifier.padding(start = 10.dp),
-                            style = TextStyle(
-                                fontSize = 17.sp,
-                                fontFamily = helveticaFontFamily,
-                                fontWeight = FontWeight.Bold
+                        Row(
+                            modifier = Modifier
+                                .background(color = Color.White, shape = RoundedCornerShape(16.dp)),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.add_circle_outline_24dp_1),
+                                contentDescription = "addIcon",
+                                tint = Color.Black
                             )
-                        )
+                            Text(
+                                text = "Add Your Link",
+                                color = Color.Black,
+                                modifier = Modifier.padding(start = 10.dp),
+                                style = TextStyle(
+                                    fontSize = 17.sp,
+                                    fontFamily = helveticaFontFamily,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+                        }
                     }
                 }
 
@@ -574,6 +626,7 @@ fun WalletBar(navController: NavController, walletBalance: Double) {
             // Wallet icon
             walletIcon()
 
+
             // Column containing text for "Today's Earning" and balance
             Column(
                 modifier = Modifier
@@ -582,6 +635,7 @@ fun WalletBar(navController: NavController, walletBalance: Double) {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.Start
             ) {
+
                 Text(
                     text = "Today's Earning",
                     modifier = Modifier.padding(bottom = 2.dp),
@@ -607,7 +661,8 @@ fun WalletBar(navController: NavController, walletBalance: Double) {
                         modifier = Modifier.padding(end = 2.dp)
                     )
                     Text(
-                        text = String.format("%.2f", walletBalance),
+                        text = "${walletBalance.roundToInt()}",
+                        modifier = Modifier.padding(top = 5.dp),
                         style = TextStyle(
                             fontFamily = arimoFontFamily,
                             fontWeight = FontWeight.Bold,
@@ -728,6 +783,7 @@ fun ServicesSection(
                                 userId = creatorUid, servicesChat = it
                             )
                     }
+
                 )
             }
             Spacer(modifier = Modifier.height(5.dp))
@@ -754,19 +810,24 @@ fun ServicesSection(
                     },
                     onCheckedChange = {
                         if (serviceSelected) {
-                            if(it == false && audioService == false && chatService == false){
+                            if (it == false && audioService == false && chatService == false) {
                                 serviceSelected = it
-                                registrationViewModel.updateServices(userId = creatorUid, masterToggle = it)
+                                registrationViewModel.updateServices(
+                                    userId = creatorUid,
+                                    masterToggle = it
+                                )
                             }
                             videoService = it
                             registrationViewModel.updateServices(
                                 userId = creatorUid, servicesVideo = it
                             )
 
-                        }
-                        else{
+                        } else {
                             serviceSelected = it
-                            registrationViewModel.updateServices(userId = creatorUid, masterToggle = it)
+                            registrationViewModel.updateServices(
+                                userId = creatorUid,
+                                masterToggle = it
+                            )
                             videoService = it
                             registrationViewModel.updateServices(
                                 userId = creatorUid, servicesVideo = it
@@ -791,17 +852,23 @@ fun ServicesSection(
                     },
                     onCheckedChange = {
                         if (serviceSelected) {
-                            if(it == false && videoService == false && chatService == false){
+                            if (it == false && videoService == false && chatService == false) {
                                 serviceSelected = it
-                                registrationViewModel.updateServices(userId = creatorUid, masterToggle = it)
+                                registrationViewModel.updateServices(
+                                    userId = creatorUid,
+                                    masterToggle = it
+                                )
                             }
                             audioService = it
                             registrationViewModel.updateServices(
                                 userId = creatorUid, servicesAudio = it
                             )
-                        }else{
+                        } else {
                             serviceSelected = it
-                            registrationViewModel.updateServices(userId = creatorUid, masterToggle = it)
+                            registrationViewModel.updateServices(
+                                userId = creatorUid,
+                                masterToggle = it
+                            )
                             audioService = it
                             registrationViewModel.updateServices(
                                 userId = creatorUid, servicesAudio = it
@@ -826,17 +893,23 @@ fun ServicesSection(
                     },
                     onCheckedChange = {
                         if (serviceSelected) {
-                            if(it == false && audioService == false && videoService == false){
+                            if (it == false && audioService == false && videoService == false) {
                                 serviceSelected = it
-                                registrationViewModel.updateServices(userId = creatorUid, masterToggle = it)
+                                registrationViewModel.updateServices(
+                                    userId = creatorUid,
+                                    masterToggle = it
+                                )
                             }
                             chatService = it
                             registrationViewModel.updateServices(
                                 userId = creatorUid, servicesChat = it
                             )
-                        }else{
+                        } else {
                             serviceSelected = it
-                            registrationViewModel.updateServices(userId = creatorUid, masterToggle = it)
+                            registrationViewModel.updateServices(
+                                userId = creatorUid,
+                                masterToggle = it
+                            )
                             chatService = it
                             registrationViewModel.updateServices(
                                 userId = creatorUid, servicesChat = it
@@ -879,7 +952,13 @@ fun ServiceRow(
     onCheckedChange: (Boolean) -> Unit,
     textColor: Color // Dynamic text color based on main toggle state
 ) {
+
     val rowTextColor = if (serviceEnabled ) textColor else Color.Gray
+    // Text and icon color should be grey if the service is disabled
+//    val rowTextColor = if (serviceEnabled && serviceSelected) textColor else Color.Gray
+//    val iconAlpha = if (serviceEnabled && serviceSelected) 1f else 0.5f
+
+
     val iconAlpha = if (serviceEnabled) 1f else 0.5f
 
     Row(
@@ -973,8 +1052,9 @@ fun EditPriceDialog(
                     onPriceChange = { newChatPrice = it })
 
 
-                if(!isError.isEmpty()){
-                    Text(text = "Error: ${isError}",
+                if (!isError.isEmpty()) {
+                    Text(
+                        text = "Error: ${isError}",
                         color = Color.Red,
                         style = TextStyle(fontSize = 12.sp)
                     )
@@ -1002,20 +1082,20 @@ fun EditPriceDialog(
                             val minPrice = 10
 
                             if (videoPriceInt != null && audioPriceInt != null && chatPriceInt != null) {
-                                if(videoPriceInt >= minPrice && audioPriceInt >= minPrice && chatPriceInt >= minPrice) {
+                                if (videoPriceInt >= minPrice && audioPriceInt >= minPrice && chatPriceInt >= minPrice) {
                                     onConfirm(newVideoPrice, newAudioPrice, newChatPrice)
-                                }else{
-                                    if(videoPriceInt < minPrice){
+                                } else {
+                                    if (videoPriceInt < minPrice) {
                                         isError = "video call price should be more than 10 RS"
                                     }
-                                    if(audioPriceInt < minPrice){
+                                    if (audioPriceInt < minPrice) {
                                         isError = "audio call price should be more than 10 RS"
                                     }
-                                    if(chatPriceInt < minPrice){
+                                    if (chatPriceInt < minPrice) {
                                         isError = "chat price should be more than 10 RS"
                                     }
                                 }
-                            }else{
+                            } else {
                                 isError = "price should be more than 10 RS"
                             }
                         }, shape = RoundedCornerShape(50), colors = ButtonDefaults.buttonColors(
@@ -1223,8 +1303,8 @@ fun DemoText() {
 }
 
 @Composable
-fun walletIcon(){
-    Box(modifier = Modifier.padding(start = 5.dp), contentAlignment = Alignment.Center){
+fun walletIcon() {
+    Box(modifier = Modifier.padding(start = 5.dp), contentAlignment = Alignment.Center) {
         Box(
             modifier = Modifier
                 .size(40.dp)
@@ -1245,30 +1325,27 @@ fun walletIcon(){
 }
 
 @Composable
-fun addedLinkLayout(onCancel: () -> Unit) {
-    var checkedLink by remember {
-        mutableStateOf(true)
-    }
+fun addedLinkLayout(item: LinkData, isActive: () -> Unit, edit: () -> Unit, delete: () -> Unit) {
     var mDisplayMenu by remember { mutableStateOf(false) }
-    val mContext = LocalContext.current
 
     Box(modifier = Modifier.padding(bottom = 10.dp)) {
-        Row(modifier = Modifier
-            .fillMaxWidth()
-            .height(56.dp)
-            .background(color = Color.White, shape = RoundedCornerShape(8.dp))
-            .border(width = 1.dp, color = BorderColor2, shape = RoundedCornerShape(8.dp)),
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .background(color = Color.White, shape = RoundedCornerShape(8.dp))
+                .border(width = 1.dp, color = BorderColor2, shape = RoundedCornerShape(8.dp)),
             verticalAlignment = Alignment.CenterVertically
 
-        ){
+        ) {
 
-            Icon(painter = painterResource(id = R.drawable.drag_indicator_24dp),
+            Icon(
+                painter = painterResource(id = R.drawable.drag_indicator_24dp),
                 contentDescription = "",
                 modifier = Modifier.padding(start = 10.dp)
             )
-
-
-            Text(text = "Twiter",
+            Text(
+                text = item.title ?: "default",
                 color = Color.Black,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
@@ -1278,16 +1355,17 @@ fun addedLinkLayout(onCancel: () -> Unit) {
             )
 
 
-            Switch(checked = checkedLink, onCheckedChange = {
-                checkedLink = it
-            }, colors = SwitchDefaults.colors(
-                checkedThumbColor = Color.White,
-                checkedTrackColor = MainColor,
-                uncheckedThumbColor = Color.White,
-                uncheckedTrackColor = SwitchColor
-            ), modifier = Modifier
-                .width(50.dp)
-                .padding(top = 5.dp)
+            Switch(
+                checked = item.isActive ?: true, onCheckedChange = {
+                    isActive()
+                }, colors = SwitchDefaults.colors(
+                    checkedThumbColor = Color.White,
+                    checkedTrackColor = MainColor,
+                    uncheckedThumbColor = Color.White,
+                    uncheckedTrackColor = SwitchColor
+                ), modifier = Modifier
+                    .width(50.dp)
+                    .padding(top = 5.dp)
             )
 
             //More vert
@@ -1309,12 +1387,16 @@ fun addedLinkLayout(onCancel: () -> Unit) {
                 ) {
 
                     DropdownMenuItem(text = {
-                        Text(text = "Edit Link") },
+                        Text(text = "Edit Link")
+                    },
                         onClick = {
                             mDisplayMenu = !mDisplayMenu
-                            Toast.makeText(mContext, "Under Development", Toast.LENGTH_SHORT).show()
+                            edit()
                         }, leadingIcon = {
-                            Icon(painter = painterResource(id = R.drawable.edit_24dp__2), contentDescription = "")
+                            Icon(
+                                painter = painterResource(id = R.drawable.edit_24dp__2),
+                                contentDescription = ""
+                            )
                         }
                     )
 
@@ -1324,12 +1406,15 @@ fun addedLinkLayout(onCancel: () -> Unit) {
                         Text(text = "Delete Link")
                     }, onClick = {
                         mDisplayMenu = !mDisplayMenu
-                        Toast.makeText(mContext, "Under Development", Toast.LENGTH_SHORT).show()
+                        delete()
                     }, leadingIcon = {
-                        Icon(painter = painterResource(id = R.drawable.delete_24dp_2), contentDescription = "")
+                        Icon(
+                            painter = painterResource(id = R.drawable.delete_24dp_2),
+                            contentDescription = ""
+                        )
                     }
                     )
-                }    
+                }
             }
         }
     }
@@ -1337,26 +1422,31 @@ fun addedLinkLayout(onCancel: () -> Unit) {
 
 
 @Composable
-fun addLinkLayout(registrationViewModel: RegistrationViewModel = hiltViewModel(), onCancel: () -> Unit) {
+fun addLinkLayout(
+    registrationViewModel: RegistrationViewModel = hiltViewModel(),
+    onCancel: () -> Unit
+) {
     var linkTitle by remember {
         mutableStateOf("")
     }
     var link by remember {
         mutableStateOf("")
     }
+    var context = LocalContext.current
     var loading by remember { mutableStateOf(false) }
 
 
-    Column(modifier = Modifier
-        .background(color = Color.White, shape = RoundedCornerShape(10.dp))
-        .border(width = 1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp))
-        .padding(15.dp)
-        ) {
+    Column(
+        modifier = Modifier
+            .background(color = Color.White, shape = RoundedCornerShape(10.dp))
+            .border(width = 1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp))
+            .padding(15.dp)
+    ) {
 
         OutlinedTextField(
             shape = RoundedCornerShape(10.dp),
             value = linkTitle,
-            onValueChange = {linkTitle = it},
+            onValueChange = { linkTitle = it },
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Next
             ),
@@ -1366,7 +1456,7 @@ fun addLinkLayout(registrationViewModel: RegistrationViewModel = hiltViewModel()
                 .border(1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp)),
             placeholder = {
                 Text(
-                    text="Enter Title Here",
+                    text = "Enter Title Here",
                     color = Color.Black,
                     style = TextStyle(
                         fontFamily = arimoFontFamily,
@@ -1380,7 +1470,7 @@ fun addLinkLayout(registrationViewModel: RegistrationViewModel = hiltViewModel()
         OutlinedTextField(
             shape = RoundedCornerShape(10.dp),
             value = link,
-            onValueChange = {link = it},
+            onValueChange = { link = it },
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Next
             ),
@@ -1391,7 +1481,7 @@ fun addLinkLayout(registrationViewModel: RegistrationViewModel = hiltViewModel()
                 .border(1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp)),
             placeholder = {
                 Text(
-                    text="Past URL link here",
+                    text = "Past URL link here",
                     color = Color.Black,
                     style = TextStyle(
                         fontFamily = arimoFontFamily,
@@ -1401,7 +1491,10 @@ fun addLinkLayout(registrationViewModel: RegistrationViewModel = hiltViewModel()
             },
             maxLines = 1,
             trailingIcon = {
-                Icon(painter = painterResource(id = R.drawable.link_24dp_2), contentDescription = "")
+                Icon(
+                    painter = painterResource(id = R.drawable.link_24dp_2),
+                    contentDescription = ""
+                )
             }
         )
         Row(
@@ -1422,13 +1515,14 @@ fun addLinkLayout(registrationViewModel: RegistrationViewModel = hiltViewModel()
                 }
             )
             {
-                Text(text = "Cancel",
+                Text(
+                    text = "Cancel",
                     textAlign = TextAlign.Center,
                     style = TextStyle(
                         fontFamily = arimoFontFamily,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
-                    ),color = Color.White
+                    ), color = Color.White
                 )
             }
 
@@ -1446,11 +1540,22 @@ fun addLinkLayout(registrationViewModel: RegistrationViewModel = hiltViewModel()
                     fontSize = 16.sp
                 ),
                 onClick = {
-                    registrationViewModel.updateUserLinks(link = LinkData(linkTitle, link,true)){
-                        loading = it
-                        if(!it){
-                            onCancel()
+
+                    if (linkTitle.isNotEmpty() && link.isNotEmpty()) {
+                        registrationViewModel.updateUserLinks(
+                            link = LinkData(
+                                linkTitle,
+                                link,
+                                true
+                            )
+                        ) {
+                            loading = it
+                            if (!it) {
+                                onCancel()
+                            }
                         }
+                    } else {
+                        Toast.makeText(context, "Enter Details Please", Toast.LENGTH_SHORT).show()
                     }
                 }
             )
@@ -1460,10 +1565,9 @@ fun addLinkLayout(registrationViewModel: RegistrationViewModel = hiltViewModel()
 }
 
 
-
 @Preview(showBackground = false)
 @Composable
-fun HomeScreenPreview(){
+fun HomeScreenPreview() {
 //    addedLinkLayout{
 //    }
 //    addLinkLayout {
