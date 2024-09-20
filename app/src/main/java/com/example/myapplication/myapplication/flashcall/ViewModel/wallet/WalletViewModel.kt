@@ -25,7 +25,12 @@ class WalletViewModel @Inject constructor(
 ) : ViewModel() {
     private val _transactions = MutableStateFlow<TransactionsResponse>(TransactionsResponse())
     val transactions: StateFlow<TransactionsResponse> = _transactions
-
+    val userId = userPreferencesRepository.getUser()?._id
+    init {
+        if (userId != null) {
+            fetchTransactions(userId)
+        }
+    }
     fun fetchTransactions(uid: String) {
 
         viewModelScope.launch {
@@ -34,7 +39,6 @@ class WalletViewModel @Inject constructor(
 
             try {
                 walletRepo.getTransactions("https://flashcall.vercel.app/api/v1/transaction/getUserTransactions?userId=$uid").collect {
-                    Log.d("UserId","UserId: ${uid}")
                     _transactions.value = it
                     saveLocalTransactions(uid, it)
                     Log.d("TransactionViewModel", "getTransaction: $it")

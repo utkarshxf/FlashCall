@@ -7,7 +7,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-//import androidx.compose.foundation.layout.FlowRowScopeInstance.weight
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -151,7 +150,7 @@ fun WalletScreen(navController: NavController, walletViewModel: WalletViewModel 
                     Spacer(modifier = Modifier.height(20.dp))
 
                     Text(
-                        text = "₹${userDetails.value.walletBalance?.roundToInt()}",
+                        text = "₹${userData?.walletBalance?.roundToInt()}",
                         style = TextStyle(
                             fontFamily = arimoFontFamily,
                             fontSize = 32.sp,

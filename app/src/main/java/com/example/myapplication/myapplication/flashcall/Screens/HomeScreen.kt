@@ -394,10 +394,6 @@ fun HomeScreenBottom(
                 Spacer(modifier = Modifier.height(20.dp))
 
 
-                if(addedAdditionalLink){
-                    addedLinkLayout {
-
-
                 var data = viewModel.getLinksList()
                 var list by remember {
                     mutableStateOf(data)
