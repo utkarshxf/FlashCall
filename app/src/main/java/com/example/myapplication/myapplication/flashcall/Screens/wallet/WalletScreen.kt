@@ -186,9 +186,6 @@ fun WalletScreen(navController: NavController, walletViewModel: WalletViewModel 
 
 
             Spacer(modifier = Modifier.height(10.dp))
-//            if (listOfTransactions.isNullOrEmpty()) {
-//                Text(text = "No transactions available")
-//            }
             Row {
                 Text(text = "Transition History")
                 Spacer(modifier = Modifier.weight(1f))
