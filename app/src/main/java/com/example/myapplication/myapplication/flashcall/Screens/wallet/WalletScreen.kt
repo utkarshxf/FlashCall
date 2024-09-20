@@ -58,6 +58,7 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamil
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 @Composable
 fun WalletScreen(navController: NavController, walletViewModel: WalletViewModel = hiltViewModel(), authenticationViewModel: AuthenticationViewModel = hiltViewModel())
@@ -161,7 +162,7 @@ fun WalletScreen(navController: NavController, walletViewModel: WalletViewModel 
                     Spacer(modifier = Modifier.height(20.dp))
 
                     Text(
-                        text = "₹${userDetails.value.walletBalance}",
+                        text = "₹${userDetails.value.walletBalance?.roundToInt()}",
                         style = TextStyle(
                             fontFamily = arimoFontFamily,
                             fontSize = 32.sp,
@@ -345,8 +346,8 @@ fun TransactionItem(transaction: Transaction, isLastInGroup: Boolean) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Column {
-                    Text("Transaction ID:\n ${transaction._id}", fontWeight = FontWeight.Bold)
+                Column(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                    Text("Transaction ID:\n ${transaction._id}", fontWeight = FontWeight.SemiBold)
                     Text(text = createdAtTime, fontSize = 14.sp)
                 }
 

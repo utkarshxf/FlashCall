@@ -81,7 +81,7 @@ fun IncomingCallScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Incoming Audio Call",
+                text = "Incoming Call",
                 color = Color.White,
                 style = TextStyle(
                     fontWeight = FontWeight.Medium,
@@ -233,20 +233,20 @@ fun InCallScreen(
             )
     ) {
         Spacer(modifier = Modifier.height(10.dp))
-        IconButton(
-            onClick = {
-                navController.navigate(ScreenRoutes.MainScreen.route)
-            },
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(16.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = "Close",
-                tint = Color.White
-            )
-        }
+//        IconButton(
+//            onClick = {
+//                navController.navigate(ScreenRoutes.MainScreen.route)
+//            },
+//            modifier = Modifier
+//                .align(Alignment.TopEnd)
+//                .padding(16.dp)
+//        ) {
+//            Icon(
+//                imageVector = Icons.Default.Close,
+//                contentDescription = "Close",
+//                tint = Color.White
+//            )
+//        }
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -420,6 +420,7 @@ fun InCallScreen(
 @Preview(showBackground = true)
 @Composable
 fun AudioCallPreview(){
+    //IncomingCallScreen(callerName = "Hello", navController = rememberNavController())
     InCallScreen(callerName = "Ram", timeLeft = "19:11", callDuration ="12:29" , navController = rememberNavController() )
 
 }

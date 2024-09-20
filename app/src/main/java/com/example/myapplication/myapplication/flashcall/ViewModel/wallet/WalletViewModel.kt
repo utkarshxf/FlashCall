@@ -27,9 +27,11 @@ class WalletViewModel @Inject constructor(
     val userDetails: StateFlow<UserDetailsResponse> = _userDetails
 
     fun fetchTransactions(uid: String) {
+
         viewModelScope.launch {
             try {
                 walletRepo.getTransactions("https://flashcall.vercel.app/api/v1/transaction/getUserTransactions?userId=$uid").collect {
+                    Log.d("UserId","UserId: ${uid}")
                     _transactions.value = it
                     Log.d("TransactionViewModel", "getTransaction: $it")
                 }

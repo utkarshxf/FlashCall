@@ -3,6 +3,10 @@ package com.example.myapplication.myapplication.flashcall.ViewModel
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
@@ -10,6 +14,7 @@ import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.CreateUserResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.LinkData
+import com.example.myapplication.myapplication.flashcall.Data.model.SDKResponseState
 import com.example.myapplication.myapplication.flashcall.Data.model.UpdateUserResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.firestore.UserServicesResponse
 import com.example.myapplication.myapplication.flashcall.repository.CreateRepository
@@ -21,6 +26,8 @@ import com.google.firebase.firestore.toObject
 import com.google.firebase.messaging.messaging
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.getstream.video.android.core.Call
+import io.getstream.video.android.core.ConnectionState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -36,6 +43,8 @@ class RegistrationViewModel @Inject constructor(
     private val userPreferencesRepository: UserPreferencesRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
+
+
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences("user_prefs1", Context.MODE_PRIVATE)
 
@@ -51,6 +60,18 @@ class RegistrationViewModel @Inject constructor(
     private val _serviceState =
         MutableStateFlow<APIResponse<UserServicesResponse>>(APIResponse.Loading)
     val serviceState: StateFlow<APIResponse<UserServicesResponse>> = _serviceState
+
+    var addAditionalLinkState by mutableStateOf(AddAditionalLinkState())
+        private set
+
+
+    private val _showAdditionalLinkState =
+        MutableStateFlow<APIResponse<List<LinkData>>>(APIResponse.Success(userPreferencesRepository.getAdditionalLinks()))
+    val showAdditionalLinkState: StateFlow<APIResponse<List<LinkData>>> = _showAdditionalLinkState
+
+
+
+
 
     fun createUser(
         username: String,
@@ -365,5 +386,25 @@ class RegistrationViewModel @Inject constructor(
             }
         }
     }
+
+
+    fun showLayoutForAddLinks(isShow: Boolean){
+        addAditionalLinkState = addAditionalLinkState.copy(showAddLinkLayout = isShow)
+    }
+
+    fun getLinksList(): List<LinkData> {
+        return userPreferencesRepository.getAdditionalLinks()
+    }
+
+
+
+
 }
+
+data class AddAditionalLinkState(
+    val showAddLinkLayout: Boolean = false,
+    val linksList: List<LinkData>? = null,
+    val isLoading: Boolean = false
+)
+
 

@@ -57,19 +57,19 @@ fun IncomingCallScreen(
                             )
                         )
                 ) {
-                    IconButton(
-                        onClick = {
-                            navController.navigate(ScreenRoutes.MainScreen.route)
-                        }, modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(16.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Close",
-                            tint = Color.White
-                        )
-                    }
+//                    IconButton(
+//                        onClick = {
+//                            navController.navigate(ScreenRoutes.MainScreen.route)
+//                        }, modifier = Modifier
+//                            .align(Alignment.TopEnd)
+//                            .padding(16.dp)
+//                    ) {
+//                        Icon(
+//                            imageVector = Icons.Default.Close,
+//                            contentDescription = "Close",
+//                            tint = Color.White
+//                        )
+//                    }
 
                     Column(
                         modifier = Modifier
@@ -132,10 +132,6 @@ fun IncomingCallScreen(
                         )
 
                         Spacer(modifier = Modifier.height(8.dp))
-                        Log.d(
-                            "IncomingCallScreen",
-
-                         )
                         Text(
                             text = call.user.type.toString(),
                             color = Color.White,

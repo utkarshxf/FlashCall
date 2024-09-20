@@ -186,7 +186,7 @@ fun ProfileScreen(
                     .clickable {
 
                         navController.navigate(ScreenRoutes.KycScreen.route)
-
+//
 //                        val updatedConfig = HyperKycConfig(
 //                            appId = "muzdob",
 //                            appKey = "2ns9u1evoeugbrydykl7",

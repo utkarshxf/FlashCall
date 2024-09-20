@@ -240,7 +240,7 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
             IncomingChatScreen(navController = navController)
         }
         composable(route = ScreenRoutes.KycScreen.route) {
-            KYCScreen(navController = navController)
+            KYCScreen(navController = navController, hyperKycLauncher)
         }
     }
 }
