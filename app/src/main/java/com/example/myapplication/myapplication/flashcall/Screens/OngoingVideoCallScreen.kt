@@ -141,8 +141,23 @@ fun VideoCallContent(
             Box(
                 modifier = Modifier.fillMaxSize()
             ){
-
                 CallContent(
+                    appBarContent = {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(16.dp)
+                                .background(Color.White.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+
+                        ) {
+                            Text(
+                                text = "Time Left: ${formatTime(timeLeft)}",
+                                color = Color.White,
+                                fontSize = 16.sp
+                            )
+                        }
+                    },
                     call = call,
                     enableInPictureInPicture = false,
                     controlsContent = {
@@ -217,24 +232,7 @@ fun VideoCallContent(
                             )
                         }
                     },
-
                 )
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(16.dp)
-                        .background(Color.White.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-
-                ) {
-                    Text(
-                        text = "Time Left: ${formatTime(timeLeft)}",
-                        color = Color.White,
-                        fontSize = 16.sp
-                    )
-                }
-
-
             }
         }
     }
