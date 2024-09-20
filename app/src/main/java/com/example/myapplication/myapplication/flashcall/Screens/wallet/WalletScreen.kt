@@ -65,11 +65,6 @@ fun WalletScreen(navController: NavController, walletViewModel: WalletViewModel 
     val scrollState = rememberScrollState()
     val context = LocalContext.current
     val userData = authenticationViewModel.getUserFromPreferences(context)
-    LaunchedEffect(Unit) {
-        userData?._id.let {
-            walletViewModel.fetchTransactions(it.toString())
-        }
-    }
     val transactions = walletViewModel.transactions.collectAsState()
     val listOfTransactions = transactions.value.transactions
 
