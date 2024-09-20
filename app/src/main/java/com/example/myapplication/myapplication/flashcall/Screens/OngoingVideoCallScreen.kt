@@ -17,10 +17,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -98,9 +96,7 @@ fun OngoingVideoCallScreen(
             VideoCallLoading()
         }
     }
-
 }
-
 
 @Composable
 fun VideoCallContent(
@@ -117,12 +113,12 @@ fun VideoCallContent(
     val isSpeakerphoneEnabled by call.speaker.isEnabled.collectAsStateWithLifecycle(lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current)
     val activeVideoCall = viewModel.state.activeCall
     val timeLeft = viewModel.timeLeft
+    var showEndCallConfirmation by remember { mutableStateOf(false) }
 
     // Listen to call status changes and end call if necessary
     LaunchedEffect(call) {
-        if (!videoCall) {
+        if (call.type != "default") {
             call.camera.setEnabled(false)
-            call.microphone.setEnabled(false)
         }
     }
     LaunchedEffect(activeVideoCall) {
@@ -135,6 +131,7 @@ fun VideoCallContent(
         }
     }
     LaunchedEffect(Unit) {
+        call.speaker.setEnabled(true)
         viewModel.observeTimeLeft(call.id)
     }
     CompositionLocalProvider(
@@ -147,7 +144,7 @@ fun VideoCallContent(
 
                 CallContent(
                     call = call,
-                    enableInPictureInPicture = true,
+                    enableInPictureInPicture = false,
                     controlsContent = {
                         if(videoCall) {
                             Box(modifier = Modifier
@@ -184,10 +181,7 @@ fun VideoCallContent(
                                             LeaveCallAction(
                                                 modifier = Modifier.size(52.dp),
                                                 onCallAction = {
-                                                    Log.v("LeaveCallAction1" , "call")
-                                                    viewModel.endCall{
-                                                        viewModel.resetCallState()
-                                                    }
+                                                    showEndCallConfirmation = true
                                                 }
                                             )
                                         }
@@ -209,9 +203,7 @@ fun VideoCallContent(
                                         LeaveCallAction(
                                             modifier = Modifier.size(52.dp),
                                             onCallAction = {
-                                                viewModel.endCall{
-                                                    viewModel.resetCallState()
-                                                }
+                                                showEndCallConfirmation = true
                                             }
                                         )
                                     }, {
@@ -245,6 +237,38 @@ fun VideoCallContent(
 
             }
         }
+    }
+
+    if (showEndCallConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showEndCallConfirmation = false },
+            title = { Text("Are you sure?") },
+            text = { Text("Proceeding further will End the Ongoing Call.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showEndCallConfirmation = false
+                        viewModel.endCall {
+                            viewModel.resetCallState()
+                            navController.navigate(ScreenRoutes.MainScreen.route) {
+                                popUpTo(ScreenRoutes.InCallScreen.route) { inclusive = true }
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                ) {
+                    Text("Proceed")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = { showEndCallConfirmation = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
 

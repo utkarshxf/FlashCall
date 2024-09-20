@@ -7,10 +7,16 @@ import com.example.myapplication.myapplication.flashcall.Data.model.CreateUserRe
 import com.example.myapplication.myapplication.flashcall.Data.model.IsUserCreatedResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.LinkData
 import com.example.myapplication.myapplication.flashcall.Data.model.UpdateUserResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.wallet.Transaction
+import com.example.myapplication.myapplication.flashcall.Data.model.wallet.TransactionGroup
+import com.example.myapplication.myapplication.flashcall.Data.model.wallet.TransactionsResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.wallet.groupByDate
 import com.example.myapplication.myapplication.flashcall.utils.PreferencesKey
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -18,6 +24,42 @@ import javax.inject.Singleton
 class UserPreferencesRepository @Inject constructor(@ApplicationContext private val context: Context) {
 
     private val sharedPreferences: SharedPreferences = context.getSharedPreferences("user_prefs1", Context.MODE_PRIVATE)
+    private val gson = Gson()
+
+    fun storeTransactions(userId: String, transactionsResponse: TransactionsResponse) {
+        val jsonString = gson.toJson(transactionsResponse)
+        sharedPreferences.edit().apply {
+            putString("transactions_$userId", jsonString)
+            apply()
+        }
+    }
+
+    fun retrieveTransactions(userId: String): TransactionsResponse {
+        val jsonString = sharedPreferences.getString("transactions_$userId", null)
+        return if (jsonString != null) {
+            gson.fromJson(jsonString, TransactionsResponse::class.java)
+        } else {
+            TransactionsResponse()
+        }
+    }
+
+    fun updateTransactions(userId: String, newTransactions: List<Transaction>) {
+        val existingTransactions = retrieveTransactions(userId)
+        val updatedTransactions = (existingTransactions.transactions ?: emptyList()) + newTransactions
+        val updatedResponse = TransactionsResponse(updatedTransactions.distinctBy { it._id })
+        storeTransactions(userId, updatedResponse)
+    }
+
+    fun getTransactionGroups(userId: String): List<TransactionGroup> {
+        val transactions = retrieveTransactions(userId).transactions ?: emptyList()
+        return transactions.groupByDate()
+    }
+
+    private fun List<Transaction>.groupByDate(): List<TransactionGroup> {
+        return groupBy {
+            LocalDateTime.parse(it.createdAt, DateTimeFormatter.ISO_DATE_TIME).toLocalDate()
+        }.map { (date, transactions) -> TransactionGroup(date, transactions) }
+    }
 
     fun getStoredUserData(key: String): String? {
         return sharedPreferences.getString(key, null)
@@ -132,7 +174,4 @@ class UserPreferencesRepository @Inject constructor(@ApplicationContext private 
         val list: List<LinkData> = gson.fromJson(stringList, listType)
         return list
     }
-
-
-
 }

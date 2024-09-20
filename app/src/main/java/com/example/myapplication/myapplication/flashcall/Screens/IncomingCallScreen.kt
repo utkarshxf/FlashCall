@@ -1,6 +1,6 @@
 package com.example.myapplication.myapplication.flashcall.Screens
 
-import android.util.Log
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -13,12 +13,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -30,183 +32,218 @@ import com.example.myapplication.myapplication.flashcall.Data.VideoCallRoute
 import com.example.myapplication.myapplication.flashcall.Data.model.SDKResponseState
 import com.example.myapplication.myapplication.flashcall.R
 import com.example.myapplication.myapplication.flashcall.ViewModel.VideoCallViewModel
-import io.getstream.video.android.compose.theme.VideoTheme
 import io.getstream.video.android.core.Call
-import io.getstream.video.android.core.StreamVideo
 
 @Composable
 fun IncomingCallScreen(
-    call: Call, navController: NavController, videoCallViewModel: VideoCallViewModel
+    call: Call,
+    navController: NavController,
+    videoCallViewModel: VideoCallViewModel
 ) {
-    CompositionLocalProvider(
-        androidx.lifecycle.compose.LocalLifecycleOwner provides androidx.compose.ui.platform.LocalLifecycleOwner.current,
-    ) {
-        val state = videoCallViewModel.state.sdkResponseState
-        if (state == SDKResponseState.Loading) {
-            VideoTheme {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = listOf(
-                                    Color(0xFF232323), // Top color (semi-transparent dark gray)
-                                    Color.Gray.copy(alpha = 0.85f), // Middle gradient color
-                                    Color(0xFF232323) // Bottom color (semi-transparent dark gray)
+    val state = videoCallViewModel.state.sdkResponseState
+    val created =call.state.createdBy.collectAsState()
+    if (state == SDKResponseState.Loading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFF1E1E1E),  // Top color
+                            Color(0xFF444444),  // Middle color
+                            Color(0xFF121212)   // Bottom color
+                        ),
+                        startY = 0f,
+                        endY = 3000f
+                    )
+                )
+        ) {
+            // Close button
+            IconButton(
+                onClick = { navController.navigate(ScreenRoutes.MainScreen.route) },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Close",
+                    tint = Color.White
+                )
+            }
+
+            // Main content
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.SpaceBetween,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Call type
+                Text(
+                    text = "Incoming ${videoCallViewModel.state.callType} Call",
+                    color = Color.White,
+                    style = TextStyle(fontWeight = FontWeight.Normal, fontSize = 18.sp),
+                    modifier = Modifier.padding(top = 56.dp)
+                )
+
+                // Profile picture with glow effect
+                Column(
+                    modifier = Modifier,
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Box(modifier = Modifier.size(300.dp),
+                        contentAlignment = Alignment.Center){
+                        Canvas(modifier = Modifier.fillMaxSize()) {
+                            drawCircle(
+                                brush = Brush.radialGradient(
+                                    colors = listOf(
+                                        Color(0xff595a59),
+                                        Color.Transparent
+                                    ),
+                                    center = center,
+                                    radius = size.minDimension / 2.5f
                                 )
                             )
-                        )
-                ) {
-//                    IconButton(
-//                        onClick = {
-//                            navController.navigate(ScreenRoutes.MainScreen.route)
-//                        }, modifier = Modifier
-//                            .align(Alignment.TopEnd)
-//                            .padding(16.dp)
-//                    ) {
-//                        Icon(
-//                            imageVector = Icons.Default.Close,
-//                            contentDescription = "Close",
-//                            tint = Color.White
-//                        )
-//                    }
 
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "Incoming ${videoCallViewModel.state.callType} Call",
-                            color = Color.White,
-                            style = TextStyle(
-                                fontWeight = FontWeight.Medium, fontSize = 22.sp
+                            drawCircle(
+                                brush = Brush.radialGradient(
+                                    colors = listOf(
+                                        Color(0xff474847),
+                                        Color.Transparent
+                                    ),
+                                    center = center,
+                                    radius = size.minDimension / 3f
+                                )
+
                             )
-                        )
 
-                        Spacer(modifier = Modifier.height(54.dp))
-
+                            drawCircle(
+                                brush = Brush.radialGradient(
+                                    colors = listOf(
+                                        Color(0xff4b4b4b),
+                                        Color.Transparent
+                                    ),
+                                    center = center,
+                                    radius = size.minDimension / 6f
+                                )
+                            )
+                        }
                         Box(
                             modifier = Modifier
-                                .size(180.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    brush = Brush.verticalGradient(
-                                        colors = listOf(
-                                            Color(0xFF606060), // Darker gray at the top
-                                            Color(0xFF707070)  // Lighter gray at the bottom
-                                        )
-                                    )
-                                )
-                                .padding(4.dp)
+                                .size(92.dp)
+                                .background(Color(0xFFf8f8f8), CircleShape),
+                            contentAlignment = Alignment.Center
                         ) {
-                            // Replace with actual profile picture logic
                             Image(
-                                painter = painterResource(id = R.drawable.vector), // Placeholder
+                                painter = painterResource(id = R.drawable.vector_1),
                                 contentDescription = "Profile Picture",
                                 modifier = Modifier
-                                    .size(160.dp)
+                                    .size(82.dp)
                                     .align(Alignment.Center)
-                                    .clip(CircleShape)
                             )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Image(
-                                painter = painterResource(id = R.drawable.vector_1), // Placeholder
-                                contentDescription = "Profile Picture",
-                                modifier = Modifier
-                                    .size(100.dp)
-                                    .align(Alignment.Center)
-                                    .clip(CircleShape) // Clip the image to a circular shape
-
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(35.dp))
-
-                        Text(
-                            text = "Call from",
-                            color = Color.White,
-                            style = TextStyle(fontSize = 16.sp)
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = call.user.name.toString(),
-                            color = Color.White,
-                            style = TextStyle(
-                                fontWeight = FontWeight.Bold, fontSize = 25.sp
-                            )
-                        )
-
-                        Spacer(modifier = Modifier.height(200.dp))
-
-                        Row(
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth(0.7f)
-                        ) {
-                            Column(
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                IconButton(
-                                    onClick = {
-                                        videoCallViewModel.rejectCall {
-                                            videoCallViewModel.resetCallState()
-                                            navController.navigate(ScreenRoutes.MainScreen.route) {
-                                                popUpTo(ScreenRoutes.IncomingCallScreen.route) {
-                                                    inclusive = true
-                                                }
-                                            }
-                                        }
-                                    },
-                                    modifier = Modifier
-                                        .size(72.dp)
-                                        .background(Color.Red, CircleShape)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.CallEnd,
-                                        contentDescription = "Reject Call",
-                                        tint = Color.White,
-                                        modifier = Modifier.size(36.dp)
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(text = "Decline", color = Color.White)
-                            }
-
-                            Column(
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                IconButton(
-                                    onClick = {
-                                        navController.navigate(VideoCallRoute.OngoingVideoCall.videoCallRoute) {
-                                            popUpTo(ScreenRoutes.IncomingCallScreen.route) {
-                                                inclusive = true
-                                            }
-                                        }
-                                    },
-                                    modifier = Modifier
-                                        .size(72.dp)
-                                        .background(Color.Green, CircleShape)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Call,
-                                        contentDescription = "Accept Call",
-                                        tint = Color.White,
-                                        modifier = Modifier.size(36.dp)
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(text = "Accept", color = Color.White)
-                            }
                         }
                     }
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Text(
+                            text = "Call from",
+                            color = Color.White.copy(alpha = 0.7f),
+                            style = TextStyle(fontSize = 16.sp)
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = created.value?.name.toString(),
+                            color = Color.White,
+                            style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 24.sp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.size(120.dp))
+
+                // Call actions
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 32.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    CallActionButton(
+                        icon = Icons.Default.CallEnd,
+                        color = Color.Red,
+                        onClick = {
+                            videoCallViewModel.rejectCall {
+                                videoCallViewModel.resetCallState()
+                                navController.navigate(ScreenRoutes.MainScreen.route) {
+                                    popUpTo(ScreenRoutes.IncomingCallScreen.route) { inclusive = true }
+                                }
+                            }
+                        },
+                        label = "Decline"
+                    )
+                    CallActionButton(
+                        icon = Icons.Default.Call,
+                        color = Color(0xFF4CAF50),
+                        onClick = {
+                            navController.navigate(VideoCallRoute.OngoingVideoCall.videoCallRoute) {
+                                popUpTo(ScreenRoutes.IncomingCallScreen.route) { inclusive = true }
+                            }
+                        },
+                        label = "Accept"
+                    )
                 }
             }
         }
+    }
+}
+
+@Composable
+fun CallActionButton(
+    icon: ImageVector,
+    color: Color,
+    onClick: () -> Unit,
+    label: String
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .size(64.dp)
+                .background(color, CircleShape)
+                .drawBehind {
+                    drawCircle(
+                        brush = Brush.radialGradient(
+                            colors = listOf(
+                                color.copy(alpha = 0.3f),
+                                Color.Transparent
+                            ),
+                            center = Offset(size.width / 2, size.height / 2),
+                            radius = size.width * 0.8f
+                        ),
+                        radius = size.width * 0.8f
+                    )
+                }
+        ) {
+            IconButton(
+                onClick = onClick,
+                modifier = Modifier.matchParentSize()
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = label,
+                    tint = Color.White,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(text = label, color = Color.White, fontSize = 14.sp)
     }
 }
