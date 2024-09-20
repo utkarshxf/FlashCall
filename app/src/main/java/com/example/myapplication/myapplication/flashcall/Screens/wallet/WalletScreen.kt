@@ -117,9 +117,7 @@ fun WalletScreen(navController: NavController, walletViewModel: WalletViewModel 
 
                     Spacer(modifier = Modifier.height(10.dp))
                 }
-
             }
-
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
