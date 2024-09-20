@@ -89,6 +89,11 @@ class UserPreferencesRepository @Inject constructor(@ApplicationContext private 
         }
     }
 
+    fun getAdditionalLinks(): List<LinkData>{
+        var additionalLinksStr = sharedPreferences.getString(PreferencesKey.AdditionalLinks.key, "") ?:""
+        return convertingStringIntoList(additionalLinksStr)
+    }
+
     fun getUser(): IsUserCreatedResponse? {
         val userId = sharedPreferences.getString(PreferencesKey.UserId.key, null) ?: return null
         val userData = IsUserCreatedResponse(

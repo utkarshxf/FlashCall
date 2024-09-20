@@ -107,6 +107,7 @@ fun IncomingCallScreen(
                                     radius = size.minDimension / 2.5f
                                 )
                             )
+
                             drawCircle(
                                 brush = Brush.radialGradient(
                                     colors = listOf(
@@ -116,6 +117,7 @@ fun IncomingCallScreen(
                                     center = center,
                                     radius = size.minDimension / 3f
                                 )
+
                             )
 
                             drawCircle(

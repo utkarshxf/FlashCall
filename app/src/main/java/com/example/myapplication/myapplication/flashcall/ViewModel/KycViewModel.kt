@@ -27,6 +27,12 @@ class KycViewModel @Inject constructor(private val repository: KycRepository,
     val panState: StateFlow<APIResponse<String>> = _panState
 
 
+    private val _aadharState = MutableStateFlow<APIResponse<String>>(APIResponse.Empty)
+    val aadharState: StateFlow<APIResponse<String>> = _aadharState
+
+
+    private val _aadharOTPState = MutableStateFlow<APIResponse<String>>(APIResponse.Empty)
+    val aadharOTPState: StateFlow<APIResponse<String>> = _aadharOTPState
 
 
 
@@ -42,27 +48,40 @@ class KycViewModel @Inject constructor(private val repository: KycRepository,
         _panState.value = APIResponse.Error<String>("Error Message")
     }
 
-    fun makePanStateSuccess(pan: String, loading: (Boolean) -> Unit) {
-        viewModelScope.launch {
-            loading(true)
-            delay(5000L)
-            repository.verifyPan(pan).collect{
-                loading(false)
-                _panState.value = APIResponse.Success<String>("Success")
-            }
-
-        }
-    }
 
 
     fun panVerification(panNumber: String, loading: (Boolean) -> Unit) {
         viewModelScope.launch {
             loading(true)
+            delay(5000L)
             repository.verifyPan("").collect{ value ->
                 Log.d("print","value: $value")
                 _panState.value = APIResponse.Success(value)
                 loading(false)
             }
+        }
+    }
+    fun aadharVerification(aadhar: String, loading: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            loading(true)
+            delay(5000L)
+            repository.verifyAadhar(aadhar).collect{
+                loading(false)
+                _aadharState.value = APIResponse.Success<String>("Success")
+            }
+
+        }
+    }
+
+    fun aadharOTPVerification(otp: String, loading: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            loading(true)
+            delay(5000L)
+            repository.verifyAadharOTP(otp).collect{
+                loading(false)
+                _aadharOTPState.value = APIResponse.Success<String>("Success")
+            }
+
         }
     }
 

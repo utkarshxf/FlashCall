@@ -21,4 +21,11 @@ class KycRepository @Inject constructor(private val apiService: APIService): Saf
         }
     }
 
+    suspend fun verifyAadharOTP(otp: String): Flow<String>{
+        return flow {
+            val response = ""
+            emit(response)
+        }
+    }
+
 }

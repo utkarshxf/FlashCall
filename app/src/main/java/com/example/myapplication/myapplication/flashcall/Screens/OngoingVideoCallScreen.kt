@@ -6,9 +6,13 @@ import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -21,15 +25,21 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Popup
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
@@ -47,7 +57,14 @@ import io.getstream.video.android.compose.ui.components.call.controls.actions.Le
 import io.getstream.video.android.compose.ui.components.call.controls.actions.ToggleCameraAction
 import io.getstream.video.android.compose.ui.components.call.controls.actions.ToggleMicrophoneAction
 import io.getstream.video.android.compose.ui.components.call.controls.actions.ToggleSpeakerphoneAction
+import io.getstream.video.android.compose.ui.components.call.renderer.FloatingParticipantVideo
+import io.getstream.video.android.compose.ui.components.call.renderer.ParticipantVideo
+import io.getstream.video.android.compose.ui.components.call.renderer.RegularVideoRendererStyle
+import io.getstream.video.android.compose.ui.components.call.renderer.VideoRendererStyle
+import io.getstream.video.android.compose.ui.components.video.VideoRenderer
 import io.getstream.video.android.core.Call
+import io.getstream.video.android.core.ParticipantState
+import io.getstream.video.android.core.call.state.ToggleSpeakerphone
 import kotlinx.coroutines.Delay
 import kotlinx.coroutines.delay
 
@@ -88,6 +105,9 @@ fun VideoCallContent(
     viewModel: VideoCallViewModel,
     navController:NavController
 ){
+    val me by call.state.me.collectAsState()
+    var parentSize: IntSize by remember { mutableStateOf(IntSize(0, 0)) }
+
     val isCameraEnabled by call.camera.isEnabled.collectAsStateWithLifecycle(lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current)
     val isMicrophoneEnabled by call.microphone.isEnabled.collectAsStateWithLifecycle(lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current)
     val isSpeakerphoneEnabled by call.speaker.isEnabled.collectAsStateWithLifecycle(lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current)
@@ -121,12 +141,15 @@ fun VideoCallContent(
             Box(
                 modifier = Modifier.fillMaxSize()
             ){
+
                 CallContent(
                     call = call,
                     enableInPictureInPicture = false,
                     controlsContent = {
                         if(videoCall) {
-                            Box(modifier = Modifier.fillMaxWidth(),
+                            Box(modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 20.dp),
                             ) {
                                 ControlActions(
                                     call = call,
@@ -142,7 +165,12 @@ fun VideoCallContent(
                                                 isCameraEnabled = isCameraEnabled,
                                                 onCallAction = { viewModel.toggleCamera(it.isEnabled) }
                                             )
-
+                                            ToggleSpeakerphoneAction(isSpeakerphoneEnabled = isSpeakerphoneEnabled
+                                                ,modifier = Modifier
+                                                    .size(52.dp)
+                                                    .padding(start = 10.dp),
+                                                onCallAction = { viewModel.toggleSpeaker(it.isEnabled) }
+                                            )
                                             ToggleMicrophoneAction(
                                                 modifier = Modifier
                                                     .size(52.dp)
@@ -188,14 +216,16 @@ fun VideoCallContent(
                                 )
                             )
                         }
-                    }
+                    },
+
                 )
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(16.dp)
                         .background(Color.White.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+
                 ) {
                     Text(
                         text = "Time Left: ${formatTime(timeLeft)}",
@@ -203,6 +233,8 @@ fun VideoCallContent(
                         fontSize = 16.sp
                     )
                 }
+
+
             }
         }
     }
@@ -239,6 +271,7 @@ fun VideoCallContent(
         )
     }
 }
+
 
 @Composable
 fun VideoCallError(viewModel: VideoCallViewModel,navController:NavController)

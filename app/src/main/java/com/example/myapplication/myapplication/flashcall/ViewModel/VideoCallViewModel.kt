@@ -29,6 +29,8 @@ class VideoCallViewModel @Inject constructor(private val firestore: FirebaseFire
     var state by mutableStateOf(VideoCallScreenState())
         private set
 
+
+
     init {
         viewModelScope.launch {
             launch { collectRingingCalls() }
@@ -180,6 +182,18 @@ class VideoCallViewModel @Inject constructor(private val firestore: FirebaseFire
             }
         }
     }
+    fun toggleSpeaker(enable: Boolean) {
+        viewModelScope.launch {
+            try {
+                state.activeCall?.let { call ->
+                    call.speaker.setEnabled(enable)  // Enable or disable the camera
+                    Log.d("VideoCall", "Speaker toggled: ${call.id}, enabled: $enable")
+                }
+            } catch (e: Exception) {
+                Log.e("VideoCall", "Error toggling speaker: ${e.message}")
+            }
+        }
+    }
     fun toggleMicrophone(enable: Boolean) {
         viewModelScope.launch {
             try {
@@ -224,5 +238,5 @@ data class VideoCallScreenState(
     val leaveCall: Call? = null,
     val callAccepted: Boolean = false,
     val connectionState: ConnectionState = ConnectionState.Loading,
-    val callType: String = "Audio"
+    val callType: String = ""
 )
