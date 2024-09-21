@@ -1,5 +1,6 @@
 package com.example.myapplication.myapplication.flashcall.domain
 
+import android.util.Log
 import com.example.myapplication.myapplication.flashcall.Data.MessageType
 import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.MessageDataClass
 import com.example.myapplication.myapplication.flashcall.repository.ChatRepository
@@ -10,6 +11,7 @@ class SendMessageUseCase @Inject constructor(
     private val chatRepository: ChatRepository
 ) {
     suspend operator fun invoke(chatId: String, messageContent: String, messageType: MessageType, senderId: String) {
+        Log.v("qwerty" ,senderId.toString() )
         val newMessage = MessageDataClass(
             createdAt = System.currentTimeMillis(),
             senderId = senderId, // You'll need to implement this function
@@ -19,6 +21,7 @@ class SendMessageUseCase @Inject constructor(
             img = if (messageType == MessageType.IMAGE) messageContent else null,
             audio = if (messageType == MessageType.AUDIO) messageContent else null
         )
+        Log.v("qwerty" ,newMessage.toString() )
 
 //        val newMessage = MessageDataClass(
 //            senderId = userId,
