@@ -115,7 +115,6 @@ interface APIService {
     ):Response<UserDetailsResponse>
 
 
-
     @Multipart
     @POST("userkyc/liveliness")
     suspend fun uploadLiveliness(
