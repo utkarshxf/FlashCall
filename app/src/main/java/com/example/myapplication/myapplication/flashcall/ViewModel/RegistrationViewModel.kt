@@ -102,7 +102,6 @@ class RegistrationViewModel @Inject constructor(
                         addDataIntoFirestore(response._id,videoRate , audioRate , chatRate)
                         // Get FCM token
                         val fcmToken = Firebase.messaging.token.await()
-
                         // Create FCM document in Firestore
                         val fcmData = hashMapOf(
                             "username" to response.username,
