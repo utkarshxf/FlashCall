@@ -16,7 +16,7 @@ data class UserDetailsResponse(
     val gender: String?=null,
     val kyc_status: String?=null,
     val lastName: String?=null,
-    val links: List<Any>?=null,
+    val links: List<LinkData>?=null,
     val phone: String?=null,
     val photo: String?=null,
     val profession: String?=null,

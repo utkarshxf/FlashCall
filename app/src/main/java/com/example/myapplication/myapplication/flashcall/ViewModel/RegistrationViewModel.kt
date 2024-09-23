@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.datastore.dataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
@@ -16,7 +17,11 @@ import com.example.myapplication.myapplication.flashcall.Data.model.CreateUserRe
 import com.example.myapplication.myapplication.flashcall.Data.model.LinkData
 import com.example.myapplication.myapplication.flashcall.Data.model.SDKResponseState
 import com.example.myapplication.myapplication.flashcall.Data.model.UpdateUserResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.deleteAdditionalLink.DeleteAdditionalLinks
+import com.example.myapplication.myapplication.flashcall.Data.model.editAdditionalLink.EditAdditionalLinkRequest
+import com.example.myapplication.myapplication.flashcall.Data.model.editAdditionalLink.EditUserLink
 import com.example.myapplication.myapplication.flashcall.Data.model.firestore.UserServicesResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.wallet.UserId
 import com.example.myapplication.myapplication.flashcall.repository.CreateRepository
 import com.example.myapplication.myapplication.flashcall.repository.UserPreferencesRepository
 import com.example.myapplication.myapplication.flashcall.utils.PreferencesKey
@@ -34,7 +39,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import java.time.LocalDate
 import javax.inject.Inject
+import kotlin.math.roundToInt
 
 @HiltViewModel
 class RegistrationViewModel @Inject constructor(
@@ -52,8 +59,7 @@ class RegistrationViewModel @Inject constructor(
         MutableStateFlow<APIResponse<CreateUserResponse>>(APIResponse.Empty)
 
     val createUserState: StateFlow<APIResponse<CreateUserResponse>> = _createUserState
-    private val _updateUserState =
-        MutableStateFlow<APIResponse<UpdateUserResponse>>(APIResponse.Empty)
+    private val _updateUserState = MutableStateFlow<APIResponse<UpdateUserResponse>>(APIResponse.Empty)
 
     val updateUserState: StateFlow<APIResponse<UpdateUserResponse>> = _updateUserState
 
@@ -65,10 +71,11 @@ class RegistrationViewModel @Inject constructor(
         private set
 
 
-    private val _showAdditionalLinkState =
-        MutableStateFlow<APIResponse<List<LinkData>>>(APIResponse.Success(userPreferencesRepository.getAdditionalLinks()))
-    val showAdditionalLinkState: StateFlow<APIResponse<List<LinkData>>> = _showAdditionalLinkState
+    var todaysWalletBalanceState by mutableStateOf(TodaysWalletBalanceState())
+        private set
 
+    var editAdditionalLinkState by mutableStateOf(EditAdditionalLink())
+        private set
 
 
 
@@ -235,7 +242,7 @@ class RegistrationViewModel @Inject constructor(
                             updateUserBackend(userId, videoRate, audioRate, chatRate, servicesVideo, servicesAudio, servicesChat)
                         }
                         .addOnFailureListener { e ->
-                            Log.w("Firestore", "Error updating document", e)
+                            Log.w("FirestoreServices", "Error updating document", e)
                         }
                 } else {
                     // If the document doesn't exist, use set to create it
@@ -331,7 +338,36 @@ class RegistrationViewModel @Inject constructor(
         }
     }
 
-    fun getAllServiceData(userId: String) {
+    fun getTodaysWalletBalance() {
+        viewModelScope.launch {
+            todaysWalletBalanceState = todaysWalletBalanceState.copy(todaysBalance = userPreferencesRepository.getTodaysWalletBalance())
+            val userId = userPreferencesRepository.getUser()?._id
+            val todaysDate = LocalDate.now()
+            try {
+                repository.getTodaysWalletBalance(
+                    url = "api/v1/transaction/getTodaysEarnings?userId=$userId&date=$todaysDate"
+                ).collect { response ->
+                    var updatedBalance = 0
+                    if(response.transactions != null){
+                        for(item in response.transactions!!){
+                            if(item?.type.equals("credit") && item?.amount != null && item.amount!! > 0){
+                                updatedBalance += item.amount!!.roundToInt()
+                            }
+                        }
+                    }
+                    Log.d("WalletBalance", "resp: $userId, $todaysDate, $updatedBalance $response")
+                    userPreferencesRepository.saveTodaysWalletBalance(updatedBalance)
+                    todaysWalletBalanceState = todaysWalletBalanceState.copy(isLoading = false, todaysBalance = userPreferencesRepository.getTodaysWalletBalance())
+                }
+            } catch (e: Exception) {
+                Log.e("error", "User update failed: ${e.message}")
+                _createUserState.value = APIResponse.Error(e.message ?: "User update error")
+            }
+        }
+    }
+
+
+    fun getAllServiceData() {
         viewModelScope.launch {
             _serviceState.value = APIResponse.Loading // Set loading state
 
@@ -363,25 +399,70 @@ class RegistrationViewModel @Inject constructor(
         return userPreferencesRepository.getStoredUserData(preferencesKey)
     }
 
-    fun updateUserLinks(link: LinkData?, loading: (Boolean) -> Unit) {
+    fun updateUserLinks(link: LinkData?) {
         val userId = userPreferencesRepository.getUser()?._id?:""
         viewModelScope.launch {
-            loading(true)
-            _updateUserState.value = APIResponse.Loading
+            addAditionalLinkState = addAditionalLinkState.copy(isLoading = true)
             try {
                 repository.updateUser(
                     "api/v1/creator/updateUser", // Replace with actual update endpoint
                     userId = userId,
                     link = link,
                 ).collect { response ->
-                    loading(false)
-                    _updateUserState.value = APIResponse.Success(response)
-                    userPreferencesRepository.storeUpdateUserResponseInPreferences(response)
+                    if(response.updatedUser.links != null){
+                        userPreferencesRepository.storeAdditionalLinks(userId, response.updatedUser.links)
+                    }else{
+                        userPreferencesRepository.storeAdditionalLinks(userId, null)
+                    }
+                    addAditionalLinkState = addAditionalLinkState.copy(showAddLinkLayout = false,linksList = userPreferencesRepository.retrieveAdditionalLinks(userId), isLoading = false)
                 }
             } catch (e: Exception) {
-                loading(false)
-                Log.e("error", "User update failed Links: ${e.message}")
-                _createUserState.value = APIResponse.Error(e.message ?: "User update error")
+
+            }
+        }
+    }
+
+    fun editUserLinks(link: LinkData?) {
+        val userId = userPreferencesRepository.getUser()?._id?:""
+
+        val body = EditAdditionalLinkRequest(userId = userId, user = EditUserLink(link))
+        viewModelScope.launch {
+            editAdditionalLinkState = editAdditionalLinkState.copy(isLoading = true)
+            try {
+                repository.editAdditionalLink(
+                    "api/v1/creator/updateUser",
+                    body
+                ).collect { response ->
+                    if(response.updatedUser.links != null){
+                        userPreferencesRepository.storeAdditionalLinks(userId, response.updatedUser.links)
+                    }else{
+                        userPreferencesRepository.storeAdditionalLinks(userId, null)
+                    }
+                    editAdditionalLinkState = editAdditionalLinkState.copy(isLoading = false ,editingLayout = ShowEditingLayout(showEditingLayout = false, -1))
+                    addAditionalLinkState = addAditionalLinkState.copy(showAddLinkLayout = false,linksList = userPreferencesRepository.retrieveAdditionalLinks(userId), isLoading = false)
+                }
+            } catch (e: Exception) {
+
+            }
+        }
+    }
+
+    fun getAddedAdditionalLinks(){
+        viewModelScope.launch {
+            val userId = userPreferencesRepository.getUser()?._id?:""
+            addAditionalLinkState = addAditionalLinkState.copy(linksList = userPreferencesRepository.retrieveAdditionalLinks(userId))
+            viewModelScope.launch {
+                try {
+                    repository.getUserAdditionalLinks(
+                        "api/v1/creator/getUserById", // Replace with actual update endpoint
+                        userId = UserId(userId)
+                    ).collect { response ->
+                        userPreferencesRepository.storeAdditionalLinks(userId, response.links)
+                        addAditionalLinkState = addAditionalLinkState.copy(linksList = userPreferencesRepository.retrieveAdditionalLinks(userId))
+                    }
+                } catch (e: Exception) {
+
+                }
             }
         }
     }
@@ -391,8 +472,83 @@ class RegistrationViewModel @Inject constructor(
         addAditionalLinkState = addAditionalLinkState.copy(showAddLinkLayout = isShow)
     }
 
-    fun getLinksList(): List<LinkData> {
-        return userPreferencesRepository.getAdditionalLinks()
+    fun changeUserStatus(isOnline: Boolean){
+        var phoneNumber = userPreferencesRepository.getUser()?.phone
+        Log.d("UpdateServiceStatus","CHange: $isOnline, ${phoneNumber}")
+
+        val updateMap = mutableMapOf<String, Any>()
+
+        if(isOnline){
+            updateMap["status"] = "Online"
+        }else{
+            updateMap["status"] = "Offline"
+        }
+
+        // Perform the update if there are fields to update
+        if (updateMap.isNotEmpty() && phoneNumber != null) {
+            val documentRef = firestore.collection("userStatus").document(phoneNumber)
+
+            // Check if the document exists first
+            documentRef.get().addOnSuccessListener { document ->
+
+                if (document.exists()) {
+                    // If the document exists, use update
+                    documentRef.update(updateMap)
+                        .addOnSuccessListener {
+                            Log.w("Firestore", "Status Chnaged Successfully")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.w("Firestore", "Error Status Not Changed", e)
+                        }
+                } else {
+                    // If the document doesn't exist, use set to create it
+
+                    documentRef.set(updateMap)
+                        .addOnSuccessListener {
+                            Log.w("Firestore", "Status Created Successfully")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.w("Firestore", "Error creating status: ", e)
+                        }
+                }
+            }.addOnFailureListener { e ->
+                Log.w("Firestore", "Error checking document", e)
+            }
+        }else{
+            Log.w("Firestore", "Error data missing")
+        }
+    }
+
+
+    fun deleteAdditionalLinks(body: LinkData){
+        viewModelScope.launch {
+            val userId = userPreferencesRepository.getUser()?._id?:""
+            addAditionalLinkState = addAditionalLinkState.copy(linksList = userPreferencesRepository.retrieveAdditionalLinks(userId))
+            Log.d("DeletingAdditionalLink","requestBody: $userId, $body")
+            viewModelScope.launch {
+                try {
+                    repository.daleteAdditionalLink(body = DeleteAdditionalLinks(body,userId))
+                    .collect { response ->
+                        Log.d("DeletingAdditionalLink","responseBody: $response")
+                        userPreferencesRepository.storeAdditionalLinks(userId, response.links)
+                        addAditionalLinkState = addAditionalLinkState.copy(linksList = userPreferencesRepository.retrieveAdditionalLinks(userId))
+                    }
+                } catch (e: Exception) {
+                    Log.d("DeletingAdditionalLink","error: ${e.message}")
+                }
+            }
+        }
+    }
+
+
+    fun showEditingAdditionalLayout(isShow: Boolean, index: Int){
+        if(isShow && index > -1){
+            editAdditionalLinkState = editAdditionalLinkState.copy(editingLayout = ShowEditingLayout(showEditingLayout = isShow, index = index))
+        }else{
+            editAdditionalLinkState = editAdditionalLinkState.copy(editingLayout = ShowEditingLayout(showEditingLayout = isShow, index = -1))
+        }
+
+
     }
 
 
@@ -400,10 +556,24 @@ class RegistrationViewModel @Inject constructor(
 
 }
 
+data class EditAdditionalLink(
+    val isLoading: Boolean = false,
+    val cancelEdition: Boolean = false,
+    val editingLayout: ShowEditingLayout = ShowEditingLayout()
+)
+
+data class ShowEditingLayout(
+    val showEditingLayout: Boolean = false,
+    val index: Int = -1
+)
 data class AddAditionalLinkState(
     val showAddLinkLayout: Boolean = false,
     val linksList: List<LinkData>? = null,
     val isLoading: Boolean = false
+)
+data class TodaysWalletBalanceState(
+    val isLoading: Boolean = false,
+    val todaysBalance: Int = 0,
 )
 
 

@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -83,6 +84,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
@@ -103,6 +105,7 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryBackG
 import com.example.myapplication.myapplication.flashcall.ui.theme.SwitchColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
 import com.example.myapplication.myapplication.flashcall.ui.theme.helveticaFontFamily
+import com.example.myapplication.myapplication.flashcall.utils.LoadingIndicator
 import kotlin.math.roundToInt
 
 //var uriImg: Uri? = null
@@ -127,7 +130,7 @@ fun HomeScreen(
     var profilePic by remember { mutableStateOf("") }
     var dob by remember { mutableStateOf("") }
     var bio by remember { mutableStateOf("") }
-    var walletBalance by remember { mutableStateOf(0.0) }
+
 
 
 
@@ -135,6 +138,8 @@ fun HomeScreen(
         if (it.size == 2) it else listOf(it[0], "")
     }
     val context = LocalContext.current
+
+
 
 //    if (uriImg != null) {
 //        uriImg?.let { uri ->
@@ -170,7 +175,6 @@ fun HomeScreen(
         gender = userData.gender ?: ""
         dob = userData.dob ?: ""
         bio = userData.bio ?: ""
-        walletBalance = userData.walletBalance ?: 0.0
         themeSelected = userData.themeSelected ?: ""
         profession = userData.profession ?: ""
         profilePic = userData.photo ?: ""
@@ -184,6 +188,7 @@ fun HomeScreen(
                 name = response.fullName
                 userId = response.username
                 profilePic = response.photo
+
                 Log.d("UserId", uid.toString())
 
             }
@@ -342,7 +347,7 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 Box(modifier = Modifier.fillMaxSize()) {
-                    HomeScreenBottom(navController, username, walletBalance)
+                    HomeScreenBottom(navController, username)
                 }
             }
         }
@@ -352,12 +357,13 @@ fun HomeScreen(
 
 @Composable
 fun HomeScreenBottom(
-    homeNavController: NavController, username: String,
-    walletBalance: Double, viewModel: RegistrationViewModel = hiltViewModel()
+    homeNavController: NavController, username: String, viewModel: RegistrationViewModel = hiltViewModel()
 ) {
     var showShareDialog by remember { mutableStateOf(true) }
 
-
+    LaunchedEffect(key1 = Unit) {
+        viewModel.getTodaysWalletBalance()
+    }
 
     Surface(
         modifier = Modifier
@@ -385,7 +391,7 @@ fun HomeScreenBottom(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                WalletBar(navController = homeNavController, walletBalance)
+                WalletBar(navController = homeNavController, viewModel)
 
                 Spacer(modifier = Modifier.height(20.dp))
 
@@ -394,54 +400,41 @@ fun HomeScreenBottom(
                 Spacer(modifier = Modifier.height(20.dp))
 
 
-                var data = viewModel.getLinksList()
-                var list by remember {
-                    mutableStateOf(data)
+
+                LaunchedEffect(key1 = Unit) {
+                    viewModel.getAddedAdditionalLinks()
                 }
 
-
-
-                val showAdditionalLinks = viewModel.showAdditionalLinkState.collectAsState()
-                when (showAdditionalLinks.value) {
-                    APIResponse.Empty -> {
-
-                    }
-
-                    is APIResponse.Error -> {
-
-
-                    }
-
-                    APIResponse.Loading -> {
-
-                    }
-
-                    is APIResponse.Success -> {
-                        list =
-                            (showAdditionalLinks.value as APIResponse.Success<List<LinkData>>).data
-                    }
-                }
-
-
-
-                for (i in 0..list.size - 1) {
-                    addedLinkLayout(list.get(i), { ->
-
-                        Log.d("addedLinkLayout", "Changing State ")
-                    }, { ->
-                        viewModel.updateUserLinks(list.get(i)){
-
-                        }
-
-                        Log.d("addedLinkLayout", "Edit State ")
-                    }, { ->
-                        Log.d("addedLinkLayout", "Delete State ")
-                    })
-                }
 
                 val addAditionalLinkState = viewModel.addAditionalLinkState
+                val editAdditionalLinkState = viewModel.editAdditionalLinkState
+
+                var additionalLinksList = addAditionalLinkState.linksList
+
+                if (!additionalLinksList.isNullOrEmpty()) {
+                    for (i in additionalLinksList.indices) {
+                        AddedLinkLayout(viewModel,item = additionalLinksList[i], isActive = {
+                            additionalLinksList[i].isActive = !additionalLinksList[i].isActive!!
+                            viewModel.updateUserLinks(LinkData(additionalLinksList[i].title,
+                                additionalLinksList[i].url, additionalLinksList[i].isActive))
+                        }, edit = {
+
+                            viewModel.showEditingAdditionalLayout(true, i)
+//                            viewModel.updateUserLinks(LinkData(additionalLinksList[i].title,
+//                                additionalLinksList[i].url, additionalLinksList[i].isActive))
+                        }) {
+                            viewModel.deleteAdditionalLinks(body = additionalLinksList[i])
+                        }
+                    }
+                }
+
+                if(editAdditionalLinkState.editingLayout.showEditingLayout && editAdditionalLinkState.editingLayout.index > -1){
+                    EditLinkLayout(viewModel, model = additionalLinksList?.get(editAdditionalLinkState.editingLayout.index))
+                }
+
+
                 if (addAditionalLinkState.showAddLinkLayout) {
-                    addLinkLayout {
+                    AddLinkLayout {
                         viewModel.showLayoutForAddLinks(false)
                     }
                 } else {
@@ -605,7 +598,12 @@ fun CopyBar(homeNavController: NavController, username: String) {
 }
 
 @Composable
-fun WalletBar(navController: NavController, walletBalance: Double) {
+fun WalletBar(navController: NavController, viewModel: RegistrationViewModel) {
+    var walletBalance by remember {
+        mutableStateOf(0)
+    }
+    walletBalance = viewModel.todaysWalletBalanceState.todaysBalance
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -657,7 +655,7 @@ fun WalletBar(navController: NavController, walletBalance: Double) {
                         modifier = Modifier.padding(end = 2.dp)
                     )
                     Text(
-                        text = "${walletBalance.roundToInt()}",
+                        text = "$walletBalance",
                         modifier = Modifier.padding(top = 5.dp),
                         style = TextStyle(
                             fontFamily = arimoFontFamily,
@@ -717,7 +715,7 @@ fun ServicesSection(
     var priceToEdit by remember { mutableStateOf("") }
     val textColor = if (serviceSelected) Color.Black else Color.Gray
     LaunchedEffect(Unit) {
-        registrationViewModel.getAllServiceData(creatorUid)
+        registrationViewModel.getAllServiceData()
     }
     if (serviceData.value is APIResponse.Success) {
         LaunchedEffect(Unit) {
@@ -763,21 +761,24 @@ fun ServicesSection(
                 Spacer(modifier = Modifier.weight(1f))
                 WideSwitch(
                     checked = serviceSelected, onCheckedChange = {
-                            serviceSelected = it
-                            registrationViewModel.updateServices(userId = creatorUid, masterToggle = it)
 
-                            videoService = it
-                            registrationViewModel.updateServices(
-                                userId = creatorUid, servicesVideo = it
-                            )
-                            audioService = it
-                            registrationViewModel.updateServices(
-                                userId = creatorUid, servicesAudio = it
-                            )
-                            chatService = it
-                            registrationViewModel.updateServices(
-                                userId = creatorUid, servicesChat = it
-                            )
+
+                        serviceSelected = it
+                        registrationViewModel.updateServices(userId = creatorUid, masterToggle = it)
+                        registrationViewModel.changeUserStatus(it)
+
+                        videoService = it
+                        registrationViewModel.updateServices(
+                            userId = creatorUid, servicesVideo = it
+                        )
+                        audioService = it
+                        registrationViewModel.updateServices(
+                            userId = creatorUid, servicesAudio = it
+                        )
+                        chatService = it
+                        registrationViewModel.updateServices(
+                            userId = creatorUid, servicesChat = it
+                        )
                     }
 
                 )
@@ -812,6 +813,7 @@ fun ServicesSection(
                                     userId = creatorUid,
                                     masterToggle = it
                                 )
+                                registrationViewModel.changeUserStatus(it)
                             }
                             videoService = it
                             registrationViewModel.updateServices(
@@ -824,6 +826,7 @@ fun ServicesSection(
                                 userId = creatorUid,
                                 masterToggle = it
                             )
+                            registrationViewModel.changeUserStatus(it)
                             videoService = it
                             registrationViewModel.updateServices(
                                 userId = creatorUid, servicesVideo = it
@@ -854,6 +857,7 @@ fun ServicesSection(
                                     userId = creatorUid,
                                     masterToggle = it
                                 )
+                                registrationViewModel.changeUserStatus(it)
                             }
                             audioService = it
                             registrationViewModel.updateServices(
@@ -865,6 +869,7 @@ fun ServicesSection(
                                 userId = creatorUid,
                                 masterToggle = it
                             )
+                            registrationViewModel.changeUserStatus(it)
                             audioService = it
                             registrationViewModel.updateServices(
                                 userId = creatorUid, servicesAudio = it
@@ -895,6 +900,7 @@ fun ServicesSection(
                                     userId = creatorUid,
                                     masterToggle = it
                                 )
+                                registrationViewModel.changeUserStatus(it)
                             }
                             chatService = it
                             registrationViewModel.updateServices(
@@ -906,6 +912,7 @@ fun ServicesSection(
                                 userId = creatorUid,
                                 masterToggle = it
                             )
+                            registrationViewModel.changeUserStatus(it)
                             chatService = it
                             registrationViewModel.updateServices(
                                 userId = creatorUid, servicesChat = it
@@ -949,7 +956,7 @@ fun ServiceRow(
     textColor: Color // Dynamic text color based on main toggle state
 ) {
 
-    val rowTextColor = if (serviceEnabled ) textColor else Color.Gray
+    val rowTextColor = if (serviceEnabled) textColor else Color.Gray
     // Text and icon color should be grey if the service is disabled
 //    val rowTextColor = if (serviceEnabled && serviceSelected) textColor else Color.Gray
 //    val iconAlpha = if (serviceEnabled && serviceSelected) 1f else 0.5f
@@ -1265,7 +1272,8 @@ fun DemoText() {
                 Text(
                     text = "If you are Interested in Learning how to create an ",
                     modifier = Modifier.align(Alignment.CenterHorizontally),
-                    style = TextStyle(color = Color.Black,
+                    style = TextStyle(
+                        color = Color.Black,
                         fontSize = 14.sp
                     )
                 )
@@ -1321,8 +1329,12 @@ fun walletIcon() {
 }
 
 @Composable
-fun addedLinkLayout(item: LinkData, isActive: () -> Unit, edit: () -> Unit, delete: () -> Unit) {
+fun AddedLinkLayout(viewModel: RegistrationViewModel,item: LinkData, isActive: () -> Unit, edit: () -> Unit, delete: () -> Unit) {
     var mDisplayMenu by remember { mutableStateOf(false) }
+    var loading by remember { mutableStateOf(false) }
+    val addAditionalLinkState = viewModel.addAditionalLinkState
+    loading = addAditionalLinkState.isLoading
+
 
     Box(modifier = Modifier.padding(bottom = 10.dp)) {
         Row(
@@ -1413,12 +1425,16 @@ fun addedLinkLayout(item: LinkData, isActive: () -> Unit, edit: () -> Unit, dele
                 }
             }
         }
+
+        if(loading){
+            LoadingIndicator()
+        }
     }
 }
 
 
 @Composable
-fun addLinkLayout(
+fun AddLinkLayout(
     registrationViewModel: RegistrationViewModel = hiltViewModel(),
     onCancel: () -> Unit
 ) {
@@ -1429,7 +1445,10 @@ fun addLinkLayout(
         mutableStateOf("")
     }
     var context = LocalContext.current
+
+    val addtingLinkState = registrationViewModel.addAditionalLinkState
     var loading by remember { mutableStateOf(false) }
+    loading = addtingLinkState.isLoading
 
 
     Column(
@@ -1536,7 +1555,6 @@ fun addLinkLayout(
                     fontSize = 16.sp
                 ),
                 onClick = {
-
                     if (linkTitle.isNotEmpty() && link.isNotEmpty()) {
                         registrationViewModel.updateUserLinks(
                             link = LinkData(
@@ -1544,12 +1562,150 @@ fun addLinkLayout(
                                 link,
                                 true
                             )
-                        ) {
-                            loading = it
-                            if (!it) {
-                                onCancel()
-                            }
-                        }
+                        )
+                    } else {
+                        Toast.makeText(context, "Enter Details Please", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            )
+        }
+
+    }
+}
+
+@Composable
+fun EditLinkLayout(
+    viewModel: RegistrationViewModel = hiltViewModel(), model: LinkData?
+) {
+    var linkTitle by remember {
+        mutableStateOf(model?.title+"")
+    }
+    var link by remember {
+        mutableStateOf(model?.url+"")
+    }
+    var isActive by remember {
+        mutableStateOf(model?.isActive)
+    }
+    var context = LocalContext.current
+
+    val addtingLinkState = viewModel.editAdditionalLinkState
+    var loading by remember { mutableStateOf(false) }
+    loading = addtingLinkState.isLoading
+
+
+    Column(
+        modifier = Modifier
+            .background(color = Color.White, shape = RoundedCornerShape(10.dp))
+            .border(width = 1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp))
+            .padding(15.dp)
+    ) {
+
+        OutlinedTextField(
+            shape = RoundedCornerShape(10.dp),
+            value = linkTitle,
+            onValueChange = { linkTitle = it },
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(color = Color.White, shape = RoundedCornerShape(10.dp))
+                .border(1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp)),
+            placeholder = {
+                Text(
+                    text = "Enter Title Here",
+                    color = Color.Black,
+                    style = TextStyle(
+                        fontFamily = arimoFontFamily,
+                        fontWeight = FontWeight.Normal,
+                    )
+                )
+            },
+            maxLines = 1,
+        )
+
+        OutlinedTextField(
+            shape = RoundedCornerShape(10.dp),
+            value = link,
+            onValueChange = { link = it },
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 10.dp)
+                .background(color = Color.White, shape = RoundedCornerShape(10.dp))
+                .border(1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp)),
+            placeholder = {
+                Text(
+                    text = "Past URL link here",
+                    color = Color.Black,
+                    style = TextStyle(
+                        fontFamily = arimoFontFamily,
+                        fontWeight = FontWeight.Normal,
+                    )
+                )
+            },
+            maxLines = 1,
+            trailingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.link_24dp_2),
+                    contentDescription = ""
+                )
+            }
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        )
+        {
+            Button(
+                shape = RoundedCornerShape(10.dp),
+                modifier = Modifier
+                    .width(150.dp)
+                    .height(48.dp),
+                colors = ButtonDefaults.buttonColors(SecondaryBackGround),
+                onClick = {
+                    viewModel.showEditingAdditionalLayout(false, -1)
+                }
+            )
+            {
+                Text(
+                    text = "Cancel",
+                    textAlign = TextAlign.Center,
+                    style = TextStyle(
+                        fontFamily = arimoFontFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    ), color = Color.White
+                )
+            }
+
+            CircularLoaderButton(
+                shape = RoundedCornerShape(10.dp),
+                modifier = Modifier
+                    .width(150.dp)
+                    .height(48.dp),
+                colors = ButtonDefaults.buttonColors(MainColor),
+                loading = loading,
+                text = "SAVE",
+                textStyle = TextStyle(
+                    fontFamily = arimoFontFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                ),
+                onClick = {
+
+                    if (linkTitle.isNotEmpty() && link.isNotEmpty()) {
+                        viewModel.editUserLinks(
+                            link = LinkData(
+                                linkTitle,
+                                link,
+                                isActive
+                            )
+                        )
                     } else {
                         Toast.makeText(context, "Enter Details Please", Toast.LENGTH_SHORT).show()
                     }

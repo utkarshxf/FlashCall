@@ -19,10 +19,8 @@ data class Transaction(
 )
 
 data class TransactionGroup(
-
     val date : LocalDate? = null,
     val transactions : List<Transaction>? = null
-
 )
 
 fun List<Transaction>.groupByDate(): List<TransactionGroup> {

@@ -6,8 +6,14 @@ import com.example.myapplication.myapplication.flashcall.Data.model.CreateUserRe
 import com.example.myapplication.myapplication.flashcall.Data.model.LinkData
 import com.example.myapplication.myapplication.flashcall.Data.model.UpdateUserRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.UpdateUserResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.UserDetailsResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.UserUpdateData
 import com.example.myapplication.myapplication.flashcall.Data.model.UsernameAvailabilityResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.deleteAdditionalLink.DeleteAdditionalLinks
+import com.example.myapplication.myapplication.flashcall.Data.model.deleteAdditionalLink.DeletedAdditionalLinksResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.editAdditionalLink.EditAdditionalLinkRequest
+import com.example.myapplication.myapplication.flashcall.Data.model.todaysWallet.TodaysWalletBalanceResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.wallet.UserId
 import com.example.myapplication.myapplication.flashcall.Data.network.APIService
 import com.example.myapplication.myapplication.flashcall.utils.SafeApiRequest
 import kotlinx.coroutines.Dispatchers
@@ -164,4 +170,38 @@ class CreateRepository @Inject constructor(private val apiService: APIService):S
     suspend fun checkUsernameAvailability(username: String): UsernameAvailabilityResponse {
         return safeApiRequest {  apiService.checkUsernameAvailability("https://flashcall.me/api/v1/user/getAllUsernames?username=$username")}
     }
+
+    suspend fun getUserAdditionalLinks(url: String , userId: UserId): Flow<UserDetailsResponse> {
+        return flow {
+            val response = apiService.getUserById(url ,userId )
+            emit(safeApiRequest { response } )
+        }
+    }
+
+    suspend fun getTodaysWalletBalance(url: String): Flow<TodaysWalletBalanceResponse> {
+        return flow {
+            val response = apiService.todaysWalletBalance(url)
+            emit(safeApiRequest { response } )
+        }
+    }
+    suspend fun daleteAdditionalLink(body: DeleteAdditionalLinks): Flow<DeletedAdditionalLinksResponse> {
+        return flow {
+            val response = apiService.deleteAdditionalLink(body )
+            emit(safeApiRequest { response } )
+        }
+    }
+
+    suspend fun editAdditionalLink(
+        url: String,
+        body: EditAdditionalLinkRequest
+    ): Flow<UpdateUserResponse> {
+        return flow {
+            val response = apiService.editAdditionalLink(
+                url,
+                body
+            )
+            emit(safeApiRequest {  response})
+        }
+    }
+
 }
