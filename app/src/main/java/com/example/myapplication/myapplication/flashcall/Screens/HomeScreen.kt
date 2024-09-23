@@ -394,50 +394,48 @@ fun HomeScreenBottom(
                 Spacer(modifier = Modifier.height(20.dp))
 
 
-                var data = viewModel.getLinksList()
-                var list by remember {
-                    mutableStateOf(data)
-                }
+//                var data = viewModel.getLinksList()
+//                var list by remember {
+//                    mutableStateOf(data)
+//                }
 
 
+//                val showAdditionalLinks = viewModel.showAdditionalLinkState.collectAsState()
+//                when (showAdditionalLinks.value) {
+//                    APIResponse.Empty -> {
+//
+//                    }
+//
+//                    is APIResponse.Error -> {
+//
+//
+//                    }
+//
+//                    APIResponse.Loading -> {
+//
+//                    }
 
-                val showAdditionalLinks = viewModel.showAdditionalLinkState.collectAsState()
-                when (showAdditionalLinks.value) {
-                    APIResponse.Empty -> {
-
-                    }
-
-                    is APIResponse.Error -> {
-
-
-                    }
-
-                    APIResponse.Loading -> {
-
-                    }
-
-                    is APIResponse.Success -> {
-                        list =
-                            (showAdditionalLinks.value as APIResponse.Success<List<LinkData>>).data
-                    }
-                }
-
+//                    is APIResponse.Success -> {
+//                        list =
+//                            (showAdditionalLinks.value as APIResponse.Success<List<LinkData>>).data
+//                    }
+//            }
 
 
-                for (i in 0..list.size - 1) {
-                    addedLinkLayout(list.get(i), { ->
-
-                        Log.d("addedLinkLayout", "Changing State ")
-                    }, { ->
-                        viewModel.updateUserLinks(list.get(i)){
-
-                        }
-
-                        Log.d("addedLinkLayout", "Edit State ")
-                    }, { ->
-                        Log.d("addedLinkLayout", "Delete State ")
-                    })
-                }
+//                for (i in 0..list.size - 1) {
+//                    addedLinkLayout(list.get(i), { ->
+//
+//                        Log.d("addedLinkLayout", "Changing State ")
+//                    }, { ->
+//                        viewModel.updateUserLinks(list.get(i)){
+//
+//                        }
+//
+//                        Log.d("addedLinkLayout", "Edit State ")
+//                    }, { ->
+//                        Log.d("addedLinkLayout", "Delete State ")
+//                    })
+//                }
 
                 val addAditionalLinkState = viewModel.addAditionalLinkState
                 if (addAditionalLinkState.showAddLinkLayout) {

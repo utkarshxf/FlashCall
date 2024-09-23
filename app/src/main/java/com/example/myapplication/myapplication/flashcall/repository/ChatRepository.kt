@@ -6,6 +6,7 @@ import com.example.myapplication.myapplication.flashcall.Data.model.Resource
 import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.ChatDataClass
 import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.ChatRequestDataClass
 import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.MessageDataClass
+import com.google.firebase.Timestamp
 //import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.toMap
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FieldValue
@@ -116,17 +117,21 @@ class ChatRepository @Inject constructor(
     private suspend fun uploadMedia(mediaUri: Uri, isImage: Boolean) : String {
 
         val fileName = if(isImage) "images/${UUID.randomUUID()}" else "audio/${UUID.randomUUID()}"
-
         val ref = storage.reference.child(fileName)
-
+        Log.v("message.audio" , mediaUri.toString())
         val uploadTask = ref.putFile(mediaUri)
-
         return uploadTask.await().storage.downloadUrl.await().toString()
-
     }
-
+    private fun sliceUntilMp3(input: String): String {
+        val index = input.indexOf(".mp3")
+        return if (index != -1) {
+            input.substring(0, index + 4) // Include ".mp3" in the result
+        } else {
+            input // Return the original string if ".mp3" is not found
+        }
+    }
     suspend fun sendMessage(chatId: String, message: MessageDataClass) {
-
+        Log.v("audioFlowuseCase12345s", message.toString())
         var updatedMessage = message
 
         try {
@@ -146,13 +151,10 @@ class ChatRepository @Inject constructor(
                 val audioUrl = uploadMedia(Uri.parse(message.audio), isImage = false)
                 updatedMessage = message.copy(audio = audioUrl)
             }
-//            logAllDocumentsInCollection("chats")
             // Send the message
             firestore.collection("chats")
                 .document(chatId)
                 .update("messages", FieldValue.arrayUnion(updatedMessage)).await()
-
-
 
         } catch (e: Exception) {
             Log.e("FirestoreError", "Failed to send message: ${e.message}")

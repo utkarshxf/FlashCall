@@ -65,9 +65,9 @@ class RegistrationViewModel @Inject constructor(
         private set
 
 
-    private val _showAdditionalLinkState =
-        MutableStateFlow<APIResponse<List<LinkData>>>(APIResponse.Success(userPreferencesRepository.getAdditionalLinks()))
-    val showAdditionalLinkState: StateFlow<APIResponse<List<LinkData>>> = _showAdditionalLinkState
+//    private val _showAdditionalLinkState =
+//        MutableStateFlow<APIResponse<List<LinkData>>>(APIResponse.Success(userPreferencesRepository.getAdditionalLinks()))
+//    val showAdditionalLinkState: StateFlow<APIResponse<List<LinkData>>> = _showAdditionalLinkState
 
 
 
@@ -392,12 +392,9 @@ class RegistrationViewModel @Inject constructor(
         addAditionalLinkState = addAditionalLinkState.copy(showAddLinkLayout = isShow)
     }
 
-    fun getLinksList(): List<LinkData> {
-        return userPreferencesRepository.getAdditionalLinks()
-    }
-
-
-
+//    fun getLinksList(): List<LinkData> {
+//        return userPreferencesRepository.getAdditionalLinks()
+//    }
 
 }
 

@@ -24,6 +24,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.util.Date
 import javax.inject.Inject
 
 
@@ -129,7 +130,7 @@ class ChatRequestViewModel @Inject constructor(
             "chatId" to chatRequest.chatId,
             "lastMessage" to "",
             "receiverId" to chatRequest.clientId,
-            "updatedAt" to 1726930464549,
+            "updatedAt" to System.currentTimeMillis(),
             "online" to false
         )
 
@@ -157,8 +158,8 @@ class ChatRequestViewModel @Inject constructor(
                     "creatorId" to chatRequest.creatorId,
                     "status" to "active",
                     "messages" to listOf<String>(),
-                    "maxChatDuration" to null,
-                    "startedAt" to 1726935411944,
+                    "maxChatDuration" to 3600,
+                    "startedAt" to System.currentTimeMillis(),
                     "endedAt" to null,
                     "walletBalance" to chatRequest.clientBalance,
                     "timeLeft" to null,

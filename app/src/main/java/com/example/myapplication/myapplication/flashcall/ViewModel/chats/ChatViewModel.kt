@@ -6,8 +6,13 @@ import android.app.Application
 import android.content.Context
 import android.media.MediaRecorder
 import android.net.Uri
+import android.os.Environment
 import android.util.Log
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
@@ -35,6 +40,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -66,10 +74,7 @@ class ChatViewModel @Inject constructor(
     private val _currentPlayingAudioMessageDuration = MutableStateFlow<String?>(null)
     val currentPlayingAudioMessageDuration: StateFlow<String?> =
         _currentPlayingAudioMessageDuration.asStateFlow()
-
-    private val _isRecording = MutableStateFlow(false)
-    val isRecording: StateFlow<Boolean> = _isRecording.asStateFlow()
-
+    var isRecording = mutableStateOf(true)
     private val _recordedAudioUri = MutableStateFlow<Uri?>(null)
     val recordedAudioUri: StateFlow<Uri?> = _recordedAudioUri.asStateFlow()
 
@@ -141,26 +146,36 @@ class ChatViewModel @Inject constructor(
         return sharedPreferences.getString("chatId", null)
     }
 
-    fun onSelectMedia(uri: Uri, messageType: MessageType) {
+    fun onSelectMedia(uri: Uri, text:String, messageType: MessageType) {
         _selectedMediaUri.value = uri
-        sendMessage(uri.toString(), messageType)
+        Log.v("audioFlow" , uri.toString())
+        sendMessage(uri.toString(),text, messageType)
+    }
+    fun getImageUri(context: Context): Uri {
+        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        val imageName = "JPEG_${timeStamp}_"
+        val storageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        val imageFile = File.createTempFile(imageName, ".jpg", storageDir)
+        return FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", imageFile)
     }
 
-    fun sendMessage(messageContent: String, messageType: MessageType) {
+    fun sendMessage(messageContent: String, text: String?, messageType: MessageType) {
         viewModelScope.launch {
             try {
-                if (messageContent.isNotBlank() || messageType == MessageType.IMAGE) {
+                if (messageContent.isNotBlank() || messageType == MessageType.IMAGE || messageType == MessageType.AUDIO) {
                     val chatId = getChatIdFromPreferences() ?: return@launch
                     userId?.let {
                         sendMessageUseCase(
                             chatId = chatId,
                             messageContent = messageContent,
                             messageType = messageType,
-                            senderId = it
+                            senderId = it,
+                            text = text
                         )
                     }
                     _messageText.value = ""
                     _selectedMediaUri.value = null
+                    _recordedAudioUri.value = null
                 }
             } catch (e: Exception) {
                 Log.e("ChatViewModel", "Error sending message", e)
@@ -200,7 +215,7 @@ class ChatViewModel @Inject constructor(
                     prepare()
                     start()
                 }
-                _isRecording.value = true
+                isRecording.value = true
             } catch (e: Exception) {
                 Log.e("ChatViewModel", "Error starting recording", e)
             }
@@ -219,13 +234,14 @@ class ChatViewModel @Inject constructor(
                 currentRecordedFile?.let { file ->
                     val uri = Uri.fromFile(file)
                     _recordedAudioUri.value = uri
+                    Log.d("ChatViewModel", "Recorded audio URI: $uri")
                     uploadAudioToFirebase(file)
                     currentRecordedFile = null
                 }
             } catch (e: Exception) {
                 Log.e("ChatViewModel", "Error stopping recording", e)
             } finally {
-                _isRecording.value = false
+                isRecording.value = false
             }
         }
     }
@@ -240,7 +256,8 @@ class ChatViewModel @Inject constructor(
                 uploadTask.addOnSuccessListener {
                     audioRef.downloadUrl.addOnSuccessListener { uri ->
                         Log.d("ChatViewModel", "Audio uploaded successfully: $uri")
-                        saveAudioMetadata(uri.toString(), file.name)
+                        saveAudioMetadata(uri, file.name)
+
                     }.addOnFailureListener { e ->
                         Log.e("ChatViewModel", "Failed to get download URL", e)
                     }
@@ -253,17 +270,18 @@ class ChatViewModel @Inject constructor(
         }
     }
 
-    private fun saveAudioMetadata(downloadUrl: String, fileName: String) {
+    private fun saveAudioMetadata(downloadUrl: Uri, fileName: String) {
         viewModelScope.launch {
             try {
                 val audioMetadata = hashMapOf(
-                    "url" to downloadUrl,
+                    "url" to downloadUrl.toString(),
                     "fileName" to fileName,
                     "timestamp" to FieldValue.serverTimestamp()
                 )
 
                 firestore.collection("audio").add(audioMetadata).addOnSuccessListener {
-                        Log.d("ChatViewModel", "Audio metadata saved successfully")
+                    Log.v("audioFlowFirebase" , downloadUrl.toString())
+                    onAudioRecorded(downloadUrl ,"")
                     }.addOnFailureListener { e ->
                         Log.e("ChatViewModel", "Failed to save audio metadata", e)
                     }
@@ -273,8 +291,10 @@ class ChatViewModel @Inject constructor(
         }
     }
 
-    fun onAudioRecorded(uri: Uri?) {
-        uri?.let { onSelectMedia(it, MessageType.AUDIO) }
+    fun onAudioRecorded(uri: Uri? , text: String) {
+        _selectedMediaUri.value = uri
+        Log.v("audioFlow" , uri.toString())
+        uri?.let { onSelectMedia(it, text, MessageType.AUDIO) }
     }
 
     fun cancelRecording() {
@@ -290,14 +310,14 @@ class ChatViewModel @Inject constructor(
             } catch (e: Exception) {
                 Log.e("ChatViewModel", "Error cancelling recording", e)
             } finally {
-                _isRecording.value = false
+                isRecording.value = false
             }
         }
     }
 
-    fun onImageSelected(uri: Uri?) {
+    fun onImageSelected(uri: Uri? , text: String) {
         viewModelScope.launch {
-            uri?.let { onSelectMedia(it, MessageType.IMAGE) }
+            uri?.let { onSelectMedia(it,text, MessageType.IMAGE) }
         }
     }
 

@@ -33,9 +33,8 @@ fun LoginDoneScreen(navController: NavController) {
     (context.applicationContext as? BaseClass)?.streamBuilder(context)
     LaunchedEffect(Unit) {
         delay(2000)
-        navController.navigate(ScreenRoutes.MainScreen.route)
-        {
-            popUpTo(ScreenRoutes.LoginDoneScreen.route){inclusive = true}
+        navController.navigate(ScreenRoutes.MainScreen.route) {
+            popUpTo(0){inclusive = true}
         }
     }
     Column(modifier = Modifier

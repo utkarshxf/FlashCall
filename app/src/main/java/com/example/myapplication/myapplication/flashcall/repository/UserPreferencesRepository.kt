@@ -89,10 +89,10 @@ class UserPreferencesRepository @Inject constructor(@ApplicationContext private 
         }
     }
 
-    fun getAdditionalLinks(): List<LinkData>{
-        var additionalLinksStr = sharedPreferences.getString(PreferencesKey.AdditionalLinks.key, "") ?:""
-        return convertingStringIntoList(additionalLinksStr)
-    }
+//    fun getAdditionalLinks(): List<LinkData>{
+//        var additionalLinksStr = sharedPreferences.getString(PreferencesKey.AdditionalLinks.key, "") ?:""
+//        return convertingStringIntoList(additionalLinksStr)
+//    }
 
     fun getUser(): IsUserCreatedResponse? {
         val userId = sharedPreferences.getString(PreferencesKey.UserId.key, null) ?: return null
@@ -168,10 +168,10 @@ class UserPreferencesRepository @Inject constructor(@ApplicationContext private 
         return jsonString
     }
 
-    private fun convertingStringIntoList(stringList: String): List<LinkData> {
-        val gson = Gson()
-        val listType = object : TypeToken<List<LinkData>>() {}.type
-        val list: List<LinkData> = gson.fromJson(stringList, listType)
-        return list
-    }
+//    private fun convertingStringIntoList(stringList: String): List<LinkData> {
+//        val gson = Gson()
+//        val listType = object : TypeToken<List<LinkData>>() {}.type
+//        val list: List<LinkData> = gson.fromJson(stringList, listType)
+//        return list
+//    }
 }
