@@ -573,8 +573,6 @@ class RegistrationViewModel @Inject constructor(
     }
 
 
-
-
 }
 
 data class ShareLinkState(

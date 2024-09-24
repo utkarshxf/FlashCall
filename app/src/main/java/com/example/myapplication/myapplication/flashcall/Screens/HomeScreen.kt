@@ -393,8 +393,6 @@ fun HomeScreenBottom(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-
-
                 LaunchedEffect(key1 = Unit) {
                     viewModel.getAddedAdditionalLinks()
                 }
