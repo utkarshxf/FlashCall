@@ -36,10 +36,6 @@ class KycViewModel @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
-//    init {
-//        checkKycStatus()
-//    }
-
     data class AadharVerified(
         var verified: Boolean = false,
         var name: String? = null,
@@ -51,19 +47,12 @@ class KycViewModel @Inject constructor(
         var name: String? = null
     )
 
-    data class LivelinessVerified(
-        var verified: Boolean = false,
-        var imageUrl: String? = null
-    )
-
     data class VerificationState(
         var isLoading: Boolean = false,
         val error: String? = null,
-        val aadharVerified: AadharVerified = AadharVerified(verified = false),
-        var panVerified: PanVerified = PanVerified(verified = false),
-        var livelinessVerified: LivelinessVerified = LivelinessVerified(verified = false),
-        var faceMatchVerified: Boolean = false,
-        var nameMatchVerified: Boolean = false
+        val isAadharVerified: Boolean = false,
+        var isPanVerified: Boolean = false,
+        var isLivelinessVerified: Boolean = false
     )
 
     data class RequiredDataToStartVerification(
@@ -94,13 +83,6 @@ class KycViewModel @Inject constructor(
         private set
 
 
-    var faceMatchState by mutableStateOf(VerificationState())
-        private set
-
-    var nameMatchState by mutableStateOf(VerificationState())
-        private set
-
-
     var userId = userPreferencesRepository.getUser()?._id ?: "user_id"
 
     fun panVerification(panNumber: String) {
@@ -113,7 +95,7 @@ class KycViewModel @Inject constructor(
                         if (response?.success!! && response.data != null) {
                             panState = panState.copy(
                                 isLoading = false,
-                                panVerified = PanVerified(true, response.data.registered_name)
+                                isPanVerified = true
                             )
                         } else {
                             panState = panState.copy(
@@ -196,11 +178,7 @@ class KycViewModel @Inject constructor(
                             )
                             aadharState = aadharState.copy(
                                 isLoading = false,
-                                aadharVerified = AadharVerified(
-                                    verified = true,
-                                    name = response.data?.name,
-                                    image = response.data?.photo_link
-                                )
+                                isAadharVerified = true
                             )
                         } else {
                             aadharOTPVerificationState = aadharOTPVerificationState.copy(
@@ -239,10 +217,7 @@ class KycViewModel @Inject constructor(
                             if (response.data != null && response.data?.status.equals("SUCCESS")) {
                                 livelinessState = livelinessState.copy(
                                     isLoading = false,
-                                    livelinessVerified = LivelinessVerified(
-                                        verified = true,
-                                        imageUrl = imgUrl
-                                    )
+                                    isLivelinessVerified = true
                                 )
                             } else {
                                 livelinessState = livelinessState.copy(
@@ -310,24 +285,16 @@ class KycViewModel @Inject constructor(
                                 if (response.data?.aadhaar!!.status.equals("VALID")) {
                                     Log.d("AadharKycStatus","link: ${response.data?.aadhaar!!.img_link}")
                                     aadharState = aadharState.copy(
-                                        aadharVerified = AadharVerified(
-                                            verified = true,
-                                            name = response.data?.aadhaar!!.name,
-                                            image = response.data?.aadhaar!!.img_link
-                                        )
+                                        isAadharVerified = true
                                     )
                                 } else {
                                     aadharState = aadharState.copy(
-                                        aadharVerified = AadharVerified(
-                                            verified = false
-                                        )
+                                        isAadharVerified = false
                                     )
                                 }
                             } else {
                                 aadharState = aadharState.copy(
-                                    aadharVerified = AadharVerified(
-                                        verified = false
-                                    )
+                                    isAadharVerified = false
                                 )
                             }
 
@@ -335,19 +302,16 @@ class KycViewModel @Inject constructor(
                             if (response.data?.pan != null) {
                                 if (response.data?.pan!!.valid == true) {
                                     panState = panState.copy(
-                                        panVerified = PanVerified(
-                                            verified = true,
-                                            name = response.data?.pan!!.registeredName
-                                        )
+                                        isPanVerified = true
                                     )
                                 } else {
                                     panState = panState.copy(
-                                        panVerified = PanVerified(verified = false)
+                                        isPanVerified = false
                                     )
                                 }
                             } else {
                                 panState = panState.copy(
-                                    panVerified = PanVerified(verified = false)
+                                    isPanVerified = false
                                 )
                             }
 
@@ -355,38 +319,18 @@ class KycViewModel @Inject constructor(
                             if (response.data?.liveliness != null) {
                                 if (response.data?.liveliness!!.status.equals("SUCCESS")) {
                                     livelinessState = livelinessState.copy(
-                                        livelinessVerified = LivelinessVerified(
-                                            verified = true,
-                                            imageUrl = response.data?.liveliness!!.img_url
-                                        )
+                                        isLivelinessVerified = true
                                     )
                                 } else {
                                     livelinessState = livelinessState.copy(
-                                        livelinessVerified = LivelinessVerified(verified = false)
+                                        isLivelinessVerified = false
                                     )
                                 }
                             } else {
                                 livelinessState = livelinessState.copy(
-                                    livelinessVerified = LivelinessVerified(verified = false)
+                                    isLivelinessVerified = false
                                 )
                             }
-
-                            // FaceMatch Check
-                            if (response.data?.faceMatch != null && response.data?.faceMatch?.status.equals("SUCCESS")) {
-                                faceMatchState = faceMatchState.copy(faceMatchVerified = true)
-                            }
-                            else {
-                                faceMatchState = faceMatchState.copy(faceMatchVerified = false)
-                            }
-
-                            // NameMatch Check
-                            if (response.data?.nameMatch != null && response.data?.nameMatch?.status.equals("SUCCESS")) {
-                                nameMatchState = nameMatchState.copy(faceMatchVerified = true)
-                            }
-                            else {
-                                nameMatchState = nameMatchState.copy(faceMatchVerified = false)
-                            }
-
                         }
                     }
 
@@ -396,37 +340,8 @@ class KycViewModel @Inject constructor(
         }
     }
 
-    fun nameMatch() {
-        val body = NameMatchRequest(aadharState.aadharVerified.name?:"",panState.panVerified.name?:"",userId,getVerificationId(15))
-        Log.d("NameMatchBody","requestBody: $body")
-        viewModelScope.launch {
-            repository.nameMatch("api/v1/userkyc/nameMatch", body).collect { response ->
-                Log.d("FaceMatchPrint","responseBody: $response")
-                if (response.success) {
-                    nameMatchState = nameMatchState.copy(nameMatchVerified = true)
-                } else {
-                    nameMatchState = nameMatchState.copy(nameMatchVerified = false)
-                }
-            }
-        }
-    }
-    fun faceMatch() {
-        val body = FaceMatchRequest(livelinessState.livelinessVerified.imageUrl?:"",aadharState.aadharVerified.image?:"",userId,getVerificationId(15))
-        Log.d("FaceMatchPrint","requestBody: uid ${body.userId}")
-        Log.d("FaceMatchPrint","requestBody: vid ${body.verificationId}")
-        Log.d("FaceMatchPrint","requestBody: firebase ${body.firstImg}")
-        Log.d("FaceMatchPrint","requestBody: aadhar ${body.secondImg}...")
-        viewModelScope.launch {
-            repository.faceMatch("api/v1/userkyc/faceMatch", body).collect { response ->
-                Log.d("FaceMatchPrint","responseBody: $response")
-                if (response.success) {
-                    faceMatchState = faceMatchState.copy(faceMatchVerified = true)
-                } else {
-                    faceMatchState = faceMatchState.copy(faceMatchVerified = false)
-                }
-            }
-        }
-    }
+
+
 
     fun compressImageToCache(context: Context, imageFile: File, quality: Int): File? {
         // Step 1: Decode the image file into a Bitmap
@@ -472,11 +387,9 @@ class KycViewModel @Inject constructor(
 
     fun checkKycStatus() {
         if (userPreferencesRepository.isKyc()) {
-            panState = panState.copy(panVerified = PanVerified(verified = true))
-            aadharState = aadharState.copy(aadharVerified = AadharVerified(verified = true))
-            livelinessState = livelinessState.copy(livelinessVerified = LivelinessVerified(verified = true))
-            faceMatchState = faceMatchState.copy(faceMatchVerified = true)
-            nameMatchState = nameMatchState.copy(nameMatchVerified = true)
+            panState = panState.copy(isPanVerified = true)
+            aadharState = aadharState.copy(isAadharVerified = true)
+            livelinessState = livelinessState.copy(isLivelinessVerified = true)
         }else{
             getKysStatus()
         }

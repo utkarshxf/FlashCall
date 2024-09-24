@@ -94,6 +94,7 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.ThemeColorOran
 import com.example.myapplication.myapplication.flashcall.ui.theme.ThemeColorPurple
 import com.example.myapplication.myapplication.flashcall.ui.theme.ThemeColorYellow
 import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
+import com.example.myapplication.myapplication.flashcall.utils.capitalizeAfterSpace
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -256,11 +257,11 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
 
 
     var edit_profile_name by remember {
-        mutableStateOf("")
+        mutableStateOf(userData?.fullName+"")
     }
 
     var edit_profile_bio by remember {
-        mutableStateOf("")
+        mutableStateOf(userData?.bio+"")
     }
 
     var colorSelected by remember {
@@ -1012,7 +1013,7 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                                     userId = uid,
                                     username = username,
                                     phone = phone ,
-                                    fullName = edit_profile_name,
+                                    fullName = capitalizeAfterSpace(edit_profile_name),
                                     firstName = firstName,
                                     lastName= lastName,
                                     photo = imageUrl,
@@ -1031,6 +1032,8 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
         }
     }
 }
+
+
 
 @Composable
 fun MyTextField(

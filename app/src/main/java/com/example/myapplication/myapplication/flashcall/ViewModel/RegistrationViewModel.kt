@@ -117,9 +117,9 @@ class RegistrationViewModel @Inject constructor(
                         photo ?: "photo", // Default image URL
                         profession ?: "Android Developer", // Default profession
                         themeSelected ?: "#000000",      // Default theme color
-                        videoRate ?: "30",               // Default video rate
+                        videoRate ?: "25",               // Default video rate
                         audioRate ?: "25",               // Default audio rate
-                        chatRate ?: "5",                 // Default chat rate
+                        chatRate ?: "25",                 // Default chat rate
                         gender ?: "Male",                // Default gender
                         dob ?: "01/01/1900",             // Default date of birth
                         bio ?: "This is the bio of my profile", // Default bio
@@ -547,12 +547,38 @@ class RegistrationViewModel @Inject constructor(
         }else{
             editAdditionalLinkState = editAdditionalLinkState.copy(editingLayout = ShowEditingLayout(showEditingLayout = isShow, index = -1))
         }
+    }
 
+    var shareLinkState by mutableStateOf(ShareLinkState())
 
+    fun getShareLink(){
+        shareLinkState = shareLinkState.copy(shareLink = userPreferencesRepository.getShareLink())
+        val userId = userPreferencesRepository.getUser()?._id
+        viewModelScope.launch {
+            repository.getShareLink(url = "api/v1/creator/creatorLink?userId=$userId").collect{ response ->
+                if(response.creatorLink != null){
+                    userPreferencesRepository.saveShareLink(response.creatorLink!!)
+                    shareLinkState = shareLinkState.copy(shareLink = userPreferencesRepository.getShareLink())
+                }
+            }
+        }
+    }
+
+    fun getIsKycRequired(): Boolean{
+        return if(userPreferencesRepository.isKyc()){
+            false
+        }else{
+            true
+        }
     }
 
 
 }
+
+data class ShareLinkState(
+    var shareLink: String = "",
+    var isLoading: Boolean = false
+)
 
 data class EditAdditionalLink(
     val isLoading: Boolean = false,
