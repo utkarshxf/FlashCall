@@ -74,7 +74,7 @@ class ChatViewModel @Inject constructor(
     private val _currentPlayingAudioMessageDuration = MutableStateFlow<String?>(null)
     val currentPlayingAudioMessageDuration: StateFlow<String?> =
         _currentPlayingAudioMessageDuration.asStateFlow()
-    var isRecording = mutableStateOf(true)
+    var isRecording = mutableStateOf(false)
     private val _recordedAudioUri = MutableStateFlow<Uri?>(null)
     val recordedAudioUri: StateFlow<Uri?> = _recordedAudioUri.asStateFlow()
 
@@ -148,7 +148,6 @@ class ChatViewModel @Inject constructor(
 
     fun onSelectMedia(uri: Uri, text:String, messageType: MessageType) {
         _selectedMediaUri.value = uri
-        Log.v("audioFlow" , uri.toString())
         sendMessage(uri.toString(),text, messageType)
     }
     fun getImageUri(context: Context): Uri {
@@ -293,7 +292,6 @@ class ChatViewModel @Inject constructor(
 
     fun onAudioRecorded(uri: Uri? , text: String) {
         _selectedMediaUri.value = uri
-        Log.v("audioFlow" , uri.toString())
         uri?.let { onSelectMedia(it, text, MessageType.AUDIO) }
     }
 

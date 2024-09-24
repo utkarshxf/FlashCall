@@ -118,20 +118,15 @@ class ChatRepository @Inject constructor(
 
         val fileName = if(isImage) "images/${UUID.randomUUID()}" else "audio/${UUID.randomUUID()}"
         val ref = storage.reference.child(fileName)
-        Log.v("message.audio" , mediaUri.toString())
         val uploadTask = ref.putFile(mediaUri)
-        return uploadTask.await().storage.downloadUrl.await().toString()
-    }
-    private fun sliceUntilMp3(input: String): String {
-        val index = input.indexOf(".mp3")
-        return if (index != -1) {
-            input.substring(0, index + 4) // Include ".mp3" in the result
-        } else {
-            input // Return the original string if ".mp3" is not found
-        }
+
+
+        val data = uploadTask.await().storage.downloadUrl.await().toString()
+
+        Log.v("messagesend123" , data.toString())
+        return data
     }
     suspend fun sendMessage(chatId: String, message: MessageDataClass) {
-        Log.v("audioFlowuseCase12345s", message.toString())
         var updatedMessage = message
 
         try {
@@ -148,16 +143,23 @@ class ChatRepository @Inject constructor(
                 val imageUrl = uploadMedia(Uri.parse(message.img), isImage = true)
                 updatedMessage = message.copy(img = imageUrl)
             } else if (message.audio != null) {
-                val audioUrl = uploadMedia(Uri.parse(message.audio), isImage = false)
-                updatedMessage = message.copy(audio = audioUrl)
+                try {
+                    val audioUrl = uploadMedia(Uri.parse(message.audio), isImage = false)
+                    updatedMessage = message.copy(audio = audioUrl)
+                } catch (e: Exception) {
+                    //needed to be fixed.
+                    firestore.collection("chats")
+                        .document(chatId)
+                        .update("messages", FieldValue.arrayUnion(updatedMessage)).await()
+                }
             }
-            // Send the message
             firestore.collection("chats")
                 .document(chatId)
                 .update("messages", FieldValue.arrayUnion(updatedMessage)).await()
 
         } catch (e: Exception) {
-            Log.e("FirestoreError", "Failed to send message: ${e.message}")
+            Log.v("messagesend123",updatedMessage.toString())
+            Log.e("messagesend123", "Failed to send message: ${e.message}")
         }
     }
     fun createChatRequest(chatId: String, clientId: String, creatorId: String) {

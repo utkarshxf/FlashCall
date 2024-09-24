@@ -44,6 +44,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
@@ -514,29 +515,69 @@ fun MessageItem(
 }
 
 // UI Button logic
+@kotlin.OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun AudioRecorderButton(
     chatViewModel: ChatViewModel
 ) {
-    var showRecorder = chatViewModel.isRecording.value
+    val recordAudioPermissionState = rememberPermissionState(Manifest.permission.RECORD_AUDIO)
+    var showRecorder by remember { mutableStateOf(false) }
+    val isRecording = chatViewModel.isRecording.value
 
-    IconButton(
-        onClick = {
-            showRecorder = !showRecorder
-            if (showRecorder) {
-                chatViewModel.startRecording()
-            } else {
-                chatViewModel.stopRecording()
+    Column {
+        if (!recordAudioPermissionState.status.isGranted) {
+            LaunchedEffect(Unit) {
+                recordAudioPermissionState.launchPermissionRequest()
             }
-        }, modifier = Modifier
-            .size(40.dp)
-            .background(Color(0xFF25D366), CircleShape)
-    ) {
-        Icon(
-            imageVector = if (showRecorder) Icons.Default.MicOff else Icons.Default.Mic,
-            contentDescription = if (showRecorder) "Stop Recording" else "Start Recording",
-            tint = Color.White
-        )
+            Text(
+                "Please grant the RECORD_AUDIO permission to use the audio recorder.",
+                modifier = Modifier.padding(8.dp),
+                color = MaterialTheme.colorScheme.error
+            )
+        } else {
+            IconButton(
+                onClick = {
+                    showRecorder = !showRecorder
+                    if (showRecorder) {
+                        chatViewModel.startRecording()
+                    } else {
+                        chatViewModel.stopRecording()
+                    }
+                },
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(
+                        if (isRecording) Color.Red else Color(0xFF25D366),
+                        CircleShape
+                    )
+            ) {
+                Icon(
+                    imageVector = if (isRecording) Icons.Default.MicOff else Icons.Default.Mic,
+                    contentDescription = if (isRecording) "Stop Recording" else "Start Recording",
+                    tint = Color.White
+                )
+            }
+
+            if (isRecording) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(4.dp)
+                        .background(Color.LightGray)
+                ) {
+                    LinearProgressIndicator(
+                        modifier = Modifier.fillMaxSize(),
+                        color = Color.Red
+                    )
+                }
+                Text(
+                    "Recording...",
+                    modifier = Modifier.padding(top = 4.dp),
+                    color = Color.Red,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+        }
     }
 }
 

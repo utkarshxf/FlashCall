@@ -38,7 +38,6 @@ class SendMessageUseCase @Inject constructor(
             "img" to newMessage.img,
             "audio" to newMessage.audio
         )
-        Log.v("audioFlowuseCase12345" , messageMap.toString())
 
         chatRepository.sendMessage(chatId, newMessage)
     }
