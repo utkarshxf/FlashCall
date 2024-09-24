@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.myapplication.myapplication.flashcall.Data.model.CreateUser
 import com.example.myapplication.myapplication.flashcall.Data.model.CreateUserResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.LinkData
+import com.example.myapplication.myapplication.flashcall.Data.model.ShareLinkResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.UpdateUserRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.UpdateUserResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.UserDetailsResponse
@@ -201,6 +202,13 @@ class CreateRepository @Inject constructor(private val apiService: APIService):S
                 body
             )
             emit(safeApiRequest {  response})
+        }
+    }
+
+    suspend fun getShareLink(url: String): Flow<ShareLinkResponse>{
+        return flow {
+            val response = apiService.getShareLink(url)
+            emit(safeApiRequest { response })
         }
     }
 
