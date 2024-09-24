@@ -18,7 +18,6 @@ class SharedChatViewModel @Inject constructor() : ViewModel() {
 
     // Function to update chatId
     fun setChatId(id: String) {
-        Log.v("qwerty" , _chatId.value.toString())
         _chatId.value = id
     }
 }

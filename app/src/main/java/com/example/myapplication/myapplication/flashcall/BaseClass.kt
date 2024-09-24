@@ -11,6 +11,7 @@ import com.example.myapplication.myapplication.flashcall.utils.PreferencesKey
 import com.example.myapplication.myapplication.flashcall.utils.TimestampConverter
 import com.google.firebase.FirebaseApp
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestoreSettings
 import com.google.gson.GsonBuilder
@@ -51,7 +52,7 @@ class BaseClass : Application() {
             userId = sharedPreferences.getString(PreferencesKey.UserId.key, "user_Id") ?: "user_Id"
             userName = sharedPreferences.getString(PreferencesKey.FirstName.key, "Unknown User") ?: "Unknown User"
             profileImage = sharedPreferences.getString(PreferencesKey.Photo.key, "") ?: ""
-            phoneNumber = sharedPreferences.getString(PreferencesKey.Phone.key , "") ?: ""
+            phoneNumber = sharedPreferences.getString(PreferencesKey.Phone.key, "") ?: ""
         } catch (e: Exception) {
             Log.e("BaseClass", "Error reading SharedPreferences: ${e.message}")
         }
@@ -67,7 +68,7 @@ class BaseClass : Application() {
                 user = User(
                     id = userId,
                     name = userName,
-                    image = profileImage?:"null",
+                    image = profileImage ?: "null",
                     role = "admin",
                 ),
                 ringNotification = { call -> Notification.Builder(context).build() }
@@ -108,7 +109,30 @@ class BaseClass : Application() {
         // Set the status to either "Online" or "Offline"
         val status = if (isOnline) "Online" else "Offline"
 
-        // Update the status field
+        // Check if the document exists
+        userRef.get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    // Document exists, update the status field
+                    updateStatus(userRef, status, phoneNumber)
+                } else {
+                    // Document doesn't exist, create it with the status field
+                    val userData = hashMapOf("status" to status)
+                    userRef.set(userData)
+                        .addOnSuccessListener {
+                            println("New userStatus document created with status $status for user: $phoneNumber")
+                        }
+                        .addOnFailureListener { e ->
+                            println("Error creating userStatus document: $e")
+                        }
+                }
+            }
+            .addOnFailureListener { e ->
+                println("Error checking document existence: $e")
+            }
+    }
+
+    private fun updateStatus(userRef: DocumentReference, status: String, phoneNumber: String) {
         userRef.update("status", status)
             .addOnSuccessListener {
                 println("Status updated to $status for user: $phoneNumber")
@@ -118,4 +142,3 @@ class BaseClass : Application() {
             }
     }
 }
-

@@ -6,8 +6,6 @@ import com.example.myapplication.myapplication.flashcall.Data.model.AadhaarRespo
 import com.example.myapplication.myapplication.flashcall.Data.model.CreateUser
 import com.example.myapplication.myapplication.flashcall.Data.model.CreateUserResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.IsUserCreatedResponse
-import com.example.myapplication.myapplication.flashcall.Data.model.LinkData
-import com.example.myapplication.myapplication.flashcall.Data.model.nameMatch.NameMatchRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.Request
 import com.example.myapplication.myapplication.flashcall.Data.model.ResendOTPResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.ResendRequest
@@ -15,6 +13,7 @@ import com.example.myapplication.myapplication.flashcall.Data.model.SendOTPRespo
 import com.example.myapplication.myapplication.flashcall.Data.model.ShareLinkResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.UpdateUserRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.UpdateUserResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.UserAssistanceLink
 import com.example.myapplication.myapplication.flashcall.Data.model.UserDetailsResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.UsernameAvailabilityResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.ValidateRequest
@@ -27,22 +26,21 @@ import com.example.myapplication.myapplication.flashcall.Data.model.chatDataMode
 import com.example.myapplication.myapplication.flashcall.Data.model.deleteAdditionalLink.DeleteAdditionalLinks
 import com.example.myapplication.myapplication.flashcall.Data.model.deleteAdditionalLink.DeletedAdditionalLinksResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.editAdditionalLink.EditAdditionalLinkRequest
-import com.example.myapplication.myapplication.flashcall.Data.model.faceMatch.FaceMatchRequest
-import com.example.myapplication.myapplication.flashcall.Data.model.faceMatch.FaceMatchResponse
-import com.example.myapplication.myapplication.flashcall.Data.model.feedback.FeedbackResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.feedback.UpdateFeedback
 import com.example.myapplication.myapplication.flashcall.Data.model.feedback.UpdateFeedbackResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.kycStatus.KycStatusResponse
-import com.example.myapplication.myapplication.flashcall.Data.model.livelinessResponse.LivelinessResponse
-import com.example.myapplication.myapplication.flashcall.Data.model.nameMatch.NameMatchResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.livelinessResponse.KycResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.paymentSetting.AddBankDetailsRequest
+import com.example.myapplication.myapplication.flashcall.Data.model.paymentSetting.AddUpiRequest
+import com.example.myapplication.myapplication.flashcall.Data.model.paymentSetting.PaymentSettingResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.todaysWallet.TodaysWalletBalanceResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.userFeedbacks.UserFeedbaks
 import com.example.myapplication.myapplication.flashcall.Data.model.wallet.TransactionsResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.wallet.UserId
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.Body
-import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.HTTP
 import retrofit2.http.Multipart
@@ -91,7 +89,7 @@ interface APIService {
     @GET
     suspend fun getFeedbacks(
         @Url url:String
-    ) :Response < FeedbackResponse>
+    ) :Response <UserFeedbaks>
 
     @POST
     suspend fun updateFeedback(
@@ -135,8 +133,6 @@ interface APIService {
     ):Response<UserDetailsResponse>
 
 
-
-
     @Multipart
     @POST("api/v1/userkyc/liveliness")
     suspend fun uploadLiveliness(
@@ -144,14 +140,14 @@ interface APIService {
         @Part("verification_id") verificationId: RequestBody,
         @Part("userId") userId: RequestBody,
         @Part("img_url") imgUrl: RequestBody
-    ): Response<LivelinessResponse>
+    ): Response<KycResponse>
 
 
     @POST
     suspend fun verifyPan(
         @Url url:String,
         @Body request: VerifyPanRequest
-    ): retrofit2.Response<PanResponse>
+    ): retrofit2.Response<KycResponse>
 
 
     @POST
@@ -165,7 +161,7 @@ interface APIService {
     suspend fun verifyAadhaarOtp(
         @Url url:String,
         @Body request: VerifyAadhaarOtpRequest
-    ): retrofit2.Response<AadharOtpResponse>
+    ): retrofit2.Response<KycResponse>
 
 
     @GET
@@ -173,20 +169,6 @@ interface APIService {
         @Url url:String
     ): retrofit2.Response<KycStatusResponse>
 
-
-    //"/api/v1/userKyc/name-match"
-    @POST
-    suspend fun nameMatch(
-        @Url url:String,
-        @Body request: NameMatchRequest
-    ): retrofit2.Response<NameMatchResponse>
-
-
-    @POST
-    suspend fun faceMatch(
-        @Url url: String,
-        @Body request: FaceMatchRequest
-    ): Response<FaceMatchResponse>
 
     @GET
     suspend fun todaysWalletBalance(
@@ -204,6 +186,31 @@ interface APIService {
     suspend fun getShareLink(
         @Url url: String
     ):Response < ShareLinkResponse>
+
+
+    @GET
+    suspend fun getUserAssistanceLink(
+        @Url url: String
+    ):Response < UserAssistanceLink>
+
+    @GET
+    suspend fun getPaymentSettings(
+        @Url url: String
+    ): Response<PaymentSettingResponse>
+
+
+    @POST
+    suspend fun addUpiDetails(
+        @Url url: String,
+        @Body body: AddUpiRequest
+    ): Response<PaymentSettingResponse>
+
+
+    @POST
+    suspend fun addBankDetails(
+        @Url url: String,
+        @Body body: AddBankDetailsRequest
+    ): Response<PaymentSettingResponse>
 
 
 

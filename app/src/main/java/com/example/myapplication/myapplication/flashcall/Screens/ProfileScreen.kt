@@ -44,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -79,7 +80,9 @@ fun ProfileScreen(
     var isKyc by remember {
         mutableStateOf(registrationViewModel.getIsKycRequired())
     }
-    val isPaymentDetails = true
+    var isPaymentDetails by remember {
+        mutableStateOf(registrationViewModel.getIsPaymentDetails())
+    }
     val context = LocalContext.current
     val uid = registrationViewModel.getStoredUserData("_id")
     val userData = authenticationViewModel.getUserFromPreferences(context)
@@ -218,15 +221,24 @@ fun ProfileScreen(
                                     .height(24.dp)
                                     .width(24.dp)
                             )
+                            Icon(
+                                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                contentDescription = "Next",
+                                tint = Color.Black,
+                                modifier = Modifier.size(36.dp)
+                            )
 
+                        }else{
+                            Image(
+                                painter = painterResource(id = R.drawable.baseline_verified_24),
+                                contentDescription = null,
+                                colorFilter = ColorFilter.tint(MainColor),
+                                modifier = Modifier
+                                    .height(24.dp)
+                                    .width(24.dp)
+                            )
                         }
 
-                        Icon(
-                            Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                            contentDescription = "Next",
-                            tint = Color.Black,
-                            modifier = Modifier.size(36.dp)
-                        )
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -338,14 +350,25 @@ fun ProfileScreen(
                                     .height(24.dp)
                                     .width(24.dp)
                             )
+                            Icon(
+                                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                contentDescription = "Next",
+                                tint = Color.Black,
+                                modifier = Modifier.size(36.dp)
+                            )
+                        }
+                        else{
+                            Image(
+                                painter = painterResource(id = R.drawable.baseline_verified_24),
+                                contentDescription = null,
+                                colorFilter = ColorFilter.tint(MainColor),
+                                modifier = Modifier
+                                    .height(24.dp)
+                                    .width(24.dp)
+                            )
                         }
 
-                        Icon(
-                            Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                            contentDescription = "Next",
-                            tint = Color.Black,
-                            modifier = Modifier.size(36.dp)
-                        )
+
                     }
 
                 }

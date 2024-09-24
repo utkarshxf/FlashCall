@@ -393,8 +393,6 @@ fun HomeScreenBottom(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-
-
                 LaunchedEffect(key1 = Unit) {
                     viewModel.getAddedAdditionalLinks()
                 }
@@ -428,7 +426,8 @@ fun HomeScreenBottom(
                     AddLinkLayout {
                         viewModel.showLayoutForAddLinks(false)
                     }
-                } else {
+                }
+                else {
                     addExtraLink(
                         modifier = Modifier
                             .height(84.dp)
@@ -471,7 +470,7 @@ fun HomeScreenBottom(
 
                 Spacer(modifier = Modifier.height(40.dp))
 
-                DemoText()
+                DemoText(viewModel)
 
                 Spacer(modifier = Modifier.height(60.dp))
 
@@ -521,6 +520,7 @@ fun addExtraLink(
 
 @Composable
 fun CopyBar(viewModel: RegistrationViewModel) {
+
     LaunchedEffect(key1 = Unit) {
         viewModel.getShareLink()
     }
@@ -529,8 +529,12 @@ fun CopyBar(viewModel: RegistrationViewModel) {
     var copyText by remember {
         mutableStateOf("")
     }
+    var myBio by remember {
+        mutableStateOf(viewModel.getMyBio())
+    }
     copyText = shareLinkState.shareLink
-    var context = LocalContext.current
+
+    val context = LocalContext.current
 
     Row(
         modifier = Modifier
@@ -587,7 +591,7 @@ fun CopyBar(viewModel: RegistrationViewModel) {
         Spacer(modifier = Modifier.width(8.dp))
 
         ShareTextButton(
-            shareLink = copyText
+            shareLink = copyText, bio = myBio
         )
     }
 }
@@ -1222,7 +1226,12 @@ fun shareLink(url: String) {
 }
 
 @Composable
-fun ShareTextButton(shareLink: String) {
+fun ShareTextButton(shareLink: String, bio: String) {
+    var sharingContent = "Hi 👋\n\nYou can use the below link to consult with me through Video Call, Audio Call or Chat. \n\nLink: $shareLink\n\n"
+
+    if(bio.isNotEmpty()){
+        sharingContent += "About me: $bio"
+    }
     val launcher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -1240,7 +1249,7 @@ fun ShareTextButton(shareLink: String) {
                 val sendIntent: Intent = Intent().apply {
                     action = Intent.ACTION_SEND
                     putExtra(
-                        Intent.EXTRA_TEXT, shareLink
+                        Intent.EXTRA_TEXT, sharingContent
                     )
                     type = "text/plain"
                 }
@@ -1252,7 +1261,23 @@ fun ShareTextButton(shareLink: String) {
 }
 
 @Composable
-fun DemoText() {
+fun DemoText(viewModel: RegistrationViewModel) {
+
+    LaunchedEffect(key1 = Unit) {
+        viewModel.getUserAssistanceLink()
+    }
+    var linksState = viewModel.userAssistanceLinkState
+    var userAssistanceLink by remember {
+        mutableStateOf("")
+    }
+    var userAssistanceLinkDesc by remember {
+        mutableStateOf("")
+    }
+    userAssistanceLink = linksState.linkUrl+""
+    userAssistanceLinkDesc = linksState.linkDesc+""
+
+    val context = LocalContext.current
+
     Box(modifier = Modifier.fillMaxWidth()) {
 
         Row(
@@ -1262,30 +1287,20 @@ fun DemoText() {
         ) {
             Column {
                 Text(
-                    text = "If you are Interested in Learning how to create an ",
+                    text = userAssistanceLinkDesc,
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                     style = TextStyle(
                         color = Color.Black,
-                        fontSize = 14.sp
-                    )
-                )
-                Text(
-                    text = "account on Flashcall and how it works.",
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    style = TextStyle(
-//                        textDecoration = TextDecoration.Underline,
-                        color = Color.Black,
-//                    fontWeight = FontWeight.Bold,
                         fontSize = 14.sp
                     )
                 )
                 Text(
                     text = "please click here",
-
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .clickable {
-
+                            val urlIntent = Intent(Intent.ACTION_VIEW, Uri.parse(userAssistanceLink+""))
+                            context.startActivity(urlIntent)
                         }, style = TextStyle(
                         textDecoration = TextDecoration.Underline,
                         color = MainColor,

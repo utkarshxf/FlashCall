@@ -9,7 +9,6 @@ import javax.inject.Inject
 class GetMessageUseCase @Inject constructor(
     private val chatRepository: ChatRepository
 ) {
-
     operator fun invoke(chatId: String): Flow<Resource<List<MessageDataClass>>> =
         chatRepository.getMessages(chatId)
 }

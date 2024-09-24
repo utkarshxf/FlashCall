@@ -51,7 +51,6 @@ class RegistrationViewModel @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
-
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences("user_prefs1", Context.MODE_PRIVATE)
 
@@ -571,11 +570,38 @@ class RegistrationViewModel @Inject constructor(
             true
         }
     }
+    fun getIsPaymentDetails(): Boolean{
+        return if(userPreferencesRepository.getPaymentSettings().isPayment){
+            false
+        }else{
+            true
+        }
+    }
 
+    var userAssistanceLinkState by mutableStateOf(UserAssistanceLinkState())
+    fun getUserAssistanceLink(){
+        userAssistanceLinkState = userAssistanceLinkState.copy(linkUrl = userPreferencesRepository.getUserAssistanceLink(), linkDesc = userPreferencesRepository.getUserAssistanceLinkDesc())
+        viewModelScope.launch {
+            repository.getUserAssistanceLink("https://backend.flashcall.me/api/v1/others/getStaticLink").collect{ response ->
+                if(response.link != null && response.description!= null){
+                    userPreferencesRepository.saveUserAssistanceLink(response.link!!)
+                    userPreferencesRepository.saveUserAssistanceLinkDesc(response.description!!)
+                    userAssistanceLinkState = userAssistanceLinkState.copy(linkUrl = userPreferencesRepository.getUserAssistanceLink(), linkDesc = userPreferencesRepository.getUserAssistanceLinkDesc())
+                }
+                Log.d("UserAssistaceLink","response: $response")
+            }
+        }
+    }
 
-
-
+    fun getMyBio(): String{
+        return userPreferencesRepository.getStoredUserData(PreferencesKey.Bio.key)+""
+    }
 }
+
+data class UserAssistanceLinkState(
+    var linkUrl: String? = null,
+    var linkDesc: String? = null
+)
 
 data class ShareLinkState(
     var shareLink: String = "",

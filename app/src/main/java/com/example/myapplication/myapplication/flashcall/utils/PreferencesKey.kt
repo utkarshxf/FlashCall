@@ -28,4 +28,11 @@ sealed class PreferencesKey(val key: String) {
     data object KYC : PreferencesKey("KYC")
     data object TodaysWalletBalance : PreferencesKey("TodaysWalletBalance")
     data object ShareLink : PreferencesKey("ShareLink")
+    data object UserAssistanceLink : PreferencesKey("UserAssistanceLink")
+    data object UserAssistanceLinkDesc : PreferencesKey("UserAssistanceLinkDesc")
+    data object PaymentMode : PreferencesKey("PaymentMode")
+    data object VPA : PreferencesKey("VPA")
+    data object AccountNumber : PreferencesKey("AccountNumber")
+    data object IFSC : PreferencesKey("IFSC")
+    data object IsPayment : PreferencesKey("IsPayment")
 }

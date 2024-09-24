@@ -6,6 +6,7 @@ import com.example.myapplication.myapplication.flashcall.Data.model.Resource
 import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.ChatDataClass
 import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.ChatRequestDataClass
 import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.MessageDataClass
+import com.google.firebase.Timestamp
 //import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.toMap
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FieldValue
@@ -54,6 +55,49 @@ class ChatRepository @Inject constructor(
         }
     }.flowOn(Dispatchers.IO)
 
+    fun fetchChatData(chatId: String): Flow<ChatDataClass?> = callbackFlow {
+        val listenerRegistration = firestore.collection("chats").document(chatId)
+            .addSnapshotListener { documentSnapshot, e ->
+                if (e != null) {
+                    Log.e("ChatViewModel", "Error fetching chat data", e)
+                    close(e) // Close the flow if there's an error
+                    return@addSnapshotListener
+                }
+
+                if (documentSnapshot != null && documentSnapshot.exists()) {
+                    val data = documentSnapshot.data ?: return@addSnapshotListener
+                    val chat = ChatDataClass(
+                        clientId = data["clientId"] as? String ?: "",
+                        clientName = data["clientName"] as? String,
+                        clientBalance = data["clientBalance"] as? Double,
+                        creatorId = data["creatorId"] as? String ?: "",
+                        endedAt = data["endedAt"] as? Long,
+                        maxChatDuration = data["maxChatDuration"] as? Int,
+                        startedAt = data["startedAt"] as? Long,
+                        status = data["status"] as? String,
+                        timeLeft = data["timeLeft"] as? Double,
+                        timeUtilized = data["timeUtilized"] as? Double,
+                        messages = (data["messages"] as? List<Map<String, Any>> ?: emptyList()).map { messageData ->
+                            MessageDataClass(
+                                text = messageData["text"] as? String,
+                                audio = messageData["audio"] as? String,
+                                img = messageData["img"] as? String,
+                                createdAt = messageData["createdAt"] as? Long,
+                                seen = messageData["seen"] as? Boolean ?: false,
+                                senderId = messageData["senderId"] as? String
+                            )
+                        }
+                    )
+                    // Emit the chat data to the flow collector
+                    trySend(chat)
+                } else {
+                    trySend(null) // Emit null if document doesn't exist
+                }
+            }
+
+        // Clean up the listener when flow collection is done
+        awaitClose { listenerRegistration.remove() }
+    }
     fun createChat(chatId : String, clientId : String) {
 
         val chatData = hashMapOf(
@@ -73,17 +117,21 @@ class ChatRepository @Inject constructor(
     private suspend fun uploadMedia(mediaUri: Uri, isImage: Boolean) : String {
 
         val fileName = if(isImage) "images/${UUID.randomUUID()}" else "audio/${UUID.randomUUID()}"
-
         val ref = storage.reference.child(fileName)
-
+        Log.v("message.audio" , mediaUri.toString())
         val uploadTask = ref.putFile(mediaUri)
-
         return uploadTask.await().storage.downloadUrl.await().toString()
-
     }
-
+    private fun sliceUntilMp3(input: String): String {
+        val index = input.indexOf(".mp3")
+        return if (index != -1) {
+            input.substring(0, index + 4) // Include ".mp3" in the result
+        } else {
+            input // Return the original string if ".mp3" is not found
+        }
+    }
     suspend fun sendMessage(chatId: String, message: MessageDataClass) {
-
+        Log.v("audioFlowuseCase12345s", message.toString())
         var updatedMessage = message
 
         try {
@@ -103,13 +151,10 @@ class ChatRepository @Inject constructor(
                 val audioUrl = uploadMedia(Uri.parse(message.audio), isImage = false)
                 updatedMessage = message.copy(audio = audioUrl)
             }
-//            logAllDocumentsInCollection("chats")
             // Send the message
             firestore.collection("chats")
                 .document(chatId)
                 .update("messages", FieldValue.arrayUnion(updatedMessage)).await()
-
-
 
         } catch (e: Exception) {
             Log.e("FirestoreError", "Failed to send message: ${e.message}")
@@ -194,9 +239,7 @@ class ChatRepository @Inject constructor(
 
                         if(message == messageToMarkSeen) message.copy(seen = true) else message
                     }
-
                     firestore.collection("chats").document(chatId).update("messages", updatedMessages)
-
                 }
 
             }
