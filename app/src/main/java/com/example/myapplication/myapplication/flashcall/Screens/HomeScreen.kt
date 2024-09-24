@@ -24,13 +24,10 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -64,7 +61,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
@@ -84,7 +80,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
@@ -106,7 +101,6 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.SwitchColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
 import com.example.myapplication.myapplication.flashcall.ui.theme.helveticaFontFamily
 import com.example.myapplication.myapplication.flashcall.utils.LoadingIndicator
-import kotlin.math.roundToInt
 
 //var uriImg: Uri? = null
 var creatorUid: String = ""
@@ -386,7 +380,7 @@ fun HomeScreenBottom(
                     .padding(10.dp)
             ) {
                 Row(modifier = Modifier.fillMaxWidth()) {
-                    CopyBar(homeNavController, username = username)
+                    CopyBar(viewModel)
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -418,10 +412,7 @@ fun HomeScreenBottom(
                             viewModel.updateUserLinks(LinkData(additionalLinksList[i].title,
                                 additionalLinksList[i].url, additionalLinksList[i].isActive))
                         }, edit = {
-
                             viewModel.showEditingAdditionalLayout(true, i)
-//                            viewModel.updateUserLinks(LinkData(additionalLinksList[i].title,
-//                                additionalLinksList[i].url, additionalLinksList[i].isActive))
                         }) {
                             viewModel.deleteAdditionalLinks(body = additionalLinksList[i])
                         }
@@ -529,10 +520,16 @@ fun addExtraLink(
 }
 
 @Composable
-fun CopyBar(homeNavController: NavController, username: String) {
-    var copyText by remember {
-        mutableStateOf("https://www.flashcall.vercel.app/expert/$creatorUserName/$creatorUid")
+fun CopyBar(viewModel: RegistrationViewModel) {
+    LaunchedEffect(key1 = Unit) {
+        viewModel.getShareLink()
     }
+    var shareLinkState = viewModel.shareLinkState
+
+    var copyText by remember {
+        mutableStateOf("")
+    }
+    copyText = shareLinkState.shareLink
     var context = LocalContext.current
 
     Row(
@@ -590,9 +587,7 @@ fun CopyBar(homeNavController: NavController, username: String) {
         Spacer(modifier = Modifier.width(8.dp))
 
         ShareTextButton(
-            textToShare = "https://www.flashcall.me/nitra-sahgal-55-consultant",
-            homeNavController = homeNavController,
-            username = username
+            shareLink = copyText
         )
     }
 }
@@ -1205,7 +1200,8 @@ fun ImageFromUrl(imageUrl: String) {
         contentDescription = null,
         modifier = Modifier
             .size(120.dp)  // Ensure a consistent size
-            .clip(CircleShape),  // Clip to a circle
+            .clip(CircleShape)
+            .border(1.dp, color = MainColor, shape = CircleShape),  // Clip to a circle
         contentScale = ContentScale.Crop  // Crop the image to fit within the circle
     )
 }
@@ -1226,8 +1222,7 @@ fun shareLink(url: String) {
 }
 
 @Composable
-fun ShareTextButton(textToShare: String, homeNavController: NavController, username: String) {
-    val context = LocalContext.current
+fun ShareTextButton(shareLink: String) {
     val launcher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -1236,9 +1231,6 @@ fun ShareTextButton(textToShare: String, homeNavController: NavController, usern
 
         }
 
-    var shareText by remember {
-        mutableStateOf("https://flashcall.me/creator/$username")
-    }
     Image(
         painter = painterResource(id = R.drawable.share_icon),
         modifier = Modifier
@@ -1248,7 +1240,7 @@ fun ShareTextButton(textToShare: String, homeNavController: NavController, usern
                 val sendIntent: Intent = Intent().apply {
                     action = Intent.ACTION_SEND
                     putExtra(
-                        Intent.EXTRA_TEXT, "$shareText"
+                        Intent.EXTRA_TEXT, shareLink
                     )
                     type = "text/plain"
                 }

@@ -2,6 +2,9 @@ package com.example.myapplication.myapplication.flashcall.Screens
 
 //import com.example.myapplication.myapplication.flashcall.hyperKycLauncher
 import android.app.Activity
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -18,12 +21,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,9 +48,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.multidex.BuildConfig
 import androidx.navigation.NavController
 import co.hyperverge.hyperkyc.data.models.HyperKycConfig
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
@@ -53,9 +61,12 @@ import com.example.myapplication.myapplication.flashcall.ViewModel.Authenticatio
 import com.example.myapplication.myapplication.flashcall.ViewModel.RegistrationViewModel
 import com.example.myapplication.myapplication.flashcall.ui.theme.BorderColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.BorderColor2
+import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.ProfileBackground
 import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryText
 import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
+import com.example.myapplication.myapplication.flashcall.utils.PreferencesKey
+import com.example.myapplication.myapplication.flashcall.utils.getAppVersionName
 
 @Composable
 fun ProfileScreen(
@@ -65,7 +76,10 @@ fun ProfileScreen(
     authenticationViewModel: AuthenticationViewModel = hiltViewModel()
 
 ) {
-    val isKyc = true
+    var isKyc by remember {
+        mutableStateOf(registrationViewModel.getIsKycRequired())
+    }
+    val isPaymentDetails = true
     val context = LocalContext.current
     val uid = registrationViewModel.getStoredUserData("_id")
     val userData = authenticationViewModel.getUserFromPreferences(context)
@@ -73,6 +87,7 @@ fun ProfileScreen(
     // Use the Elvis operator to simplify null checks and assignment
     val name = userData?.fullName ?: registrationViewModel.getStoredUserData("fullName")
     val profilePic = userData?.photo ?: registrationViewModel.getStoredUserData("photo")
+    val profession = userData?.profession ?: registrationViewModel.getStoredUserData(PreferencesKey.Profession.key)
 
     // Remember state values
     var profilePicState by remember { mutableStateOf(profilePic) }
@@ -84,11 +99,12 @@ fun ProfileScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
+                .verticalScroll(rememberScrollState())
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(180.dp)
+                    .height(170.dp)
             ) {
                 Column(
                     modifier = Modifier.fillMaxSize()
@@ -112,7 +128,7 @@ fun ProfileScreen(
                         Box(
                             modifier = Modifier
                                 .size(100.dp)
-                                .padding(6.dp)
+//                                .padding(6.dp)
                         ) {
                             ImageFromUrl(imageUrl = profilePic!!)
                         }
@@ -131,7 +147,7 @@ fun ProfileScreen(
                             )
 
                             Text(
-                                text = "Astrologer", style = TextStyle(
+                                text = profession+"", style = TextStyle(
                                     fontFamily = arimoFontFamily,
                                     fontWeight = FontWeight.Black,
                                     fontSize = 16.sp,
@@ -142,9 +158,8 @@ fun ProfileScreen(
                 }
             }
 
-
             HorizontalDivider(
-                thickness = 10.dp, color = BorderColor2
+                thickness = 1.dp, color = BorderColor2
             )
 
             Spacer(modifier = Modifier.height(30.dp))
@@ -164,11 +179,11 @@ fun ProfileScreen(
                 .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
                 .clickable {
                     navController.navigate(ScreenRoutes.KycScreen.route)
-
                 }) {
 
                 Column(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -215,8 +230,6 @@ fun ProfileScreen(
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
-
-
                 }
                 if (isKyc) {
                     Spacer(modifier = Modifier.height(8.dp))
@@ -233,48 +246,6 @@ fun ProfileScreen(
             }
 
             // Additional Boxes for Support, Payment Settings, etc.
-
-            Spacer(modifier = Modifier.height(15.dp))
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(60.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color.White)
-                    .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(20.dp)
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.support_icon),
-                        contentDescription = null
-                    )
-
-                    Text(
-                        text = "Support",
-                        modifier = Modifier.padding(start = 10.dp),
-                        color = Color.Black,
-                        style = TextStyle(
-                            fontFamily = arimoFontFamily,
-                            fontWeight = FontWeight.Black,
-                            fontSize = 18.sp
-                        )
-                    )
-
-                    Spacer(modifier = Modifier.weight(1f))
-
-                    Icon(
-                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                        contentDescription = "Next",
-                        tint = Color.Black,
-                        modifier = Modifier.size(36.dp)
-                    )
-                }
-            }
             Spacer(modifier = Modifier.height(15.dp))
 
             Box(modifier = Modifier
@@ -322,139 +293,260 @@ fun ProfileScreen(
 
             Box(modifier = Modifier
                 .fillMaxWidth()
-                .height(60.dp)
+                .height(if (isPaymentDetails) 75.dp else 60.dp)
                 .clip(RoundedCornerShape(10.dp))
                 .background(Color.White)
                 .clickable {
                     navController.navigate(ScreenRoutes.PaymentSettings.route)
                 }
                 .border(1.dp, BorderColor, RoundedCornerShape(10.dp))) {
-                Row(
+                Column(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(20.dp)
+                        .fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.payment_icon),
-                        contentDescription = null
-                    )
-
-                    Text(
-                        text = "Payment Settings",
-                        color = Color.Black,
-                        modifier = Modifier.padding(start = 10.dp),
-                        style = TextStyle(
-                            fontFamily = arimoFontFamily,
-                            fontWeight = FontWeight.Black,
-                            fontSize = 18.sp
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(20.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.payment_icon),
+                            contentDescription = null
                         )
-                    )
 
-                    Spacer(modifier = Modifier.weight(1f))
+                        Text(
+                            text = "Payment Settings",
+                            color = Color.Black,
+                            modifier = Modifier.padding(start = 10.dp),
+                            style = TextStyle(
+                                fontFamily = arimoFontFamily,
+                                fontWeight = FontWeight.Black,
+                                fontSize = 18.sp
+                            )
+                        )
 
-                    Icon(
-                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                        contentDescription = "Next",
-                        tint = Color.Black,
-                        modifier = Modifier.size(36.dp)
+                        Spacer(modifier = Modifier.weight(1f))
+
+                        if(isPaymentDetails){
+                            Image(
+                                painter = painterResource(id = R.drawable.exclamation1),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .height(24.dp)
+                                    .width(24.dp)
+                            )
+                        }
+
+                        Icon(
+                            Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                            contentDescription = "Next",
+                            tint = Color.Black,
+                            modifier = Modifier.size(36.dp)
+                        )
+                    }
+
+                }
+                if (isPaymentDetails) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Please complete your payment details",
+                        color = Color.Red,
+                        fontSize = 12.sp,
+                        modifier = Modifier
+                            .padding(start = 45.dp, top = 50.dp)
+                            .fillMaxWidth()
+
                     )
                 }
+
             }
 
             Spacer(modifier = Modifier.height(15.dp))
 
-            Box(
-                modifier = Modifier
+
+            // Logout And Support
+            var isLogout by remember {
+                mutableStateOf(false)
+            }
+            Row{
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(60.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.White)
+                        .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
+                        .weight(1f)
+                        .clickable {
+                            navController.navigate(ScreenRoutes.Support.route)
+                        }
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(20.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.support_icon),
+                            contentDescription = null
+                        )
+
+                        Text(
+                            text = "Support",
+                            modifier = Modifier.padding(start = 10.dp),
+                            color = Color.Black,
+                            style = TextStyle(
+                                fontFamily = arimoFontFamily,
+                                fontWeight = FontWeight.Black,
+                                fontSize = 18.sp
+                            )
+                        )
+
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                }
+                
+                Spacer(modifier = Modifier.width(10.dp))
+
+                Box(modifier = Modifier
                     .fillMaxWidth()
                     .height(60.dp)
                     .clip(RoundedCornerShape(10.dp))
                     .background(Color.White)
                     .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(20.dp)
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.terms_icon),
-                        contentDescription = null
-                    )
-
-                    Text(
-                        text = "Terms & Conditions",
-                        color = Color.Black,
-                        modifier = Modifier.padding(start = 10.dp),
-                        style = TextStyle(
-                            fontFamily = arimoFontFamily,
-                            fontWeight = FontWeight.Black,
-                            fontSize = 18.sp
+                    .weight(1f)
+                    .clickable {
+                        isLogout = !isLogout
+                    }) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(20.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.logout_icon),
+                            contentDescription = null
                         )
-                    )
 
-                    Spacer(modifier = Modifier.weight(1f))
+                        Text(
+                            text = "Log Out",
+                            color = Color.Black,
+                            modifier = Modifier.padding(start = 10.dp),
+                            style = TextStyle(
+                                fontFamily = arimoFontFamily,
+                                fontWeight = FontWeight.Black,
+                                fontSize = 18.sp
+                            )
+                        )
 
-                    Icon(
-                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                        contentDescription = "Next",
-                        tint = Color.Black,
-                        modifier = Modifier.size(36.dp)
-                    )
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
                 }
             }
 
+
             Spacer(modifier = Modifier.height(15.dp))
 
-            val activity = (LocalContext.current as? Activity)
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .height(60.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(Color.White)
-                .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
-                .clickable {
-//                        activity?.finish()
-                    authenticationViewModel.deleteTokenFromPreferences()
 
-                    // Navigate to the login screen or some other screen
+
+
+            //Logout Confirmation Dialog
+            if(isLogout){
+                LogoutConfirmationDialog(cancel = {
+                    isLogout = !isLogout
+                }, confirm = {
+                    authenticationViewModel.deleteTokenFromPreferences()
                     navController.navigate(ScreenRoutes.SignUpScreen.route) {
                         popUpTo(0) { inclusive = true } // Clear the backstack
                     }
-                }) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(20.dp)
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.logout_icon),
-                        contentDescription = null
-                    )
+                    isLogout = !isLogout
+                })
+            }
 
-                    Text(
-                        text = "Log Out",
-                        color = Color.Black,
-                        modifier = Modifier.padding(start = 10.dp),
-                        style = TextStyle(
-                            fontFamily = arimoFontFamily,
-                            fontWeight = FontWeight.Black,
-                            fontSize = 18.sp
-                        )
-                    )
+            AppVersionAndPrivacyPolicy(navController)
 
-                    Spacer(modifier = Modifier.weight(1f))
+        }
+    }
+}
 
-                    Icon(
-                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                        contentDescription = "Next",
-                        tint = Color.Black,
-                        modifier = Modifier.size(36.dp)
-                    )
+@Composable
+fun LogoutConfirmationDialog(confirm: () -> Unit, cancel: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = { cancel() }, // Dismiss the dialog on outside touch or back press
+        title = {
+            Text(text = "Logout Confirmation")
+        },
+        text = {
+            Text("Are you sure you want to log out?")
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    confirm()
                 }
+            ) {
+                Text("Confirm")
+            }
+        },
+        dismissButton = {
+            Button(
+                onClick = { cancel()}
+            ) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+@Composable
+fun AppVersionAndPrivacyPolicy(navController: NavController) {
+    val context = LocalContext.current
+    val versionCode = getAppVersionName(context)
+    Box(modifier = Modifier.fillMaxWidth()) {
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Column {
+                Text(
+                    text = "",
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    style = TextStyle(
+                        color = Color.Black,
+                        fontSize = 14.sp
+                    )
+                )
+                Text(
+                    text = "version $versionCode",
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    style = TextStyle(
+                        color = Color.Black,
+                        fontSize = 14.sp
+                    )
+                )
+                Text(
+                    text = "Terms & Conditions",
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .clickable {
+                            navController.navigate(ScreenRoutes.TermAndCondition.route)
+                        }, style = TextStyle(
+                        textDecoration = TextDecoration.Underline,
+                        color = MainColor,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
+                    )
+                )
             }
         }
     }
 }
+
 
 
 //@Preview

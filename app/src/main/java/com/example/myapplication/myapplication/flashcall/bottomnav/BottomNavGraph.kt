@@ -17,6 +17,8 @@ import com.example.myapplication.myapplication.flashcall.Screens.InCallScreen
 import com.example.myapplication.myapplication.flashcall.Screens.IncomingCallScreen
 import com.example.myapplication.myapplication.flashcall.Screens.OngoingVideoCallScreen
 import com.example.myapplication.myapplication.flashcall.Screens.ProfileScreen
+import com.example.myapplication.myapplication.flashcall.Screens.Support
+import com.example.myapplication.myapplication.flashcall.Screens.TermAndCondition
 import com.example.myapplication.myapplication.flashcall.Screens.wallet.WalletScreen
 import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.RegistrationViewModel
@@ -75,6 +77,12 @@ fun BottomNavGraph(
         }
         composable(route = ScreenRoutes.EditScreen.route) {
             EditProfileScreen(navController = homeNavController)
+        }
+        composable(route = ScreenRoutes.TermAndCondition.route) {
+            TermAndCondition()
+        }
+        composable(route = ScreenRoutes.Support.route) {
+            Support()
         }
     }
 }

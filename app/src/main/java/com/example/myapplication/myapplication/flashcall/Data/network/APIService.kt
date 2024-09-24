@@ -12,6 +12,7 @@ import com.example.myapplication.myapplication.flashcall.Data.model.Request
 import com.example.myapplication.myapplication.flashcall.Data.model.ResendOTPResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.ResendRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.SendOTPResponseX
+import com.example.myapplication.myapplication.flashcall.Data.model.ShareLinkResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.UpdateUserRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.UpdateUserResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.UserDetailsResponse
@@ -196,6 +197,13 @@ interface APIService {
     suspend fun deleteAdditionalLink(
         @Body body: DeleteAdditionalLinks
     ):Response < DeletedAdditionalLinksResponse>
+
+
+
+    @GET
+    suspend fun getShareLink(
+        @Url url: String
+    ):Response < ShareLinkResponse>
 
 
 

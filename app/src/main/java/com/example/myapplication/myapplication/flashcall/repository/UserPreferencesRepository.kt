@@ -212,5 +212,15 @@ class UserPreferencesRepository @Inject constructor(@ApplicationContext private 
         return sharedPreferences.getInt(PreferencesKey.TodaysWalletBalance.key,0)
     }
 
+    fun getShareLink(): String{
+        return sharedPreferences.getString(PreferencesKey.ShareLink.key, "")+""
+    }
+    fun saveShareLink(shareLink: String){
+        sharedPreferences.edit().apply{
+            putString(PreferencesKey.ShareLink.key,shareLink)
+            apply()
+        }
+    }
+
 
 }

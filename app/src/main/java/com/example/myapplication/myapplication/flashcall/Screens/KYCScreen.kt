@@ -69,6 +69,7 @@ import com.composeuisuite.ohteepee.configuration.OhTeePeeConfigurations
 import com.example.myapplication.myapplication.flashcall.R
 import com.example.myapplication.myapplication.flashcall.ViewModel.KycViewModel
 import com.example.myapplication.myapplication.flashcall.ui.theme.BorderColor
+import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.OTPBackground
 import com.example.myapplication.myapplication.flashcall.ui.theme.OTPBorder
 import com.example.myapplication.myapplication.flashcall.ui.theme.ProfileBackground
@@ -127,23 +128,15 @@ fun KYCScreen(
             val panState = viewModel.panState
             val aadharState = viewModel.aadharState
             val livelinessState = viewModel.livelinessState
-            val nameMatchState = viewModel.nameMatchState
-            val faceMatchState = viewModel.faceMatchState
-            if(panState.panVerified.verified && aadharState.aadharVerified.verified && livelinessState.livelinessVerified.verified){
-                if(!nameMatchState.nameMatchVerified){
-                    viewModel.nameMatch()
-                }
-                if(!faceMatchState.faceMatchVerified){
-                    viewModel.faceMatch()
-                }
-            }
-            if(panState.panVerified.verified
-                && aadharState.aadharVerified.verified
-                && livelinessState.livelinessVerified.verified
-                && nameMatchState.nameMatchVerified && faceMatchState.faceMatchVerified){
+            if(panState.isPanVerified && aadharState.isAadharVerified && livelinessState.isLivelinessVerified){
                 viewModel.makeKycDone()
-                Log.d("KycStatusUpdated","Kyc Verified Successfully")
+                Row (modifier = Modifier.fillMaxWidth().padding(top = 15.dp), horizontalArrangement = Arrangement.Center){
+                    Text("KYC Completed", color = MainColor, textAlign = TextAlign.Center, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                }
+
             }
+
+
 
 
         }
@@ -154,7 +147,7 @@ fun KYCScreen(
 fun PanKYC(vm: KycViewModel) {
     var isExpand by remember { mutableStateOf(false) }
     var panState = vm.panState
-    val iconResId = if(panState.panVerified?.verified!!){
+    val iconResId = if(panState.isPanVerified){
         R.drawable.baseline_verified_24
     }else{
         R.drawable.exclamation1
@@ -185,7 +178,7 @@ fun PanKYC(vm: KycViewModel) {
                             .width(24.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    if (!panState.panVerified?.verified!!) {
+                    if (!panState.isPanVerified) {
                         Icon(
                             if (isExpand) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                             contentDescription = if (isExpand) "Collapse" else "Expand",
@@ -199,7 +192,7 @@ fun PanKYC(vm: KycViewModel) {
                 }
             }
 
-            if(!panState.panVerified?.verified!!){
+            if(!panState.isPanVerified){
                 if (isExpand ) {
                     Spacer(modifier = Modifier.height(16.dp))
                     var panNumber by remember { mutableStateOf("") }
@@ -238,7 +231,7 @@ fun PanKYC(vm: KycViewModel) {
 fun AadharKYC(vm: KycViewModel){
     var expanded by remember { mutableStateOf(false) }
     var aadharState = vm.aadharState
-    val iconResId = if(aadharState.aadharVerified?.verified!!){
+    val iconResId = if(aadharState.isAadharVerified){
         R.drawable.baseline_verified_24
     }else{
         R.drawable.exclamation1
@@ -268,7 +261,7 @@ fun AadharKYC(vm: KycViewModel){
                             .width(24.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    if(!aadharState.aadharVerified.verified){
+                    if(!aadharState.isAadharVerified){
                         Icon(
                             if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                             contentDescription = if (expanded) "Collapse" else "Expand",
@@ -280,7 +273,7 @@ fun AadharKYC(vm: KycViewModel){
                 }
             }
 
-            if(!aadharState.aadharVerified.verified){
+            if(!aadharState.isAadharVerified){
                 if (expanded) {
                     Spacer(modifier = Modifier.height(16.dp))
                     var aadhaarNumber by remember { mutableStateOf("") }
@@ -470,7 +463,7 @@ fun AadharKYC(vm: KycViewModel){
 fun LivelinessKYC(vm: KycViewModel){
     var expanded by remember { mutableStateOf(false) }
     var livelinessState = vm.livelinessState
-    val iconResId = if(livelinessState.livelinessVerified.verified){
+    val iconResId = if(livelinessState.isLivelinessVerified){
         R.drawable.baseline_verified_24
     }else{
         R.drawable.exclamation1
@@ -501,7 +494,7 @@ fun LivelinessKYC(vm: KycViewModel){
                             .width(24.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    if(!livelinessState.livelinessVerified?.verified!!){
+                    if(!livelinessState.isLivelinessVerified){
                         Icon(
                             if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                             contentDescription = if (expanded) "Collapse" else "Expand",
@@ -514,7 +507,7 @@ fun LivelinessKYC(vm: KycViewModel){
                 }
             }
 
-            if(!livelinessState.livelinessVerified?.verified!!){
+            if(!livelinessState.isLivelinessVerified){
                 if (expanded) {
                     Spacer(modifier = Modifier.height(16.dp))
                     var fileName by remember { mutableStateOf("No file chosen") }

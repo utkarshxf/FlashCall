@@ -43,6 +43,8 @@ import com.example.myapplication.myapplication.flashcall.Screens.SelectSpecialit
 import com.example.myapplication.myapplication.flashcall.Screens.SignUpOTP
 import com.example.myapplication.myapplication.flashcall.Screens.SignUpScreen
 import com.example.myapplication.myapplication.flashcall.Screens.SplashScreen
+import com.example.myapplication.myapplication.flashcall.Screens.Support
+import com.example.myapplication.myapplication.flashcall.Screens.TermAndCondition
 import com.example.myapplication.myapplication.flashcall.Screens.chats.ChatRequestScreen
 import com.example.myapplication.myapplication.flashcall.Screens.chats.ChatRoomScreen
 import com.example.myapplication.myapplication.flashcall.Screens.feedback.FeedbackScreen
@@ -238,6 +240,12 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
         }
         composable(route = ScreenRoutes.KycScreen.route) {
             KYCScreen(navController = navController, hyperKycLauncher)
+        }
+        composable(route = ScreenRoutes.TermAndCondition.route) {
+            TermAndCondition()
+        }
+        composable(route = ScreenRoutes.Support.route) {
+            Support()
         }
     }
 }

@@ -27,4 +27,5 @@ sealed class PreferencesKey(val key: String) {
     data object ChatRate : PreferencesKey("chatRate")
     data object KYC : PreferencesKey("KYC")
     data object TodaysWalletBalance : PreferencesKey("TodaysWalletBalance")
+    data object ShareLink : PreferencesKey("ShareLink")
 }
