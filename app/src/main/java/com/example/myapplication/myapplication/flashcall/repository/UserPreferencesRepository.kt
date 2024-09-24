@@ -124,6 +124,7 @@ class UserPreferencesRepository @Inject constructor(@ApplicationContext private 
         }
     }
 
+
     fun getUser(): IsUserCreatedResponse? {
         val userId = sharedPreferences.getString(PreferencesKey.UserId.key, null) ?: return null
         val userData = IsUserCreatedResponse(
@@ -211,6 +212,5 @@ class UserPreferencesRepository @Inject constructor(@ApplicationContext private 
     fun getTodaysWalletBalance(): Int{
         return sharedPreferences.getInt(PreferencesKey.TodaysWalletBalance.key,0)
     }
-
 
 }

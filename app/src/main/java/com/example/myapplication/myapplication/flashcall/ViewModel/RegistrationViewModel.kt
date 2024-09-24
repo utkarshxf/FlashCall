@@ -552,8 +552,6 @@ class RegistrationViewModel @Inject constructor(
     }
 
 
-
-
 }
 
 data class EditAdditionalLink(

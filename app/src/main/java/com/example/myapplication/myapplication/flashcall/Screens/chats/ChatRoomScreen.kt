@@ -1,65 +1,52 @@
 package com.example.myapplication.myapplication.flashcall.Screens.chats
 
+//import androidx.compose.ui.R
+//import com.example.myapplication.myapplication.flashcall.ViewModel.chats.WakeLockManager
 import android.Manifest
-import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.media.MediaRecorder
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
-import android.util.Log
+import androidx.activity.ComponentActivity
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.animateColor
-import androidx.compose.animation.core.animateDp
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.updateTransition
+import androidx.annotation.OptIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.MicOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
-import com.example.myapplication.myapplication.flashcall.R
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -68,90 +55,119 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
-//import androidx.compose.ui.R
+import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.media3.common.MediaItem
-import androidx.media3.exoplayer.ExoPlayer
-import coil.compose.AsyncImage
-import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.audio.AudioRecorderState
+import androidx.media3.common.util.Log
+import androidx.media3.common.util.UnstableApi
+import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
 import com.example.myapplication.myapplication.flashcall.Data.MessageType
+import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Data.model.Resource
 import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.MessageDataClass
-import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.audio.AudioPlayerState
+import com.example.myapplication.myapplication.flashcall.R
 import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
-import com.example.myapplication.myapplication.flashcall.ViewModel.chats.ChatRequestViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.chats.ChatViewModel
-import com.example.myapplication.myapplication.flashcall.ViewModel.chats.WakeLockManager
-import com.example.myapplication.myapplication.flashcall.ui.theme.ChatBackground
-import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
-import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryText
-import com.example.myapplication.myapplication.flashcall.ui.theme.TimerBackground
 import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.coroutines.delay
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.Timer
+import java.util.TimerTask
 
-
-private const val REQUEST_RECORD_AUDIO_PERMISSION = 200
 @Composable
 fun ChatRoomScreen(
+    navController: NavController,
     chatViewModel: ChatViewModel = hiltViewModel(),
-//    chatRequestViewModel: ChatRequestViewModel = hiltViewModel(),
     authenticationViewModel: AuthenticationViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val userData = authenticationViewModel.getUserFromPreferences(context)
     val uid = userData?._id
-    val name = userData?.fullName
     val messages = chatViewModel.messages.collectAsState().value
     var messageText by remember { mutableStateOf("") }
-    var imagePicker by remember { mutableStateOf(false) }
-    var chatImageUri by rememberSaveable { mutableStateOf("") }
-    val isRecording by chatViewModel.isRecording.collectAsState()
-    val recordedAudioUri by chatViewModel.recordedAudioUri.collectAsState()
-    var recorder: MediaRecorder? = null
-    var currentRecordedFile: File? = null
     val chatData by chatViewModel.chatData.collectAsState()
-
-    if (isRecording) {
-        Text(text = "Recording is active...")
-    } else {
-        Text(text = "No recording in progress.")
-    }
-
-    val launcher = rememberLauncherForActivityResult(
+    val callEnded by chatViewModel.endedCall.collectAsState()
+    val listState = rememberLazyListState()
+    var previousSize = listState.layoutInfo.totalItemsCount
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    var cameraImageUri by remember { mutableStateOf<Uri?>(null) }
+    var micRecordingUri by remember { mutableStateOf<Uri?>(null) }
+    val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        uri?.let {
-            chatImageUri = it.toString()
+        imageUri = uri
+    }
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success) {
+            imageUri = cameraImageUri
         }
-        chatViewModel.onImageSelected(uri)
+    }
+    LaunchedEffect(messages) {
+        if (listState.layoutInfo.totalItemsCount > previousSize) listState.animateScrollToItem(
+            listState.layoutInfo.totalItemsCount - 1
+        )
+        previousSize = listState.layoutInfo.totalItemsCount
+    }
+    LaunchedEffect(callEnded) {
+        delay(3000)
+        if (callEnded) {
+            navController.navigate(ScreenRoutes.MainScreen.route) {
+                popUpTo(ScreenRoutes.ChatRoomScreen.route) { inclusive = true }
+            }
+        }
+    }
+    DisposableEffect(Unit) {
+        val callback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                chatViewModel.endChat {
+                    navController.navigate(ScreenRoutes.MainScreen.route) {
+                        popUpTo(ScreenRoutes.ChatRoomScreen.route) { inclusive = true }
+                    }
+                }
+            }
+        }
+        val dispatcher = (context as? ComponentActivity)?.onBackPressedDispatcher
+        dispatcher?.addCallback(callback)
+        onDispose {
+            callback.remove()
+        }
     }
 
-
     Surface(
-        color = ChatBackground
+        color = Color(0xFF1E1E1E)
     ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .paint(
+                    painter = painterResource(id = R.drawable.bg_chat_image),
+                    contentScale = ContentScale.Crop
+                )
+                .background(Color(0xff232323).copy(alpha = 0.5f))
+        )
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
@@ -159,61 +175,62 @@ fun ChatRoomScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .wrapContentHeight()
+                    .background(Color(0xFF2C2C2C))
+                    .padding(16.dp)
             ) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Image(
-                        modifier = Modifier.size(50.dp),
-                        painter = painterResource(id = com.example.myapplication.myapplication.flashcall.R.drawable.profile_picture_holder),
+                        modifier = Modifier.size(40.dp),
+                        painter = painterResource(id = R.drawable.profile_picture_holder),
                         contentDescription = "Chat Client Image"
                     )
                     Column(
                         modifier = Modifier
                             .weight(1f)
-                            .padding(start = 16.dp)
+                            .padding(start = 10.dp)
                     ) {
                         Text(
-                            text = "Ongoing Chat with",
-                            style = TextStyle(
+                            text = "On going chat with", style = TextStyle(
                                 color = Color.White,
-                                fontSize = 14.sp,
+                                fontSize = 12.sp,
                                 fontFamily = arimoFontFamily,
-                                fontWeight = FontWeight.Light
+                                fontWeight = FontWeight.Normal
                             )
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = chatData?.clientName.toString(),
-                            style = TextStyle(
+                            text = chatData?.clientName ?: "Naina Talwar", style = TextStyle(
                                 color = Color.White,
-                                fontSize = 22.sp,
+                                fontSize = 18.sp,
                                 fontFamily = arimoFontFamily,
                                 fontWeight = FontWeight.Bold
                             )
                         )
                     }
                     Button(
-                        onClick = { chatViewModel.endChat(chatId = chatData?.clientId.toString()) },
+                        onClick = {
+                            chatViewModel.endChat {
+                                navController.navigate(ScreenRoutes.MainScreen.route) {
+                                    popUpTo(ScreenRoutes.ChatRoomScreen.route) { inclusive = true }
+                                }
+                            }
+                        },
                         modifier = Modifier
-                            .width(120.dp)
-                            .height(50.dp),
-                        shape = RoundedCornerShape(10.dp),
+                            .width(100.dp)
+                            .height(40.dp),
+                        shape = RoundedCornerShape(5.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Red,
-                            contentColor = Color.White
+                            containerColor = Color(0xFFFF4D4F), contentColor = Color.White
                         )
                     ) {
                         Text(
-                            text = "End Chat",
-                            style = TextStyle(
+                            text = "End", style = TextStyle(
                                 color = Color.White,
                                 fontFamily = arimoFontFamily,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp
+                                fontSize = 14.sp
                             )
                         )
                     }
@@ -224,141 +241,157 @@ fun ChatRoomScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(TimerBackground.copy(alpha = 0.1f)),
+                    .background(Color(0xFF800000)),
                 contentAlignment = Alignment.Center
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(TimerBackground.copy(alpha = 0.7f))
-                        .padding(8.dp),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "Time Left: ${chatData?.timeLeft.toString()} ",
-                        style = TextStyle(
-                            fontSize = 16.sp,
-                            color = Color.Red,
-                            fontFamily = arimoFontFamily,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                }
+                Text(
+                    text = "Time Left: ${formatTimeLeft(chatData?.timeLeft ?: 0.0)}",
+                    style = TextStyle(
+                        fontSize = 14.sp,
+                        color = Color.White,
+                        fontFamily = arimoFontFamily,
+                        fontWeight = FontWeight.Normal
+                    ),
+                    modifier = Modifier.padding(vertical = 5.dp)
+                )
             }
 
             // Messages List
-            Column(
-                modifier = Modifier.weight(1f)
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                reverseLayout = false
             ) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth(),
-                    reverseLayout = false // Ensures latest messages are at the bottom
-                ) {
-                    when (messages) {
-                        is Resource.Success<*> -> {
-                            val messageList = messages.data as? List<MessageDataClass> ?: emptyList()
-                            val sortedMessages = messageList.sortedBy { it.createdAt ?: 0 } // Sort messages by timestamp
-                            items(sortedMessages) { message ->
-                                MessageItem(
-                                    message = message,
-                                    creatorId = uid.toString(),
-                                    onMessageSeen = chatViewModel::markMessageAsSeen,
-                                    viewModel = chatViewModel
-                                )
-                            }
-                        }
-                        is Resource.Error -> {
-                            // Handle error
-                        }
-                        is Resource.Loading -> {
-                            // Handle loading state
+                item {
+                    Text(
+                        text = "07 Dec 2024",
+                        style = TextStyle(
+                            color = Color.Gray, fontSize = 12.sp, fontFamily = arimoFontFamily
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        textAlign = TextAlign.Center
+                    )
+                }
+                when (messages) {
+                    is Resource.Success<*> -> {
+                        val messageList = messages.data ?: emptyList()
+                        val sortedMessages = messageList.sortedBy { it.createdAt ?: 0 }
+                        items(sortedMessages) { message ->
+                            MessageItem(
+                                message = message,
+                                creatorId = uid.toString(),
+                                onMessageSeen = chatViewModel::markMessageAsSeen,
+                            )
                         }
                     }
+
+                    is Resource.Error -> {}
+                    is Resource.Loading -> {}
                 }
             }
 
-            // Message Input and Actions
-            var progress by remember { mutableStateOf(false) }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(10.dp)
-                    .background(Color.White)
-                    .clip(RoundedCornerShape(24.dp)),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                OutlinedTextField(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 8.dp),
-                    value = messageText,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
-                    keyboardActions = KeyboardActions(
-                        onSend = {
-                            if (messageText.isNotEmpty()) {
-                                chatViewModel.sendMessage(messageText, MessageType.TEXT)
-                                messageText = ""
-                            }
-                        }
-                    ),
-                    onValueChange = {
-                        messageText = it
-                    },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color.White.copy(alpha = 0.3f),
-                        unfocusedContainerColor = Color.White.copy(alpha = 0.3f),
-                        focusedTextColor = SecondaryText,
-                        unfocusedTextColor = SecondaryText,
-                        unfocusedBorderColor = Color.Transparent,
-                        focusedBorderColor = Color.Transparent
-                    ),
-                    placeholder = {
-                        Text(
-                            text = if (progress) "Recording..." else "Message",
-                            style = TextStyle(
-                                color = SecondaryText,
-                                fontSize = 16.sp,
-                                fontFamily = arimoFontFamily,
-                                fontWeight = FontWeight.Black
-                            )
+            Column {
+                if (imageUri != null) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFF3E3E3E))
+                            .padding(8.dp)
+                    ) {
+                        Image(
+                            painter = rememberAsyncImagePainter(imageUri),
+                            contentDescription = "Selected Image",
+                            modifier = Modifier
+                                .height(100.dp)
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp)),
+                            contentScale = ContentScale.Crop
                         )
-                    },
-                    shape = RoundedCornerShape(32.dp),
-                    trailingIcon = {
-                        Row(
-                            modifier = Modifier.width(70.dp),
-                            horizontalArrangement = Arrangement.SpaceEvenly
+                        IconButton(
+                            onClick = { imageUri = null },
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .background(Color(0x80000000), CircleShape)
                         ) {
                             Icon(
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .clickable { launcher.launch("image/*") },
-                                painter = painterResource(id = R.drawable.attach_file_chat),
-                                contentDescription = "Attach File"
-                            )
-                            Icon(
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .clickable { launcher.launch("camera/*") },
-                                painter = painterResource(id = R.drawable.camera_icon_chat),
-                                contentDescription = "Camera"
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Remove Image",
+                                tint = Color.White
                             )
                         }
                     }
-                )
-
-                AudioRecorderButton(chatViewModel = chatViewModel)
-                if (isRecording) {
-                    Text(text = "Recording...")
                 }
-
-                recordedAudioUri?.let {
-                    // Play or send audio button
-                    Button(onClick = {
-                        chatViewModel.onAudioRecorded(it)
-                    }) {
-                        Text("Send Audio")
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFF2C2C2C))
+                        .padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 8.dp),
+                        value = messageText,
+                        onValueChange = { messageText = it },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = Color(0xFF3E3E3E),
+                            unfocusedContainerColor = Color(0xFF3E3E3E),
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            unfocusedBorderColor = Color.Transparent,
+                            focusedBorderColor = Color.Transparent
+                        ),
+                        placeholder = {
+                            Text(
+                                text = "Message", style = TextStyle(
+                                    color = Color.Gray,
+                                    fontSize = 16.sp,
+                                    fontFamily = arimoFontFamily
+                                )
+                            )
+                        },
+                        shape = RoundedCornerShape(20.dp)
+                    )
+                    Icon(painter = painterResource(id = R.drawable.attach_file_chat),
+                        contentDescription = "Attach File",
+                        tint = Color.Gray,
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable { imagePickerLauncher.launch("image/*") })
+                    Spacer(modifier = Modifier.width(8.dp))
+                    if (messageText.isNotBlank() || imageUri != null) {
+                        IconButton(
+                            onClick = {
+                                if (imageUri != null) {
+                                    chatViewModel.onImageSelected(imageUri!!, messageText)
+                                } else {
+                                    chatViewModel.sendMessage(
+                                        messageContent = messageText,
+                                        messageType = MessageType.TEXT,
+                                        text = null
+                                    )
+                                }
+                                messageText = ""
+                                imageUri = null
+                            },
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(Color(0xFF25D366), CircleShape)
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Send,
+                                contentDescription = "Send Message",
+                                tint = Color.White
+                            )
+                        }
+                    } else {
+                        AudioRecorderButton(chatViewModel)
                     }
                 }
             }
@@ -366,281 +399,257 @@ fun ChatRoomScreen(
     }
 }
 
+fun formatTimeLeft(timeLeftInSeconds: Double): String {
+    val minutes = (timeLeftInSeconds / 60).toInt()
+    val seconds = (timeLeftInSeconds % 60).toInt().toString().padStart(2, '0')
+    return "$minutes:$seconds"
+}
+
+
+@OptIn(UnstableApi::class)
+@Composable
+fun MessageItem(
+    message: MessageDataClass, creatorId: String, onMessageSeen: (MessageDataClass) -> Unit
+) {
+    val isOwnMessage = message.senderId == creatorId
+    val formattedTime = message.createdAt?.let {
+        SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date(it))
+    } ?: ""
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        horizontalAlignment = if (isOwnMessage) Alignment.End else Alignment.Start
+    ) {
+        Box(
+            modifier = Modifier
+                .background(
+                    color = if (isOwnMessage) Color(0xFF25D366) else Color.White,
+                    shape = RoundedCornerShape(10.dp)
+                )
+                .padding(8.dp)
+        ) {
+            Column {
+                Log.e("qwerty", message.toString())
+                if (message.text != null && message.img == null && message.audio == null) {
+                    Text(
+                        text = message.text,
+                        color = if (isOwnMessage) Color.White else Color.Black,
+                        style = LocalTextStyle.current.copy(
+                            fontSize = 16.sp, fontFamily = arimoFontFamily
+                        )
+                    )
+                }
+                if (message.img != null && message.text == null && message.audio == null) {
+                    Image(
+                        painter = rememberAsyncImagePainter(model = message.img),
+                        contentDescription = "Sent image",
+                        modifier = Modifier.size(400.dp, 400.dp),
+                        contentScale = ContentScale.Crop,
+                        alignment = Alignment.Center,
+                    )
+                }
+                if (message.img != null && message.text != null) {
+                    Card {
+                        Image(
+                            painter = rememberAsyncImagePainter(model = message.img),
+                            contentDescription = "Sent image",
+                            modifier = Modifier.size(200.dp),
+                            contentScale = ContentScale.FillBounds,
+                            alignment = Alignment.Center,
+                        )
+                        if (message.text != "") {
+                            Text(
+                                text = message.text,
+                                color = if (isOwnMessage) Color.White else Color.Black,
+                                style = LocalTextStyle.current.copy(
+                                    fontSize = 16.sp, fontFamily = arimoFontFamily
+                                ),
+                                modifier = Modifier.padding(8.dp),
+                            )
+                        }
+
+                    }
+                }
+                if (message.audio != null) {
+                    Text(
+                        text = "🎵 Audio message",
+                        color = if (isOwnMessage) Color.White else Color.Black,
+                        style = LocalTextStyle.current.copy(
+                            fontSize = 16.sp, fontFamily = arimoFontFamily
+                        )
+                    )
+//                        Audio Player Component
+                }
+                Row(
+                    modifier = Modifier.align(Alignment.End),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = formattedTime,
+                        color = if (isOwnMessage) Color.White.copy(alpha = 0.7f) else Color.Gray,
+                        style = LocalTextStyle.current.copy(
+                            fontSize = 10.sp, fontFamily = arimoFontFamily
+                        )
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = if (message.seen == true) "✓✓" else "✓",
+                        color = if (isOwnMessage) Color.White.copy(alpha = 0.7f) else Color.Gray,
+                        style = LocalTextStyle.current.copy(
+                            fontSize = 10.sp, fontFamily = arimoFontFamily
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(message) {
+        if (!isOwnMessage && message.seen != true) {
+            onMessageSeen(message)
+        }
+    }
+}
+
+// UI Button logic
 @Composable
 fun AudioRecorderButton(
     chatViewModel: ChatViewModel
 ) {
-    val isRecording by chatViewModel.isRecording.collectAsState()
-    val context = LocalContext.current
-    val activity = LocalContext.current as? Activity
+    var showRecorder = chatViewModel.isRecording.value
 
     IconButton(
         onClick = {
-            if (isRecording) {
-                chatViewModel.stopRecording()
-                WakeLockManager.releaseWakeLock()
+            showRecorder = !showRecorder
+            if (showRecorder) {
+                chatViewModel.startRecording()
             } else {
-                // Check for permission to record audio
-                if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(
-                        activity!!,
-                        arrayOf(Manifest.permission.RECORD_AUDIO),
-                        REQUEST_RECORD_AUDIO_PERMISSION
-                    )
-                } else {
-                    // Start recording if permission is granted
-                    WakeLockManager.acquireWakeLock(context)
-                    chatViewModel.startRecording()
-                }
+                chatViewModel.stopRecording()
             }
-        }
+        }, modifier = Modifier
+            .size(40.dp)
+            .background(Color(0xFF25D366), CircleShape)
     ) {
         Icon(
-            imageVector = if (isRecording) Icons.Default.Stop else Icons.Default.Mic,
-            contentDescription = if (isRecording) "Stop Recording" else "Start Recording",
-            tint = if (isRecording) Color.Red else Color.Black
+            imageVector = if (showRecorder) Icons.Default.MicOff else Icons.Default.Mic,
+            contentDescription = if (showRecorder) "Stop Recording" else "Start Recording",
+            tint = Color.White
         )
     }
 }
 
+@kotlin.OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun MessageItem(
-    message: MessageDataClass,
-    creatorId: String,
-    onMessageSeen: (MessageDataClass) -> Unit,
-    viewModel: ChatViewModel
-) {
-    val isOwnMessage = message.senderId == creatorId
-    val formattedTime = message.createdAt?.let {
-        SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(it))
-    } ?: ""
+fun AudioRecorder(onStopRecording: (Uri, String) -> Unit) {
+    val context = LocalContext.current
+    var isRecording by remember { mutableStateOf(false) }
+    var recorder: MediaRecorder? by remember { mutableStateOf(null) }
+    var recordingDuration by remember { mutableStateOf("00:00") }
+    val recordAudioPermissionState = rememberPermissionState(Manifest.permission.RECORD_AUDIO)
 
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = if (!isOwnMessage) Arrangement.End else Arrangement.Start
-    ) {
-        if (message.text != null) {
-            // Handle text message
-            Card(
-                modifier = Modifier
-                    .padding(10.dp)
-                    .background(Color.White)
-                    .clip(RoundedCornerShape(if (isOwnMessage) 16.dp else 0.dp)),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            ) {
-                Column(
-                    modifier = Modifier.padding(8.dp)
-                ) {
-                    Text(
-                        text = message.text,
-                        style = TextStyle(
-                            color = if (isOwnMessage) Color.Black else Color.White,
-                            fontSize = 16.sp,
-                            fontFamily = arimoFontFamily
-                        )
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = formattedTime,
-                        style = TextStyle(
-                            color = Color.Gray,
-                            fontSize = 12.sp,
-                            fontFamily = arimoFontFamily
-                        )
-                    )
-                }
-            }
-        } else if (message.audio != null) {
-            // Handle audio message
-            Card(
-                modifier = Modifier
-                    .padding(10.dp)
-                    .background(Color.White)
-                    .clip(RoundedCornerShape(if (isOwnMessage) 16.dp else 0.dp)),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            ) {
-                Column(
-                    modifier = Modifier.padding(8.dp)
-                ) {
-                    AudioPlayer(
-                        audioUrl = message.audio
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = formattedTime,
-                        style = TextStyle(
-                            color = Color.Gray,
-                            fontSize = 12.sp,
-                            fontFamily = arimoFontFamily
-                        )
-                    )
-                }
-            }
+    // Timer for recording duration
+    val timer = remember { Timer() }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            recorder?.release()
+            recorder = null
+            timer.cancel()  // Ensure timer is stopped
         }
     }
-}
 
-@Composable
-fun AudioPlayer(audioUrl: String) {
-    // Placeholder for audio player UI
-    // You might use a button to start playing the audio, or integrate a more complex audio player component.
-    Row(
-        modifier = Modifier
-            .padding(vertical = 8.dp)
-            .clickable {
-                // Handle audio play logic here
+    fun startRecordingTimer() {
+        val startTime = System.currentTimeMillis()
+        timer.schedule(object : TimerTask() {
+            override fun run() {
+                val duration = System.currentTimeMillis() - startTime
+                val seconds = (duration / 1000) % 60
+                val minutes = (duration / (1000 * 60)) % 60
+                recordingDuration = String.format("%02d:%02d", minutes, seconds)
             }
-    ) {
-        Icon(
-            imageVector = Icons.Filled.PlayArrow,
-            contentDescription = "Play Audio",
-            tint = Color.Black
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = "Audio Message",
-            style = TextStyle(
-                color = Color.Black,
-                fontSize = 16.sp,
-                fontFamily = arimoFontFamily
-            )
-        )
-    }
-}
-
-@Composable
-fun AudioMessageItem(message: MessageDataClass, viewModel: ChatViewModel) {
-    val audioPlayerState = viewModel.audioPlayerStates[message.senderId] ?: AudioPlayerState(
-        ExoPlayer.Builder(LocalContext.current).build()
-    )
-    var isPlaying by remember { mutableStateOf(audioPlayerState.isPlaying) }
-
-    LaunchedEffect(message.senderId) { // Initialize player with the audio URI
-        audioPlayerState.player.setMediaItem(MediaItem.fromUri(message.audio!!))
-        audioPlayerState.player.prepare()
+        }, 0, 1000)
     }
 
-    Row(
+    fun stopRecordingTimer() {
+        timer.cancel()
+    }
+
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Play/Pause Button
-        IconButton(onClick = {
-            viewModel.playAudio(message, !isPlaying)
-            isPlaying = !isPlaying
-        }) {
-            Icon(
-                imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                contentDescription = if (isPlaying) "Pause" else "Play",
-                tint = Color.White
-            )
-        }
+        if (!recordAudioPermissionState.status.isGranted) {
+            LaunchedEffect(Unit) {
+                recordAudioPermissionState.launchPermissionRequest()
+            }
+            Text("Please grant the RECORD_AUDIO permission to use the audio recorder.")
+        } else {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Button(
+                    onClick = {
+                        if (!isRecording) {
+                            // Start recording
+                            val audioFilePath = getAudioFilePath(context)
+                            recorder = MediaRecorder().apply {
+                                setAudioSource(MediaRecorder.AudioSource.MIC)
+                                setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+                                setOutputFile(audioFilePath)
+                                setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
 
-        // Audio Visualizer or Progress Bar (Replace with your implementation)
-        // You can use the audioPlayerState.player to get playback position and duration
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .height(48.dp)
-                .background(Color.LightGray, RoundedCornerShape(8.dp))
-        ) {
-            // Implement audio visualizer or progress bar here
+                                try {
+                                    prepare()
+                                    start()
+                                    isRecording = true
+                                    startRecordingTimer()
+                                } catch (e: IOException) {
+                                    Log.e("AudioRecorder", "Error starting recording: ${e.message}")
+                                }
+                            }
+                        } else {
+                            // Stop recording
+                            recorder?.apply {
+                                stop()
+                                release()
+                            }
+                            recorder = null
+                            stopRecordingTimer()
+                            val audioUri = Uri.fromFile(File(getAudioFilePath(context)))
+                            onStopRecording(audioUri, recordingDuration)
+                            isRecording = false
+                        }
+                    }
+                ) {
+                    Text(if (isRecording) "Stop Recording" else "Start Recording")
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                if (isRecording) {
+                    Text(recordingDuration)
+                }
+            }
+
+            if (isRecording) {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            }
         }
     }
 }
 
-//@Composable
-//fun AudioRecorder(onStopRecording: (Uri) -> Unit) {
-//    val context = LocalContext.current
-//    var isRecording by remember { mutableStateOf(false) }
-//    var recorder: MediaRecorder? by remember { mutableStateOf(null) }
-//
-//    DisposableEffect(Unit) {
-//        onDispose {
-//            recorder?.release()
-//            recorder = null
-//        }
-//    }
-//
-//    Column(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .padding(16.dp),
-//        horizontalAlignment = Alignment.CenterHorizontally
-//    ) {
-//        Row(verticalAlignment = Alignment.CenterVertically) {
-//            Button(onClick = {
-//                if (!isRecording) {
-//                    if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-//                        // Request permission if not granted
-//                        // ... (Use ActivityResultLauncher or other permission handling mechanism)
-//                        return@Button // Don't proceed if permission isn't granted yet
-//                    }
-//
-//                    // Start recording
-//                    recorder = MediaRecorder().apply {
-//                        setAudioSource(MediaRecorder.AudioSource.MIC)
-//                        setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
-//                        setOutputFile(getAudioFilePath(context))
-//                        setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
-//
-//                        try {
-//                            prepare()
-//                            start()
-//                            isRecording = true
-//                        } catch (e: IOException) {
-//                            Log.e("AudioRecorder", "Prepare or start recording failed: ${e.message}")
-//                        }
-//                    }
-//                } else {
-//                    // Stop recording
-//                    recorder?.stop()
-//                    recorder?.release()
-//                    recorder = null
-//                    isRecording = false
-//
-//                    // Notify the ChatScreen with the recorded audio URI
-//                    onStopRecording(Uri.fromFile(File(getAudioFilePath(context))))
-//                }
-//            }) {
-//                Text(if (isRecording) "Stop Recording" else "Start Recording")
-//            }
-//            Spacer(modifier = Modifier.width(16.dp))
-//            // ... (Optionally add a visual indicator like a recording animation or timer)
-//        }
-//        if (isRecording) {
-//            // You can add a progress bar or visualizer here while recording
-//            LinearProgressIndicator(
-//                modifier = Modifier.fillMaxWidth()
-//            )
-//        }
-//    }
-//}
-//
-//private fun getAudioFilePath(context: Context): String {
-//    // ... your existing implementation for getAudioFilePath ...
-//    val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-//    val fileName = "audio_record_$timestamp.mp3" // You can use other formats like .aac, .wav, etc.
-//
-//    // Get a suitable directory for storing audio files
-//    val directory = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-//        // On Android 10 (Q) and above, use scoped storage
-//        context.getExternalFilesDir(Environment.DIRECTORY_MUSIC)
-//    } else {
-//        // On older Android versions, use external storage
-//        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
-//    }
-//
-//    // Create the directory if it doesn't exist
-//    if (directory != null) {
-//        if (!directory.exists()) {
-//            directory.mkdirs()
-//        }
-//    }
-//
-//    // Create the full file path
-//    return File(directory, fileName).absolutePath
-//}
+private fun getAudioFilePath(context: Context): String {
+    val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+    val fileName = "audio_record_$timestamp.mp3"
+    val directory = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        context.getExternalFilesDir(Environment.DIRECTORY_MUSIC)
+    } else {
+        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
+    }
 
+    if (!directory?.exists()!!) {
+        directory.mkdirs()
+    }
+
+    return File(directory, fileName).absolutePath
+}

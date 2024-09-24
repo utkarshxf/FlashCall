@@ -63,13 +63,6 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val viewModel by viewModels<SplashViewModel>()
     private val authenticationViewModel by viewModels<AuthenticationViewModel>()
-    private val chatRequestViewModel by viewModels<ChatRequestViewModel>()
-    override fun onTrimMemory(level: Int) {
-        super.onTrimMemory(level)
-        if (level == ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN) {
-            UserStatusTracker(this.application, authenticationViewModel)
-        }
-    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -132,12 +125,9 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-}
-class UserStatusTracker(private val application: Application, private val authenticationViewModel: AuthenticationViewModel) : DefaultLifecycleObserver {
-    private var isAppInForeground = false
 
-    override fun onStop(owner: LifecycleOwner) {
-        isAppInForeground = false
+    override fun onDestroy() {
+        super.onDestroy()
         (this.application as? BaseClass)?.updateUserStatus(
             authenticationViewModel.getUserFromPreferences(application)?.phone.toString(),
             false
@@ -221,7 +211,7 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
             PaymentSettings(navController = navController)
         }
         composable(route = ScreenRoutes.ChatRoomScreen.route) {
-            ChatRoomScreen(chatViewModel, authenticationViewModel)
+            ChatRoomScreen(navController)
         }
 
         composable(route = ScreenRoutes.FeedbackScreen.route) {
