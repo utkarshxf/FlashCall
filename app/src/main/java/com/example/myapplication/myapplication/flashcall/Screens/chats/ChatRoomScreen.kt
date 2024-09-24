@@ -5,10 +5,12 @@ package com.example.myapplication.myapplication.flashcall.Screens.chats
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -17,16 +19,19 @@ import androidx.annotation.OptIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -37,9 +42,12 @@ import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MicOff
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -47,6 +55,8 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -95,6 +105,7 @@ import java.util.Date
 import java.util.Locale
 import java.util.Timer
 import java.util.TimerTask
+import java.util.concurrent.TimeUnit
 
 @Composable
 fun ChatRoomScreen(
@@ -126,6 +137,7 @@ fun ChatRoomScreen(
             imageUri = cameraImageUri
         }
     }
+    val isRecording = chatViewModel.isRecording.value
     LaunchedEffect(messages) {
         if (listState.layoutInfo.totalItemsCount > previousSize) listState.animateScrollToItem(
             listState.layoutInfo.totalItemsCount - 1
@@ -330,42 +342,44 @@ fun ChatRoomScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF2C2C2C))
                         .padding(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    OutlinedTextField(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(end = 8.dp),
-                        value = messageText,
-                        onValueChange = { messageText = it },
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color(0xFF3E3E3E),
-                            unfocusedContainerColor = Color(0xFF3E3E3E),
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
-                            unfocusedBorderColor = Color.Transparent,
-                            focusedBorderColor = Color.Transparent
-                        ),
-                        placeholder = {
-                            Text(
-                                text = "Message", style = TextStyle(
-                                    color = Color.Gray,
-                                    fontSize = 16.sp,
-                                    fontFamily = arimoFontFamily
+                    if (!isRecording)
+                    {
+                        OutlinedTextField(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(end = 8.dp),
+                            value = messageText,
+                            onValueChange = { messageText = it },
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedContainerColor = Color(0xFF3E3E3E),
+                                unfocusedContainerColor = Color(0xFF3E3E3E),
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White,
+                                unfocusedBorderColor = Color.Transparent,
+                                focusedBorderColor = Color.Transparent
+                            ),
+                            placeholder = {
+                                Text(
+                                    text = "Message", style = TextStyle(
+                                        color = Color.Gray,
+                                        fontSize = 16.sp,
+                                        fontFamily = arimoFontFamily
+                                    )
                                 )
-                            )
-                        },
-                        shape = RoundedCornerShape(20.dp)
-                    )
-                    Icon(painter = painterResource(id = R.drawable.attach_file_chat),
-                        contentDescription = "Attach File",
-                        tint = Color.Gray,
-                        modifier = Modifier
-                            .size(24.dp)
-                            .clickable { imagePickerLauncher.launch("image/*") })
-                    Spacer(modifier = Modifier.width(8.dp))
+                            },
+                            shape = RoundedCornerShape(20.dp)
+                        )
+                        Icon(painter = painterResource(id = R.drawable.attach_file_chat),
+                            contentDescription = "Attach File",
+                            tint = Color.Gray,
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clickable { imagePickerLauncher.launch("image/*") })
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
                     if (messageText.isNotBlank() || imageUri != null) {
                         IconButton(
                             onClick = {
@@ -432,7 +446,6 @@ fun MessageItem(
                 .padding(8.dp)
         ) {
             Column {
-                Log.e("qwerty", message.toString())
                 if (message.text != null && message.img == null && message.audio == null) {
                     Text(
                         text = message.text,
@@ -446,20 +459,25 @@ fun MessageItem(
                     Image(
                         painter = rememberAsyncImagePainter(model = message.img),
                         contentDescription = "Sent image",
-                        modifier = Modifier.size(400.dp, 400.dp),
                         contentScale = ContentScale.Crop,
                         alignment = Alignment.Center,
                     )
                 }
                 if (message.img != null && message.text != null) {
                     Card {
-                        Image(
-                            painter = rememberAsyncImagePainter(model = message.img),
-                            contentDescription = "Sent image",
-                            modifier = Modifier.size(200.dp),
-                            contentScale = ContentScale.FillBounds,
-                            alignment = Alignment.Center,
-                        )
+                        Box(
+                            modifier = Modifier
+                                .size(300.dp, 400.dp) // Set maximum size for the box
+                                .clip(RoundedCornerShape(10.dp)) // Optional: Rounded corners
+                        ) {
+                            Image(
+                                painter = rememberAsyncImagePainter(model = message.img),
+                                contentDescription = "Sent image",
+                                modifier = Modifier.fillMaxSize(), // Fill the box
+                                contentScale = ContentScale.Fit, // Maintain aspect ratio
+                                alignment = Alignment.Center,
+                            )
+                        }
                         if (message.text != "") {
                             Text(
                                 text = message.text,
@@ -474,14 +492,10 @@ fun MessageItem(
                     }
                 }
                 if (message.audio != null) {
-                    Text(
-                        text = "🎵 Audio message",
-                        color = if (isOwnMessage) Color.White else Color.Black,
-                        style = LocalTextStyle.current.copy(
-                            fontSize = 16.sp, fontFamily = arimoFontFamily
-                        )
+                    AudioPlayerComponent(
+                        audioUrl = message.audio,
+                        isOwnMessage = isOwnMessage
                     )
-//                        Audio Player Component
                 }
                 Row(
                     modifier = Modifier.align(Alignment.End),
@@ -524,7 +538,9 @@ fun AudioRecorderButton(
     var showRecorder by remember { mutableStateOf(false) }
     val isRecording = chatViewModel.isRecording.value
 
-    Column {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         if (!recordAudioPermissionState.status.isGranted) {
             LaunchedEffect(Unit) {
                 recordAudioPermissionState.launchPermissionRequest()
@@ -532,165 +548,215 @@ fun AudioRecorderButton(
             Text(
                 "Please grant the RECORD_AUDIO permission to use the audio recorder.",
                 modifier = Modifier.padding(8.dp),
-                color = MaterialTheme.colorScheme.error
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium // Use body style for better readability
             )
         } else {
-            IconButton(
-                onClick = {
-                    showRecorder = !showRecorder
-                    if (showRecorder) {
-                        chatViewModel.startRecording()
-                    } else {
-                        chatViewModel.stopRecording()
-                    }
-                },
-                modifier = Modifier
-                    .size(48.dp)
-                    .background(
-                        if (isRecording) Color.Red else Color(0xFF25D366),
-                        CircleShape
-                    )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Icon(
-                    imageVector = if (isRecording) Icons.Default.MicOff else Icons.Default.Mic,
-                    contentDescription = if (isRecording) "Stop Recording" else "Start Recording",
-                    tint = Color.White
-                )
-            }
-
-            if (isRecording) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(4.dp)
-                        .background(Color.LightGray)
-                ) {
+                if (isRecording) {
                     LinearProgressIndicator(
-                        modifier = Modifier.fillMaxSize(),
-                        color = Color.Red
+                        modifier = Modifier.fillMaxWidth(0.9f),
+                        color = Color.Red,
                     )
                 }
-                Text(
-                    "Recording...",
-                    modifier = Modifier.padding(top = 4.dp),
-                    color = Color.Red,
-                    style = MaterialTheme.typography.bodySmall
-                )
+                IconButton(
+                    onClick = {
+                        showRecorder = !showRecorder
+                        if (showRecorder) {
+                            chatViewModel.startRecording()
+                        } else {
+                            chatViewModel.stopRecording()
+                        }
+                    },
+                    modifier = Modifier
+                        .background(
+                            if (isRecording) Color.Red else Color(0xFF25D366),
+                            CircleShape
+                        )
+                ) {
+                    Icon(
+                        imageVector = if (isRecording) Icons.Default.MicOff else Icons.Default.Mic,
+                        contentDescription = if (isRecording) "Stop Recording" else "Start Recording",
+                        tint = Color.White
+                    )
+                }
             }
         }
     }
 }
 
-@kotlin.OptIn(ExperimentalPermissionsApi::class)
-@Composable
-fun AudioRecorder(onStopRecording: (Uri, String) -> Unit) {
-    val context = LocalContext.current
-    var isRecording by remember { mutableStateOf(false) }
-    var recorder: MediaRecorder? by remember { mutableStateOf(null) }
-    var recordingDuration by remember { mutableStateOf("00:00") }
-    val recordAudioPermissionState = rememberPermissionState(Manifest.permission.RECORD_AUDIO)
 
-    // Timer for recording duration
-    val timer = remember { Timer() }
+@Composable
+fun AudioPlayerComponent(audioUrl: String, isOwnMessage: Boolean) {
+    var isPlaying by remember { mutableStateOf(false) }
+    var isPrepared by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
+    var progress by remember { mutableStateOf(0f) }
+    var duration by remember { mutableStateOf(0) }
+    var currentPosition by remember { mutableStateOf(0) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
+    val mediaPlayer = remember { MediaPlayer() }
+
+    var manualDuration by remember { mutableStateOf(0L) }
+    var startTime by remember { mutableStateOf(0L) }
 
     DisposableEffect(Unit) {
         onDispose {
-            recorder?.release()
-            recorder = null
-            timer.cancel()  // Ensure timer is stopped
+            mediaPlayer.release()
         }
     }
 
-    fun startRecordingTimer() {
-        val startTime = System.currentTimeMillis()
-        timer.schedule(object : TimerTask() {
-            override fun run() {
-                val duration = System.currentTimeMillis() - startTime
-                val seconds = (duration / 1000) % 60
-                val minutes = (duration / (1000 * 60)) % 60
-                recordingDuration = String.format("%02d:%02d", minutes, seconds)
+    fun prepareMediaPlayer() {
+        isLoading = true
+        errorMessage = null
+        try {
+            mediaPlayer.reset()
+            mediaPlayer.setDataSource(context, Uri.parse(audioUrl))
+            mediaPlayer.prepareAsync()
+            mediaPlayer.setOnPreparedListener { mp ->
+                isPrepared = true
+                duration = mp.duration
+                Log.d("AudioPlayerComponent", "Audio prepared. MediaPlayer Duration: $duration ms")
+                if (duration <= 0) {
+                    Log.w("AudioPlayerComponent", "Invalid duration from MediaPlayer, will use manual tracking")
+                }
+                isLoading = false
             }
-        }, 0, 1000)
+            mediaPlayer.setOnErrorListener { _, what, extra ->
+                Log.e("AudioPlayerComponent", "MediaPlayer error: what=$what, extra=$extra")
+                errorMessage = "Error loading audio: MediaPlayer error $what"
+                isPrepared = false
+                isLoading = false
+                true
+            }
+        } catch (e: Exception) {
+            Log.e("AudioPlayerComponent", "Error preparing MediaPlayer", e)
+            errorMessage = "Error loading audio: ${e.message}"
+            isPrepared = false
+            isLoading = false
+        }
     }
 
-    fun stopRecordingTimer() {
-        timer.cancel()
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        if (!recordAudioPermissionState.status.isGranted) {
-            LaunchedEffect(Unit) {
-                recordAudioPermissionState.launchPermissionRequest()
-            }
-            Text("Please grant the RECORD_AUDIO permission to use the audio recorder.")
-        } else {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Button(
-                    onClick = {
-                        if (!isRecording) {
-                            // Start recording
-                            val audioFilePath = getAudioFilePath(context)
-                            recorder = MediaRecorder().apply {
-                                setAudioSource(MediaRecorder.AudioSource.MIC)
-                                setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-                                setOutputFile(audioFilePath)
-                                setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-
-                                try {
-                                    prepare()
-                                    start()
-                                    isRecording = true
-                                    startRecordingTimer()
-                                } catch (e: IOException) {
-                                    Log.e("AudioRecorder", "Error starting recording: ${e.message}")
+    Column(modifier = Modifier.width(300.dp)) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.size(48.dp)
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        color = if (isOwnMessage) Color.White else MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                } else {
+                    IconButton(
+                        onClick = {
+                            if (!isPrepared && !isLoading) {
+                                prepareMediaPlayer()
+                            } else if (isPrepared) {
+                                if (isPlaying) {
+                                    mediaPlayer.pause()
+                                    isPlaying = false
+                                    manualDuration += System.currentTimeMillis() - startTime
+                                } else {
+                                    mediaPlayer.seekTo(currentPosition)
+                                    mediaPlayer.start()
+                                    isPlaying = true
+                                    startTime = System.currentTimeMillis()
                                 }
+                                Log.d("AudioPlayerComponent", "Play/Pause clicked. isPlaying: $isPlaying")
                             }
-                        } else {
-                            // Stop recording
-                            recorder?.apply {
-                                stop()
-                                release()
-                            }
-                            recorder = null
-                            stopRecordingTimer()
-                            val audioUri = Uri.fromFile(File(getAudioFilePath(context)))
-                            onStopRecording(audioUri, recordingDuration)
-                            isRecording = false
                         }
+                    ) {
+                        Icon(
+                            imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                            contentDescription = if (isPlaying) "Pause" else "Play",
+                            tint = if (isOwnMessage) Color.White else Color.Black
+                        )
                     }
-                ) {
-                    Text(if (isRecording) "Stop Recording" else "Start Recording")
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                if (isRecording) {
-                    Text(recordingDuration)
                 }
             }
 
-            if (isRecording) {
-                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            Column(modifier = Modifier.weight(1f)) {
+                Slider(
+                    value = progress,
+                    onValueChange = { newProgress ->
+                        if (isPrepared) {
+                            progress = newProgress
+                            val newPosition = (if (duration > 0) duration else manualDuration.toInt()) * progress
+                            mediaPlayer.seekTo(newPosition.toInt())
+                            currentPosition = newPosition.toInt()
+                            Log.d("AudioPlayerComponent", "Slider moved. Progress: $progress, New position: $newPosition")
+                        }
+                    },
+                    enabled = isPrepared && !isLoading,
+                    colors = SliderDefaults.colors(
+                        thumbColor = if (isOwnMessage) Color.White else MaterialTheme.colorScheme.primary,
+                        activeTrackColor = if (isOwnMessage) Color.White else MaterialTheme.colorScheme.primary,
+                        inactiveTrackColor = if (isOwnMessage) Color.White.copy(alpha = 0.3f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                    )
+                )
+
+                Text(
+                    text = "${formatTime(currentPosition.toLong())} / ${formatTime(if (duration > 0) duration.toLong() else manualDuration.toLong())}",
+                    color = if (isOwnMessage) Color.White else Color.Black,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.align(Alignment.End)
+                )
             }
+        }
+
+        errorMessage?.let {
+            Text(
+                text = it,
+                color = Color.Red,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
+    }
+
+    LaunchedEffect(isPlaying) {
+        while (isPlaying) {
+            delay(100)
+            if (mediaPlayer.isPlaying) {
+                if (duration > 0) {
+                    currentPosition = mediaPlayer.currentPosition
+                    progress = currentPosition.toFloat() / duration
+                } else {
+                    // Manual tracking
+                    val elapsedTime = System.currentTimeMillis() - startTime
+                    currentPosition = (manualDuration + elapsedTime).toInt()
+                    progress = if (currentPosition > 0) currentPosition.toFloat() / (manualDuration + elapsedTime) else 0f
+                }
+                Log.d("AudioPlayerComponent", "Updated position: $currentPosition, Progress: $progress")
+            } else {
+                isPlaying = false
+            }
+        }
+    }
+
+    DisposableEffect(Unit) {
+        mediaPlayer.setOnCompletionListener {
+            isPlaying = false
+            progress = 1f
+            currentPosition = if (duration > 0) duration else manualDuration.toInt()
+            Log.d("AudioPlayerComponent", "Playback completed")
+        }
+        onDispose {
+            mediaPlayer.release()
         }
     }
 }
 
-private fun getAudioFilePath(context: Context): String {
-    val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-    val fileName = "audio_record_$timestamp.mp3"
-    val directory = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        context.getExternalFilesDir(Environment.DIRECTORY_MUSIC)
-    } else {
-        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
-    }
-
-    if (!directory?.exists()!!) {
-        directory.mkdirs()
-    }
-
-    return File(directory, fileName).absolutePath
+private fun formatTime(timeMs: Long): String {
+    val minutes = TimeUnit.MILLISECONDS.toMinutes(timeMs)
+    val seconds = TimeUnit.MILLISECONDS.toSeconds(timeMs) % 60
+    return String.format("%02d:%02d", minutes, seconds)
 }
