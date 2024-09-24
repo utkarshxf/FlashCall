@@ -1,12 +1,20 @@
 package com.example.myapplication.myapplication.flashcall.Data.model
 
+import com.example.myapplication.myapplication.flashcall.Data.model.nameMatch.Data
+import com.google.gson.annotations.SerializedName
+
 data class AadhaarResponse(
-    val `data`: Data,
-    val success: Boolean
+    @SerializedName("data")
+    val `data`: aadharData?,
+    @SerializedName("success")
+    val success: Boolean?
 )
 
-data class Data(
-    val message: String,
-    val ref_id: String,
-    val status: String
+data class aadharData(
+    @SerializedName("message")
+    val message: String?,
+    @SerializedName("ref_id")
+    val ref_id: String?,
+    @SerializedName("status")
+    val status: String?
 )

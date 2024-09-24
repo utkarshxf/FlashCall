@@ -108,10 +108,10 @@ data class UserUpdateData(
 )
 data class LinkData(
     @SerializedName("title")
-    val title: String?=null,
+    var title: String?=null,
     @SerializedName("url")
-    val url: String?=null,
+    var url: String?=null,
     @SerializedName("isActive")
-    val isActive: Boolean?=true
+    var isActive: Boolean?=true
 )
 

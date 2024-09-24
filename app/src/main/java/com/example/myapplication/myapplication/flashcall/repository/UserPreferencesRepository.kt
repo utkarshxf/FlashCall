@@ -43,6 +43,41 @@ class UserPreferencesRepository @Inject constructor(@ApplicationContext private 
         }
     }
 
+
+    fun storeAdditionalLinks(userId: String, additionalLinksList: List<LinkData>?) {
+        if(additionalLinksList != null){
+            val jsonString = gson.toJson(additionalLinksList)
+            sharedPreferences.edit().apply {
+                putString("additional_links_$userId", jsonString)
+                apply()
+            }
+        }else{
+            sharedPreferences.edit().apply {
+                putString("additional_links_$userId", "")
+                apply()
+            }
+        }
+    }
+
+    fun retrieveAdditionalLinks(userId: String): List<LinkData>? {
+        val additionalLinksStr = sharedPreferences.getString("additional_links_$userId", "") ?:""
+        if(additionalLinksStr.isNotEmpty()){
+            return convertingStringIntoList(additionalLinksStr)
+        }else{
+            return null
+        }
+    }
+    private fun convertingStringIntoList(stringList: String): List<LinkData>? {
+        val gson = Gson()
+        val listType = object : TypeToken<List<LinkData>>() {}.type
+        val list: List<LinkData> = gson.fromJson(stringList, listType)
+        return list
+    }
+
+
+
+
+
     fun updateTransactions(userId: String, newTransactions: List<Transaction>) {
         val existingTransactions = retrieveTransactions(userId)
         val updatedTransactions = (existingTransactions.transactions ?: emptyList()) + newTransactions
@@ -89,10 +124,6 @@ class UserPreferencesRepository @Inject constructor(@ApplicationContext private 
         }
     }
 
-//    fun getAdditionalLinks(): List<LinkData>{
-//        var additionalLinksStr = sharedPreferences.getString(PreferencesKey.AdditionalLinks.key, "") ?:""
-//        return convertingStringIntoList(additionalLinksStr)
-//    }
 
     fun getUser(): IsUserCreatedResponse? {
         val userId = sharedPreferences.getString(PreferencesKey.UserId.key, null) ?: return null
@@ -133,7 +164,6 @@ class UserPreferencesRepository @Inject constructor(@ApplicationContext private 
             putString(PreferencesKey.Gender.key, response.updatedUser.gender)
             putString(PreferencesKey.Dob.key, response.updatedUser.dob)
             putString(PreferencesKey.Bio.key, response.updatedUser.bio)
-            putString(PreferencesKey.AdditionalLinks.key, convertingListIntoString(response.updatedUser.links))
             apply()
         }
     }
@@ -162,16 +192,25 @@ class UserPreferencesRepository @Inject constructor(@ApplicationContext private 
         }
     }
 
-    private fun convertingListIntoString(list: List<LinkData>?): String {
-        val gson = Gson()
-        val jsonString = gson.toJson(list)
-        return jsonString
+    fun saveKyc(kyc: Boolean){
+        sharedPreferences.edit().apply {
+            putBoolean(PreferencesKey.KYC.key, kyc)
+            apply()
+        }
+    }
+    fun isKyc(): Boolean{
+        return sharedPreferences.getBoolean(PreferencesKey.KYC.key, false)
     }
 
-//    private fun convertingStringIntoList(stringList: String): List<LinkData> {
-//        val gson = Gson()
-//        val listType = object : TypeToken<List<LinkData>>() {}.type
-//        val list: List<LinkData> = gson.fromJson(stringList, listType)
-//        return list
-//    }
+    fun saveTodaysWalletBalance(balance: Int){
+        sharedPreferences.edit().apply {
+            putInt(PreferencesKey.TodaysWalletBalance.key,balance)
+            apply()
+        }
+    }
+
+    fun getTodaysWalletBalance(): Int{
+        return sharedPreferences.getInt(PreferencesKey.TodaysWalletBalance.key,0)
+    }
+
 }
