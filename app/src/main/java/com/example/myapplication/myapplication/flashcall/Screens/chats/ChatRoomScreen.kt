@@ -73,8 +73,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.paint
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -477,7 +480,76 @@ fun MessageItem(
                     color = if (isOwnMessage) Color(0xFF25D366) else Color.White,
                     shape = RoundedCornerShape(10.dp)
                 )
+                .drawBehind {
+                    val bubblePath = Path().apply {
+                        val cornerRadius = 16.dp.toPx()
+                        val triangleHeight = 8.dp.toPx()
+                        val triangleWidth = 12.dp.toPx()
+
+                        if (isOwnMessage) {
+                            moveTo(size.width, cornerRadius)
+                            lineTo(size.width, triangleHeight)
+                            lineTo(size.width + triangleWidth, 0f)
+                            lineTo(size.width, 0f)
+                            lineTo(size.width - cornerRadius, 0f)
+                        } else {
+                            moveTo(0f, cornerRadius)
+                            lineTo(0f, triangleHeight)
+                            lineTo(-triangleWidth, 0f)
+                            lineTo(0f, 0f)
+                            lineTo(size.width - cornerRadius, 0f)
+                        }
+
+                        arcTo(
+                            rect = Rect(
+                                size.width - 2 * cornerRadius,
+                                0f,
+                                size.width,
+                                2 * cornerRadius
+                            ),
+                            startAngleDegrees = 270f,
+                            sweepAngleDegrees = 90f,
+                            forceMoveTo = false
+                        )
+
+                        lineTo(size.width, size.height - cornerRadius)
+                        arcTo(
+                            rect = Rect(
+                                size.width - 2 * cornerRadius,
+                                size.height - 2 * cornerRadius,
+                                size.width,
+                                size.height
+                            ),
+                            startAngleDegrees = 0f,
+                            sweepAngleDegrees = 90f,
+                            forceMoveTo = false
+                        )
+
+                        lineTo(cornerRadius, size.height)
+
+                        arcTo(
+                            rect = Rect(
+                                0f,
+                                size.height - 2 * cornerRadius,
+                                2 * cornerRadius,
+                                size.height
+                            ),
+                            startAngleDegrees = 90f,
+                            sweepAngleDegrees = 90f,
+                            forceMoveTo = false
+                        )
+
+                        lineTo(0f, cornerRadius)
+                        close()
+                    }
+
+                    drawPath(
+                        path = bubblePath,
+                        color = if (isOwnMessage) Color(0xFF25D366) else Color.White,
+                    )
+                }
                 .padding(8.dp)
+
         ) {
             Column {
                 if (message.text != null && message.img == null && message.audio == null) {
