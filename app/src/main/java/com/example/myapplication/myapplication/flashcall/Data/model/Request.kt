@@ -16,13 +16,10 @@ data class VerifyRequest(
     @SerializedName("phone")
     val phone : String,
     @SerializedName("otp")
-    val otp : String,
-    @SerializedName("token")
-    val token : String
+    val otp : String
 )
 
 data class CreateUser(
-
     @SerializedName("username")
     val username : String,
     @SerializedName("phone")
@@ -54,9 +51,67 @@ data class CreateUser(
     @SerializedName("kyc_status")
     val kyc_status : String
 )
+data class Link(
+    val url: String,
+    val description: String?
+)
 
 
 data class ValidateRequest(
     @SerializedName("token")
     val token : String
 )
+
+data class UpdateUserRequest(
+    @SerializedName("userId")
+    val userId: String,
+    @SerializedName("user")
+    val user: UserUpdateData
+)
+data class UserUpdateData(
+    @SerializedName("fullName")
+    val fullName: String?=null,
+    @SerializedName("username")
+    val username: String?=null,
+    @SerializedName("phone")
+    val phone: String?=null,
+    @SerializedName("firstName")
+    val firstName: String?=null,
+    @SerializedName("lastName")
+    val lastName: String?=null,
+    @SerializedName("photo")
+    val photo: String?=null,
+    @SerializedName("profession")
+    val profession: String?=null,
+    @SerializedName("themeSelected")
+    val themeSelected: String?=null,
+    @SerializedName("videoRate")
+    val videoRate: String?=null,
+    @SerializedName("audioRate")
+    val audioRate: String?=null,
+    @SerializedName("chatRate")
+    val chatRate: String?=null,
+    @SerializedName("videoAllowed")
+    val videoAllowed: Boolean?=null,
+    @SerializedName("audioAllowed")
+    val audioAllowed: Boolean?=null,
+    @SerializedName("chatAllowed")
+    val chatAllowed: Boolean?=null,
+    @SerializedName("gender")
+    val gender: String?=null,
+    @SerializedName("dob")
+    val dob: String?=null,
+    @SerializedName("bio")
+    val bio: String?=null,
+    @SerializedName("link")
+    val link: LinkData?=null
+)
+data class LinkData(
+    @SerializedName("title")
+    var title: String?=null,
+    @SerializedName("url")
+    var url: String?=null,
+    @SerializedName("isActive")
+    var isActive: Boolean?=true
+)
+

@@ -1,6 +1,13 @@
 package com.example.myapplication.myapplication.flashcall.bottomnav
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateDp
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -9,8 +16,12 @@ import androidx.compose.foundation.layout.Box
 //import androidx.compose.foundation.layout.FlowColumnScopeInstance.align
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -22,8 +33,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -31,103 +44,6 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
-
-//@Composable
-//fun CustomBottomNavigation(
-//    currentScreenId : String,
-//    onItemSelected : (Screen) -> Unit,
-//    navController: NavController
-//) {
-//
-//    val item = Screen.items.list
-//    val navBackStackEntry = navController.currentBackStackEntry
-//    val currentDestination = navBackStackEntry?.destination
-//
-//    Box(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .background(Color.Black, RoundedCornerShape(30.dp))
-//            .clip(RoundedCornerShape(30.dp))
-//    ) {
-//        Row(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .background(Color.Black, RoundedCornerShape(20.dp))
-//                .clip(RoundedCornerShape(20.dp))
-//                .padding(10.dp),
-//            verticalAlignment = Alignment.CenterVertically,
-//            horizontalArrangement = Arrangement.SpaceAround
-//        ) {
-//            item.forEach { item ->
-//
-//                CustomBottomNavigationItem(
-//                    item = ,
-//                    isSelected = ,
-//                    onClick = { /*TODO*/ },
-//                    navController = ,
-//                    currentDestination =
-//                )
-//
-//            }
-//        }
-//    }
-//}
-//
-//@Composable
-//fun CustomBottomNavigationItem(
-//    item : Screen,
-//    isSelected : Boolean,
-//    onClick:()->Unit,
-//    navController: NavController,
-//    currentDestination: NavDestination?
-//) {
-//    val background = if (isSelected) MainColor else Color.Transparent
-//    val contentColor = if (isSelected) Color.White else Color.White
-//
-//    val screenSelected = currentDestination?.hierarchy?.any {
-//        it.route == item.id
-//    } == true
-//
-//    Box(
-//        modifier = Modifier
-//            .clip(RoundedCornerShape(20.dp))
-//            .background(background)
-//            .clickable {
-//                onClick
-//
-//                navController.navigate(item.id) {
-//                    popUpTo(navController.graph.findStartDestination().id)
-//                    launchSingleTop = true
-//                }
-//            }
-//    ) {
-//
-//        Row(
-//            modifier = Modifier
-//                .padding(12.dp),
-//            verticalAlignment = Alignment.CenterVertically,
-//            horizontalArrangement = Arrangement.spacedBy(4.dp)
-//        ) {
-//
-//            Icon(
-//                painter = painterResource(id = if (isSelected) item.focusedIcon else item.unfocusedIcon),
-//                contentDescription = null,
-//                tint = contentColor
-//            )
-//
-//            AnimatedVisibility(
-//                visible = isSelected
-//            ) {
-//                Text(
-//                    text = item.title,
-//                    color = contentColor
-//                )
-//            }
-//
-//        }
-//
-//    }
-//}
 
 
 @Composable
@@ -138,24 +54,23 @@ fun BottomBar(navController: NavController) {
         Screen.Profile
     )
 
-    val navStackBackEntry by navController.currentBackStackEntryAsState()
-    val currentDestination = navStackBackEntry?.destination
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
 
     Box(
         modifier = Modifier
-            .fillMaxWidth(0.98f)
-            .padding(start = 10.dp)
-            .background(Color.Black, RoundedCornerShape(30.dp))
-            .clip(RoundedCornerShape(30.dp))
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.Black, RoundedCornerShape(20.dp))
-                .clip(RoundedCornerShape(20.dp))
-                .padding(10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceAround
+                .height(56.dp)
+                .clip(RoundedCornerShape(28.dp))
+                .background(Color(0xFF1E1E1E))
+                .padding(horizontal = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             screens.forEach { screen ->
                 AddItem(
@@ -165,7 +80,6 @@ fun BottomBar(navController: NavController) {
                 )
             }
         }
-
     }
 }
 
@@ -175,38 +89,58 @@ fun AddItem(
     currentDestination: NavDestination?,
     navController: NavController
 ) {
-    val selected = currentDestination?.hierarchy?.any { it.route == screen.id } == true
-
+    val selected = currentDestination?.route == screen.id
     val background = if (selected) MainColor else Color.Transparent
-    val contentColor = if (selected) Color.White else Color.White
 
+    val transition = updateTransition(targetState = selected, label = "itemTransition")
+
+    val itemWidth by transition.animateDp(
+        transitionSpec = { tween(durationMillis = 300) },
+        label = "itemWidth"
+    ) { isSelected ->
+        if (isSelected) 110.dp else 48.dp
+    }
+
+    val textAlpha by transition.animateFloat(
+        transitionSpec = { tween(durationMillis = 200) },
+        label = "textAlpha"
+    ) { isSelected ->
+        if (isSelected) 1f else 0f
+    }
 
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
+            .width(itemWidth)
+            .height(48.dp)
+            .clip(RoundedCornerShape(24.dp))
             .background(background)
-            .clickable(onClick = {
+            .clickable {
                 navController.navigate(screen.id) {
-                    popUpTo(navController.graph.findStartDestination().id)
+                    popUpTo(navController.graph.startDestinationId)
                     launchSingleTop = true
                 }
-            })
+            }
     ) {
         Row(
             modifier = Modifier
-                .padding(12.dp),
+                .fillMaxSize()
+                .padding(horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Icon(
                 painter = painterResource(id = if (selected) screen.focusedIcon else screen.unfocusedIcon),
-                contentDescription = "icon",
-                tint = contentColor
+                contentDescription = screen.title,
+                tint = Color.White,
+                modifier = Modifier.size(24.dp)
             )
-            AnimatedVisibility(visible = selected) {
+            if (textAlpha > 0.01f) {
                 Text(
                     text = screen.title,
-                    color = contentColor
+                    color = Color.White.copy(alpha = textAlpha),
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 14.sp,
+                    maxLines = 1
                 )
             }
         }

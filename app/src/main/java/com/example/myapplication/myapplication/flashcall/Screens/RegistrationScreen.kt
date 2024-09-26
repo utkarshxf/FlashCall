@@ -96,7 +96,7 @@ import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-var uriImg : Uri? = null
+
 var imageUrl : String? = null
 var imageUploadCounter = false
 var userToken : String = ""
@@ -122,13 +122,15 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
     }
 
     val phoneNumber = authenticationViewModel.phoneNumber.value
-
     var genderMale by remember { mutableStateOf(false) }
     var genderFemale by remember { mutableStateOf(false) }
     var genderOthers by remember { mutableStateOf(false) }
 
     var name by remember {
         mutableStateOf("")
+    }
+    val (firstName, lastName) = name.split(" ", limit = 2).let {
+        if (it.size == 2) it else listOf(it[0], "")
     }
 
     var userId by remember {
@@ -209,7 +211,7 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                 ) { uri: Uri? ->
 
                     uri?.let {
-                        uriImg = it
+//                        uriImg = it
                         imageUri.value = it.toString()
                     }
                 }
@@ -299,6 +301,7 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                         cursorColor = MainColor
                     )
                 )
+
 
                 Spacer(modifier = Modifier.height(15.dp))
 
@@ -564,11 +567,11 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                 Spacer(modifier = Modifier.height(60.dp))
 
 //                Text(text = R.color.splash.toString())
-                if (uriImg != null) {
-                    uriImg.let { uri ->
-                        uploadImageToFirebase(uri, context)
-                    }
-                }
+//                if (uriImg != null) {
+//                    uriImg.let { uri ->
+//                        uploadImageToFirebase(uri, context)
+//                    }
+//                }
 
                 Button(
                     shape = RoundedCornerShape(10.dp),
@@ -579,24 +582,23 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
 //                    enabled = imageUploadCounter,
                     onClick = {
                         registrationViewModel.createUser(
-                            userId,
-                            "",
-                            name,
-                            "",
-                            "",
-                            imageUrl!!,
-                            "Astrologer",
-                            "#50A65C",
-                            "25",
-                            "25",
-                            "25",
-                            selectedGender,
-                            formattedDate,
-                            "",
-                            "Incomplete",
-                            navController
+                           username = userId,
+                        phone = phoneNumber,
+                         fullName = name,
+                         firstName = firstName,
+                         lastName= lastName,
+                         photo= imageUrl,
+                         profession= "Astrologer" ,// constant value
+                         themeSelected = "#50A65C", // constant value
+                         videoRate= "25", // constant value
+                         audioRate= "25", // constant value
+                         chatRate= "25", // constant value
+                         gender= selectedGender,
+                         dob = formattedDate,
+                         bio = "mdlapd", // constant value
+                         kyc_status = "Incomplete", // constant value
+                         navController= navController
                         )
-                        Toast.makeText(context, "User Created", Toast.LENGTH_SHORT).show()
                         authenticationViewModel.saveToken(userToken)
                     }
                 ) {
@@ -635,44 +637,19 @@ fun GenderRadioButton(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
-
         Text(text)
     }
 }
 
 
 
-    @Composable
-    fun PickImageFromGallery()
-    {
+@Composable
+fun PickImageFromGallery()
+{
         val context = LocalContext.current
         var imageUri by remember { mutableStateOf<Uri?>(null) }
     }
 
-//                        Button(
-//                            shape = RoundedCornerShape(10.dp),
-//                            modifier = Modifier.fillMaxSize(),
-//                            elevation = ButtonDefaults.buttonElevation(
-//                                defaultElevation = 1.dp,
-//                                pressedElevation = 5.dp
-//                            ),
-//                            border = BorderStroke(1.dp, color = BorderColor2),
-//                            colors = ButtonDefaults.buttonColors(Color.White),
-//                            onClick = {
-//                                selectedGender = "Male"
-//                            }
-//                        )
-//                        {
-//                            Text(text = "Male",
-//                                modifier = Modifier,
-//                                textAlign = TextAlign.Center,
-//                                style = TextStyle(
-//                                    fontFamily = arimoFontFamily,
-//                                    fontWeight = FontWeight.Black,
-//                                    fontSize = 14.sp
-//                                ),color = SecondaryText
-//                            )
-//                        }
 @Composable
 fun gender()
 {
@@ -696,8 +673,8 @@ fun gender()
     }
 }
 
-fun uploadImageToFirebase(uri: Uri?, context: Context) {
-
+fun uploadImageToFirebase(uri: Uri?, context: Context, onSuccess: (String) -> Unit) {
+    Log.d("UploadingImageToFirebase","Image Url: ${uri.toString()}")
     val storage = FirebaseStorage.getInstance()
     val storageRef = storage.reference
     val imageRef = storageRef.child("images/${uri!!.lastPathSegment}")
@@ -706,15 +683,12 @@ fun uploadImageToFirebase(uri: Uri?, context: Context) {
         imageRef.putFile(it)
     }
 
-//    imageUploadCounter = false
-
     uploadTask.addOnSuccessListener {
-        imageRef.downloadUrl.addOnSuccessListener {
-            imageUrl = it.toString()
+        imageRef.downloadUrl.addOnSuccessListener { downloadUrl ->
+            onSuccess(downloadUrl.toString())
         }
-//        imageUploadCounter = true
-
     }.addOnFailureListener {
+        Toast.makeText(context, "Image upload failed", Toast.LENGTH_SHORT).show()
     }
 }
 

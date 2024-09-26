@@ -1,6 +1,9 @@
 package com.example.myapplication.myapplication.flashcall.di
 
+import android.app.Application
+import android.app.Notification
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
@@ -21,6 +24,9 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import io.getstream.video.android.core.StreamVideo
+import io.getstream.video.android.core.StreamVideoBuilder
+import io.getstream.video.android.model.User
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -36,7 +42,7 @@ object APIModule {
     fun providesRetrofit() : Retrofit {
         val moshi = GsonConverterFactory.create()
         return Retrofit.Builder()
-            .baseUrl("https://flashcall.vercel.app/")
+            .baseUrl("https://flashcall.me/")
             .client(OkHttpClient())
             .addConverterFactory(moshi)
             .build()
@@ -93,5 +99,16 @@ object APIModule {
     @Provides
     fun providesUserPref(dataStore: DataStore<Preferences>)
             : userPref = PreferenceStore(dataStore)
+
+    @Provides
+    @Singleton
+    fun provideApplicationContext(@ApplicationContext context: Context): Context = context
+
+    @Provides
+    fun provideSharedPreferences(
+        @ApplicationContext context: Context
+    ): SharedPreferences {
+        return context.getSharedPreferences("user_prefs1", Context.MODE_PRIVATE)
+    }
 
 }
