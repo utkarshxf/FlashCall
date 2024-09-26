@@ -50,6 +50,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -61,6 +62,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import co.hyperverge.hyperkyc.data.models.HyperKycConfig
 import com.composeuisuite.ohteepee.OhTeePeeInput
@@ -130,7 +132,9 @@ fun KYCScreen(
             val livelinessState = viewModel.livelinessState
             if(panState.isPanVerified && aadharState.isAadharVerified && livelinessState.isLivelinessVerified){
                 viewModel.makeKycDone()
-                Row (modifier = Modifier.fillMaxWidth().padding(top = 15.dp), horizontalArrangement = Arrangement.Center){
+                Row (modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 15.dp), horizontalArrangement = Arrangement.Center){
                     Text("KYC Completed", color = MainColor, textAlign = TextAlign.Center, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                 }
 
@@ -173,6 +177,7 @@ fun PanKYC(vm: KycViewModel) {
                     Image(
                         painter = painterResource(id = iconResId),
                         contentDescription = null,
+                        colorFilter = ColorFilter.tint(MainColor),
                         modifier = Modifier
                             .height(24.dp)
                             .width(24.dp)
@@ -256,6 +261,7 @@ fun AadharKYC(vm: KycViewModel){
                     Image(
                         painter = painterResource(id = iconResId),
                         contentDescription = null,
+                        colorFilter = ColorFilter.tint(MainColor),
                         modifier = Modifier
                             .height(24.dp)
                             .width(24.dp)
@@ -468,6 +474,9 @@ fun LivelinessKYC(vm: KycViewModel){
     }else{
         R.drawable.exclamation1
     }
+    var isUploadingImage by remember {
+        mutableStateOf(false)
+    }
 
 
     Card(
@@ -489,6 +498,7 @@ fun LivelinessKYC(vm: KycViewModel){
                     Image(
                         painter = painterResource(id = iconResId),
                         contentDescription = null,
+                        colorFilter = ColorFilter.tint(MainColor),
                         modifier = Modifier
                             .height(24.dp)
                             .width(24.dp)
@@ -513,16 +523,24 @@ fun LivelinessKYC(vm: KycViewModel){
                     var fileName by remember { mutableStateOf("No file chosen") }
                     val context = LocalContext.current
                     val destinationFile = File(context.cacheDir, "${LocalDateTime.now()}_img.tmp")
-                    var uriImg: Uri? = null
-                    var imageUriStr: String? = null
+                    var uri: Uri? = null
+                    var uriImg by remember {
+                        mutableStateOf(uri)
+                    }
+                    var imageUriStr by remember {
+                        mutableStateOf("")
+                    }
 
                     val launcher = rememberLauncherForActivityResult(
                         contract = ActivityResultContracts.GetContent()
                     ) { uri: Uri? ->
                         uri?.let {
+                            isUploadingImage = !isUploadingImage
                             uriImg = it
                             uploadImageToFirebase(uri, context) { imgUrl ->
                                 imageUriStr = imgUrl
+                                Log.d("ImageUploaded", "url: $imageUriStr, uri: $uriImg")
+                                isUploadingImage = !isUploadingImage
                             }
 
                         }
@@ -538,10 +556,13 @@ fun LivelinessKYC(vm: KycViewModel){
                         Text("Choose File", color = Color.Black)
                     }
                     Spacer(modifier = Modifier.height(8.dp))
+                    if(imageUriStr != null){
+                        fileName = "Image Selected"
+                    }
                     Text(fileName, color = Color.Gray)
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    if (livelinessState.isLoading) {
+                    if (livelinessState.isLoading || isUploadingImage) {
                         LoadingIndicator()
                     }
                     if (livelinessState.error != null) {
@@ -568,7 +589,13 @@ fun LivelinessKYC(vm: KycViewModel){
                                     Toast.makeText(context, "Image Not Found", Toast.LENGTH_SHORT).show()
                                 }
                             } else {
-                                Toast.makeText(context, "Processing...", Toast.LENGTH_SHORT).show()
+                                if(uriImg == null){
+                                    Toast.makeText(context, "Uri Processing...", Toast.LENGTH_SHORT).show()
+                                }
+                                if(imageUriStr == null){
+                                    Toast.makeText(context, "Image Processing...", Toast.LENGTH_SHORT).show()
+                                }
+
                             }
                         },
                         modifier = Modifier.fillMaxWidth(),
@@ -579,6 +606,9 @@ fun LivelinessKYC(vm: KycViewModel){
                     }
                 }
             }
+            //66f3be0326c7007e59f7a173
+            //104801510351
+            //icic0002355
 
         }
     }

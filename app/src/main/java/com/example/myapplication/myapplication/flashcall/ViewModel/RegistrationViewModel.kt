@@ -51,7 +51,6 @@ class RegistrationViewModel @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
-
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences("user_prefs1", Context.MODE_PRIVATE)
 
@@ -305,6 +304,8 @@ class RegistrationViewModel @Inject constructor(
         navController: NavController,
         loading: (Boolean) -> Unit
     ) {
+
+        Log.d("SelectedTheme","theme: $themeSelected")
         viewModelScope.launch {
             loading(true)
             _updateUserState.value = APIResponse.Loading
@@ -324,10 +325,12 @@ class RegistrationViewModel @Inject constructor(
                     phone = phone,
                     username = username
                 ).collect { response ->
+
+
+
                     _updateUserState.value = APIResponse.Success(response)
                     loading(false)
                     userPreferencesRepository.storeUpdateUserResponseInPreferences(response)
-//                    navController.navigate(ScreenRoutes.HomeScreen.route)
                     navController.popBackStack()
                 }
             } catch (e: Exception) {
@@ -571,9 +574,38 @@ class RegistrationViewModel @Inject constructor(
             true
         }
     }
+    fun getIsPaymentDetails(): Boolean{
+        return if(userPreferencesRepository.getPaymentSettings().isPayment){
+            false
+        }else{
+            true
+        }
+    }
 
+    var userAssistanceLinkState by mutableStateOf(UserAssistanceLinkState())
+    fun getUserAssistanceLink(){
+        userAssistanceLinkState = userAssistanceLinkState.copy(linkUrl = userPreferencesRepository.getUserAssistanceLink(), linkDesc = userPreferencesRepository.getUserAssistanceLinkDesc())
+        viewModelScope.launch {
+            repository.getUserAssistanceLink("https://backend.flashcall.me/api/v1/others/getStaticLink").collect{ response ->
+                if(response.link != null && response.description!= null){
+                    userPreferencesRepository.saveUserAssistanceLink(response.link!!)
+                    userPreferencesRepository.saveUserAssistanceLinkDesc(response.description!!)
+                    userAssistanceLinkState = userAssistanceLinkState.copy(linkUrl = userPreferencesRepository.getUserAssistanceLink(), linkDesc = userPreferencesRepository.getUserAssistanceLinkDesc())
+                }
+                Log.d("UserAssistaceLink","response: $response")
+            }
+        }
+    }
 
+    fun getMyBio(): String{
+        return userPreferencesRepository.getStoredUserData(PreferencesKey.Bio.key)+""
+    }
 }
+
+data class UserAssistanceLinkState(
+    var linkUrl: String? = null,
+    var linkDesc: String? = null
+)
 
 data class ShareLinkState(
     var shareLink: String = "",

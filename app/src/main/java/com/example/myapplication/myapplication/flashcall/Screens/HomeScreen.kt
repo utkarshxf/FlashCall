@@ -15,6 +15,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +29,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -55,8 +57,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -65,6 +69,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.consumeAllChanges
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -98,9 +104,13 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.PrimaryBackGround
 import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryBackGround
 import com.example.myapplication.myapplication.flashcall.ui.theme.SwitchColor
-import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
 import com.example.myapplication.myapplication.flashcall.ui.theme.helveticaFontFamily
 import com.example.myapplication.myapplication.flashcall.utils.LoadingIndicator
+import com.jetpack.draganddroplist.DragDropList
+import com.jetpack.draganddroplist.move
+import com.jetpack.draganddroplist.rememberDragDropListState
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 //var uriImg: Uri? = null
 var creatorUid: String = ""
@@ -237,7 +247,7 @@ fun HomeScreen(
                             }) {
                                 Text(
                                     text = "edit profile", style = TextStyle(
-                                        fontFamily = arimoFontFamily,
+                                        fontFamily = helveticaFontFamily,
                                         fontWeight = FontWeight.Black,
                                         fontSize = 13.sp,
                                         color = Color.Black
@@ -321,7 +331,7 @@ fun HomeScreen(
 
                 Text(
                     text = name, color = Color.White, style = TextStyle(
-                        fontFamily = arimoFontFamily,
+                        fontFamily = helveticaFontFamily,
                         fontWeight = FontWeight.Bold,
                         fontSize = 24.sp,
                     ), modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -331,8 +341,8 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = userId, color = Color.White, style = TextStyle(
-                        fontFamily = arimoFontFamily,
+                    text = "@$userId", color = Color.White, style = TextStyle(
+                        fontFamily = helveticaFontFamily,
                         fontWeight = FontWeight.Black,
                         fontSize = 16.sp,
                     ), modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -404,8 +414,15 @@ fun HomeScreenBottom(
                 var additionalLinksList = addAditionalLinkState.linksList
 
                 if (!additionalLinksList.isNullOrEmpty()) {
+
+//                    additionalLinksList.toMutableStateList()
+//                    DragDropList(
+//                        items = additionalLinksList,
+//                        onMove = { fromIndex, toIndex -> additionalLinksList.move(fromIndex, toIndex)}
+//                    )
+
                     for (i in additionalLinksList.indices) {
-                        AddedLinkLayout(viewModel,item = additionalLinksList[i], isActive = {
+                        AddedLinkLayout(item = additionalLinksList[i], isActive = {
                             additionalLinksList[i].isActive = !additionalLinksList[i].isActive!!
                             viewModel.updateUserLinks(LinkData(additionalLinksList[i].title,
                                 additionalLinksList[i].url, additionalLinksList[i].isActive))
@@ -426,7 +443,8 @@ fun HomeScreenBottom(
                     AddLinkLayout {
                         viewModel.showLayoutForAddLinks(false)
                     }
-                } else {
+                }
+                else {
                     addExtraLink(
                         modifier = Modifier
                             .height(84.dp)
@@ -469,7 +487,7 @@ fun HomeScreenBottom(
 
                 Spacer(modifier = Modifier.height(40.dp))
 
-                DemoText()
+                DemoText(viewModel)
 
                 Spacer(modifier = Modifier.height(60.dp))
 
@@ -478,6 +496,8 @@ fun HomeScreenBottom(
         }
     }
 }
+
+
 
 
 @Composable
@@ -519,6 +539,7 @@ fun addExtraLink(
 
 @Composable
 fun CopyBar(viewModel: RegistrationViewModel) {
+
     LaunchedEffect(key1 = Unit) {
         viewModel.getShareLink()
     }
@@ -527,8 +548,12 @@ fun CopyBar(viewModel: RegistrationViewModel) {
     var copyText by remember {
         mutableStateOf("")
     }
+    var myBio by remember {
+        mutableStateOf(viewModel.getMyBio())
+    }
     copyText = shareLinkState.shareLink
-    var context = LocalContext.current
+
+    val context = LocalContext.current
 
     Row(
         modifier = Modifier
@@ -563,7 +588,7 @@ fun CopyBar(viewModel: RegistrationViewModel) {
                         .weight(1f)
                         .padding(end = 8.dp),
                     style = TextStyle(
-                        fontFamily = arimoFontFamily,
+                        fontFamily = helveticaFontFamily,
                         fontWeight = FontWeight.Black,
                         fontSize = 14.sp,
                         color = Color.Black
@@ -585,7 +610,7 @@ fun CopyBar(viewModel: RegistrationViewModel) {
         Spacer(modifier = Modifier.width(8.dp))
 
         ShareTextButton(
-            shareLink = copyText
+            shareLink = copyText, bio = myBio
         )
     }
 }
@@ -640,7 +665,7 @@ fun WalletBar(navController: NavController, viewModel: RegistrationViewModel) {
                     Text(
                         text = "Rs.",
                         style = TextStyle(
-                            fontFamily = arimoFontFamily,
+                            fontFamily = helveticaFontFamily,
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
                             color = Color.Black
@@ -651,7 +676,7 @@ fun WalletBar(navController: NavController, viewModel: RegistrationViewModel) {
                         text = "$walletBalance",
                         modifier = Modifier.padding(top = 5.dp),
                         style = TextStyle(
-                            fontFamily = arimoFontFamily,
+                            fontFamily = helveticaFontFamily,
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp,
                             color = Color.Black
@@ -676,7 +701,7 @@ fun WalletBar(navController: NavController, viewModel: RegistrationViewModel) {
                 Text(
                     text = "View Wallet",
                     style = TextStyle(
-                        fontFamily = arimoFontFamily,
+                        fontFamily = helveticaFontFamily,
                         fontWeight = FontWeight.Black,
                         fontSize = 13.sp,
                     ),
@@ -745,8 +770,8 @@ fun ServicesSection(
                 Text(
                     text = "My Services",
                     style = TextStyle(
-                        fontFamily = arimoFontFamily,
-                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = helveticaFontFamily,
+                        fontWeight = FontWeight.Bold,
                         fontSize = 20.sp,
                         color = Color.Black
                     )
@@ -967,7 +992,7 @@ fun ServiceRow(
                 text = serviceName,
                 modifier = Modifier.clickable(enabled = serviceEnabled) { onEditClick() },
                 style = TextStyle(
-                    fontFamily = arimoFontFamily,
+                    fontFamily = helveticaFontFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     color = rowTextColor // Apply dynamic color
@@ -977,7 +1002,7 @@ fun ServiceRow(
             Row {
                 Text(
                     text = "Rs. $servicePrice/min", style = TextStyle(
-                        fontFamily = arimoFontFamily,
+                        fontFamily = helveticaFontFamily,
                         fontWeight = FontWeight.Black,
                         fontSize = 14.sp,
                         color = rowTextColor
@@ -1220,7 +1245,12 @@ fun shareLink(url: String) {
 }
 
 @Composable
-fun ShareTextButton(shareLink: String) {
+fun ShareTextButton(shareLink: String, bio: String) {
+    var sharingContent = "Hi 👋\n\nYou can use the below link to consult with me through Video Call, Audio Call or Chat. \n\nLink: $shareLink\n\n"
+
+    if(bio.isNotEmpty()){
+        sharingContent += "About me: $bio"
+    }
     val launcher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -1238,7 +1268,7 @@ fun ShareTextButton(shareLink: String) {
                 val sendIntent: Intent = Intent().apply {
                     action = Intent.ACTION_SEND
                     putExtra(
-                        Intent.EXTRA_TEXT, shareLink
+                        Intent.EXTRA_TEXT, sharingContent
                     )
                     type = "text/plain"
                 }
@@ -1250,7 +1280,23 @@ fun ShareTextButton(shareLink: String) {
 }
 
 @Composable
-fun DemoText() {
+fun DemoText(viewModel: RegistrationViewModel) {
+
+    LaunchedEffect(key1 = Unit) {
+        viewModel.getUserAssistanceLink()
+    }
+    var linksState = viewModel.userAssistanceLinkState
+    var userAssistanceLink by remember {
+        mutableStateOf("")
+    }
+    var userAssistanceLinkDesc by remember {
+        mutableStateOf("")
+    }
+    userAssistanceLink = linksState.linkUrl+""
+    userAssistanceLinkDesc = linksState.linkDesc+""
+
+    val context = LocalContext.current
+
     Box(modifier = Modifier.fillMaxWidth()) {
 
         Row(
@@ -1260,30 +1306,20 @@ fun DemoText() {
         ) {
             Column {
                 Text(
-                    text = "If you are Interested in Learning how to create an ",
+                    text = userAssistanceLinkDesc,
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                     style = TextStyle(
                         color = Color.Black,
-                        fontSize = 14.sp
-                    )
-                )
-                Text(
-                    text = "account on Flashcall and how it works.",
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    style = TextStyle(
-//                        textDecoration = TextDecoration.Underline,
-                        color = Color.Black,
-//                    fontWeight = FontWeight.Bold,
                         fontSize = 14.sp
                     )
                 )
                 Text(
                     text = "please click here",
-
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .clickable {
-
+                            val urlIntent = Intent(Intent.ACTION_VIEW, Uri.parse(userAssistanceLink+""))
+                            context.startActivity(urlIntent)
                         }, style = TextStyle(
                         textDecoration = TextDecoration.Underline,
                         color = MainColor,
@@ -1319,12 +1355,8 @@ fun walletIcon() {
 }
 
 @Composable
-fun AddedLinkLayout(viewModel: RegistrationViewModel,item: LinkData, isActive: () -> Unit, edit: () -> Unit, delete: () -> Unit) {
+fun AddedLinkLayout(item: LinkData, isActive: () -> Unit, edit: () -> Unit, delete: () -> Unit) {
     var mDisplayMenu by remember { mutableStateOf(false) }
-    var loading by remember { mutableStateOf(false) }
-    val addAditionalLinkState = viewModel.addAditionalLinkState
-    loading = addAditionalLinkState.isLoading
-
 
     Box(modifier = Modifier.padding(bottom = 10.dp)) {
         Row(
@@ -1415,10 +1447,6 @@ fun AddedLinkLayout(viewModel: RegistrationViewModel,item: LinkData, isActive: (
                 }
             }
         }
-
-        if(loading){
-            LoadingIndicator()
-        }
     }
 }
 
@@ -1436,9 +1464,9 @@ fun AddLinkLayout(
     }
     var context = LocalContext.current
 
-    val addtingLinkState = registrationViewModel.addAditionalLinkState
+    //val addtingLinkState = registrationViewModel.addAditionalLinkState
     var loading by remember { mutableStateOf(false) }
-    loading = addtingLinkState.isLoading
+    //loading = addtingLinkState.isLoading
 
 
     Column(
@@ -1464,7 +1492,7 @@ fun AddLinkLayout(
                     text = "Enter Title Here",
                     color = Color.Black,
                     style = TextStyle(
-                        fontFamily = arimoFontFamily,
+                        fontFamily = helveticaFontFamily,
                         fontWeight = FontWeight.Normal,
                     )
                 )
@@ -1489,7 +1517,7 @@ fun AddLinkLayout(
                     text = "Past URL link here",
                     color = Color.Black,
                     style = TextStyle(
-                        fontFamily = arimoFontFamily,
+                        fontFamily = helveticaFontFamily,
                         fontWeight = FontWeight.Normal,
                     )
                 )
@@ -1524,7 +1552,7 @@ fun AddLinkLayout(
                     text = "Cancel",
                     textAlign = TextAlign.Center,
                     style = TextStyle(
-                        fontFamily = arimoFontFamily,
+                        fontFamily = helveticaFontFamily,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     ), color = Color.White
@@ -1540,7 +1568,7 @@ fun AddLinkLayout(
                 loading = loading,
                 text = "SAVE",
                 textStyle = TextStyle(
-                    fontFamily = arimoFontFamily,
+                    fontFamily = helveticaFontFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
                 ),
@@ -1606,7 +1634,7 @@ fun EditLinkLayout(
                     text = "Enter Title Here",
                     color = Color.Black,
                     style = TextStyle(
-                        fontFamily = arimoFontFamily,
+                        fontFamily = helveticaFontFamily,
                         fontWeight = FontWeight.Normal,
                     )
                 )
@@ -1631,7 +1659,7 @@ fun EditLinkLayout(
                     text = "Past URL link here",
                     color = Color.Black,
                     style = TextStyle(
-                        fontFamily = arimoFontFamily,
+                        fontFamily = helveticaFontFamily,
                         fontWeight = FontWeight.Normal,
                     )
                 )
@@ -1666,7 +1694,7 @@ fun EditLinkLayout(
                     text = "Cancel",
                     textAlign = TextAlign.Center,
                     style = TextStyle(
-                        fontFamily = arimoFontFamily,
+                        fontFamily = helveticaFontFamily,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     ), color = Color.White
@@ -1682,7 +1710,7 @@ fun EditLinkLayout(
                 loading = loading,
                 text = "SAVE",
                 textStyle = TextStyle(
-                    fontFamily = arimoFontFamily,
+                    fontFamily = helveticaFontFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
                 ),

@@ -1,5 +1,6 @@
 package com.example.myapplication.myapplication.flashcall.Screens
 
+import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.core.animateDpAsState
@@ -27,9 +28,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -78,8 +81,15 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryText
 import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -96,21 +106,35 @@ import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
 import com.example.myapplication.myapplication.flashcall.Screens.common.CircularLoaderButton
 import com.google.accompanist.insets.LocalWindowInsets
+import kotlinx.coroutines.launch
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.runtime.*
+import kotlinx.coroutines.launch
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.text.input.ImeAction
+import kotlinx.coroutines.launch
 
-var sendtoken : String? = ""
+var sendtoken: String? = ""
+
 //var keyBoard by remember { mutableStateOf(false) }
+@SuppressLint("CoroutineCreationDuringComposition")
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(navController: NavController, viewModel: AuthenticationViewModel) {
     // Create a mutable state to track keyboard visibility
-    var isKeyboardOpen by remember { mutableStateOf(false) }
-    val insets = LocalWindowInsets.current
+//    var isKeyboardOpen by remember { mutableStateOf(false) }
+//    val insets = LocalWindowInsets.current
     val keyboardController = LocalSoftwareKeyboardController.current
-    LaunchedEffect(insets) {
-        val keyboardHeight = insets.ime.bottom
-        isKeyboardOpen = keyboardHeight > 0
+//    LaunchedEffect(insets) {
+//        val keyboardHeight = insets.ime.bottom
+//        isKeyboardOpen = keyboardHeight > 0
 //        Log.d("isKeyboard", "$isKeyboardOpen")
-    }
-    Log.d("isKeyboard", "$isKeyboardOpen")
+//    }
+//    Log.d("isKeyboard", "$isKeyboardOpen")
     Surface(
         modifier = Modifier
             .fillMaxSize()
@@ -118,62 +142,36 @@ fun SignUpScreen(navController: NavController, viewModel: AuthenticationViewMode
         color = Background,
     ) {
 
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
+            contentAlignment = Alignment.BottomCenter
         ) {
-            if (!isKeyboardOpen) {
-                // Only show image slider and texts when the keyboard is closed
-                ImageSlider()
-                Spacer(modifier = Modifier.height(20.dp))
-                //TitleText()
+//            if (!isKeyboardOpen) {
+            // Only show image slider and texts when the keyboard is closed
+            ImageSlider()
+//                Spacer(modifier = Modifier.height(20.dp))
+            //TitleText()
 //                Spacer(modifier = Modifier.height(15.dp))
 //                SubTitleText()
 //                Spacer(modifier = Modifier.height(30.dp))
-            }
-            if(isKeyboardOpen){
-                Spacer(modifier = Modifier.height(50.dp))
+//            }
+//            if(isKeyboardOpen){
+//                Spacer(modifier = Modifier.height(50.dp))
 //                TitleText()
 //                Spacer(modifier = Modifier.height(15.dp))
 //                SubTitleText()
 //                Spacer(modifier = Modifier.height(30.dp))
-            }
-            BottomSignUpBar(navController, viewModel, isKeyboardOpen, onKeyboardToggle = {
-                isKeyboardOpen = it
-            })
+//            }
+
+
+
+            BottomSignUpBar(navController, viewModel)
+
         }
     }
 }
 
-//@Composable
-//fun TitleText()
-//{
-//    //Title 1: Catchy Line to Make user Fool
-//    Text(text = "",
-//        color = Color.White,
-//        style = TextStyle(
-//            fontFamily = arimoFontFamily,
-//            fontWeight = FontWeight.Bold,
-//            fontSize = 18.sp
-//        )
-//    )
-//
-//}
-
-//@Composable
-//fun SubTitleText()
-//{
-//    //Sub Title 1:To support the above line
-//    Text(text = "",
-//        color = Color.Gray,
-//        style = TextStyle(
-//            fontFamily = arimoFontFamily,
-//            fontWeight = FontWeight.Normal,
-//            fontSize = 16.sp
-//        )
-//    )
-//}
 
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -186,12 +184,11 @@ fun ImageSlider(modifier: Modifier = Modifier) {
         R.drawable.home_slider_image3,
     )
 
-   val pagerState = rememberPagerState(pageCount = { images.size })
+    val pagerState = rememberPagerState(pageCount = { images.size })
 
     LaunchedEffect(Unit) {
 
-        while(true)
-        {
+        while (true) {
             delay(3000)
             val nextPager = (pagerState.currentPage + 1) % pagerState.pageCount
             pagerState.scrollToPage(nextPager)
@@ -200,13 +197,14 @@ fun ImageSlider(modifier: Modifier = Modifier) {
     }
 
     Column(modifier = modifier.fillMaxWidth()) {
-        Box(modifier = modifier
-            .padding(top = 70.dp)
-            .wrapContentSize()
-            .align(Alignment.CenterHorizontally)
-            .width(200.dp)
-            .height(200.dp))
-        {
+        Box(
+            modifier = modifier
+//            .padding(top = 70.dp)
+//            .wrapContentSize()
+//            .align(Alignment.CenterHorizontally)
+//            .width(200.dp)
+//            .height(200.dp)
+        ) {
 
             HorizontalPager(
                 state = pagerState,
@@ -239,11 +237,8 @@ fun ImageSlider(modifier: Modifier = Modifier) {
 }
 
 
-
-
 @Composable
-fun PageIndicator(pageCount: Int, currentPage: Int, modifier:  Modifier)
-{
+fun PageIndicator(pageCount: Int, currentPage: Int, modifier: Modifier) {
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -254,8 +249,8 @@ fun PageIndicator(pageCount: Int, currentPage: Int, modifier:  Modifier)
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            repeat(pageCount){
-                IndicatorDots(isSelected = it == currentPage, modifier= modifier)
+            repeat(pageCount) {
+                IndicatorDots(isSelected = it == currentPage, modifier = modifier)
             }
         }
     }
@@ -267,22 +262,21 @@ fun PageIndicator(pageCount: Int, currentPage: Int, modifier:  Modifier)
 @Composable
 fun IndicatorDots(isSelected: Boolean, modifier: Modifier) {
     val size = animateDpAsState(targetValue = if (isSelected) 7.dp else 5.dp, label = "")
-    Box(modifier = modifier
-        .padding(2.dp)
-        .size(size.value)
-        .clip(CircleShape)
-        .background(if (isSelected) Color(0xFFD9D9D9) else Color(0x40D9D9D9))
+    Box(
+        modifier = modifier
+            .padding(2.dp)
+            .size(size.value)
+            .clip(CircleShape)
+            .background(if (isSelected) Color(0xFFD9D9D9) else Color(0x40D9D9D9))
     )
 }
 
 @Composable
 fun BottomSignUpBar(
     navController: NavController,
-    viewModel: AuthenticationViewModel,
-    isKeyboardOpen: Boolean,
-    onKeyboardToggle: (Boolean) -> Unit
+    viewModel: AuthenticationViewModel
 ) {
-    var loading by remember {mutableStateOf(false)}
+    var loading by remember { mutableStateOf(false) }
     val context = LocalContext.current
     var phoneNumber by remember {
         mutableStateOf("")
@@ -291,23 +285,25 @@ fun BottomSignUpBar(
     val focusManager = LocalFocusManager.current
 
     val sendOTPState by viewModel.sendOTPState.collectAsState()
-    Log.d("isKeyboard2", "$isKeyboardOpen")
+//    Log.d("isKeyboard2", "$isKeyboardOpen")
 
     Surface(
         modifier = Modifier
-            .fillMaxSize()
-            .pointerInput(Unit) {
-                // Detect taps anywhere on the screen
-                detectTapGestures {
-                    // Clear focus when tapping outside the input field
-                    focusManager.clearFocus()
-                }
-            },
+            .fillMaxWidth()
+            .wrapContentHeight()
+//            .pointerInput(Unit) {
+//                // Detect taps anywhere on the screen
+//                detectTapGestures {
+//                    // Clear focus when tapping outside the input field
+//                    focusManager.clearFocus()
+//                }
+//            }
+        ,
         shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
     ) {
         Box(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .background(
                     Color.White,
                     shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
@@ -317,9 +313,11 @@ fun BottomSignUpBar(
 
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-            ) {
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState()),
+
+                ) {
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(
                     text = "Login or SignUp",
@@ -365,10 +363,7 @@ fun BottomSignUpBar(
                     Row(
                         modifier = Modifier
                             .fillMaxSize()
-                            .clip(shape = RoundedCornerShape(16.dp))
                             .background(PrimaryBackGround, shape = RoundedCornerShape(16.dp))
-                            .border(BorderStroke(1.dp, SolidColor(BorderColor))),
-//                        verticalAlignment = Alignment.CenterVertically,
                     ) {
 
                         Text(
@@ -384,17 +379,13 @@ fun BottomSignUpBar(
 
 
 
-//                        VerticalDivider()
-
-                        Text(
-                            text = "|",
-                            modifier = Modifier.padding(start = 10.dp, top = 5.dp),
-                            color = SecondaryText,
-                            style = TextStyle(
-                                fontFamily = arimoFontFamily,
-                                fontWeight = FontWeight.Light,
-                                fontSize = 40.sp
-                            )
+                        VerticalDivider(
+                            modifier = Modifier
+                                .width(1.dp)
+                                .fillMaxHeight()
+                                .padding(vertical = 15.dp)
+                                .padding(start = 10.dp)
+                                .background(color = SecondaryText)
                         )
 
                         TextField(
@@ -404,10 +395,7 @@ fun BottomSignUpBar(
                                 .padding(top = 7.dp)
                                 .fillMaxHeight()
                                 .width(170.dp)
-                                .focusRequester(focusRequester)
-                                .onFocusChanged {
-                                    onKeyboardToggle(it.isFocused)
-                                },
+                                .focusRequester(focusRequester),
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = Color.Transparent,
                                 unfocusedContainerColor = Color.Transparent,
@@ -415,7 +403,8 @@ fun BottomSignUpBar(
                                 unfocusedIndicatorColor = Color.Transparent
                             ),
                             keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Number
+                                keyboardType = KeyboardType.Number,
+                                imeAction = ImeAction.Done
                             ),
                             textStyle = TextStyle(
                                 fontFamily = arimoFontFamily,
@@ -440,9 +429,11 @@ fun BottomSignUpBar(
                                 val response = (sendOTPState as APIResponse.Success).data
                                 sendtoken = response.token
                             }
+
                             APIResponse.Empty -> Log.e("ERROR", "ERROR CODE")
                             is APIResponse.Error -> {
-                                Toast.makeText(context, "Something Went Wrong", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Something Went Wrong", Toast.LENGTH_SHORT)
+                                    .show()
                             }
 
                             APIResponse.Loading -> Log.e("ERROR", "ERROR CODE")
@@ -453,10 +444,10 @@ fun BottomSignUpBar(
                                 onClick = {
                                     viewModel.signUP(
                                         phoneNumber = phoneNumber, navController, sendtoken
-                                    ) {loading = it}
+                                    ) { loading = it }
                                 },
                                 modifier = Modifier
-                                    .padding(top = 5.dp, end = 1.dp),
+                                    .padding(top = 5.dp, end = 5.dp),
                                 shape = RoundedCornerShape(8.dp),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = MainColor,
@@ -483,7 +474,7 @@ fun BottomSignUpBar(
                     )
                 )
 
-                Spacer(modifier = if(isKeyboardOpen) Modifier.height(50.dp) else Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(110.dp))
 
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -508,7 +499,8 @@ fun BottomSignUpBar(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center
                         ) {
-                            Text(text = "Terms of Service",
+                            Text(
+                                text = "Terms of Service",
                                 modifier = Modifier.clickable { },
                                 style = TextStyle(
                                     fontFamily = arimoFontFamily,
@@ -517,7 +509,8 @@ fun BottomSignUpBar(
                                     color = Color.Black
                                 )
                             )
-                            Text(text = " and ",
+                            Text(
+                                text = " and ",
                                 modifier = Modifier.clickable { },
                                 style = TextStyle(
                                     fontFamily = arimoFontFamily,
@@ -527,7 +520,8 @@ fun BottomSignUpBar(
                                 )
                             )
 
-                            Text(text = "Privacy Policy",
+                            Text(
+                                text = "Privacy Policy",
                                 modifier = Modifier.clickable { },
                                 style = TextStyle(
                                     fontFamily = arimoFontFamily,
@@ -539,78 +533,17 @@ fun BottomSignUpBar(
                         }
                     }
                 }
+                Spacer(modifier = Modifier.height(40.dp))
             }
         }
     }
 }
 
 
-//@Composable
-//fun VerticalDivider(
-//    color: Color = Color.LightGray,
-//    thickness: Dp = 2.dp,
-//    height: Dp = 30.dp
-//) {
-//    Box(
-//        modifier = Modifier
-//            .height(height) // or use a specific height like `.height(height)`
-//            .width(thickness)
-//            .background(color),
-//
-//    )
-//}
-
-
-@Composable
-fun ClickableText() {
-
-
-    val termsOfServices = "Terms of Services"
-    val and = " and "
-    val privacyPolicy = "Privacy Policy"
-
-    val annotatedString = buildAnnotatedString {
-
-        withStyle(
-            style = SpanStyle(
-                color = Color.Black,
-                fontFamily = arimoFontFamily,
-                fontWeight = FontWeight.Bold
-            )
-        ) {
-            append(termsOfServices)
-        }
-        append(and)
-        withStyle(
-            style = SpanStyle(
-                color = Color.Black,
-                fontFamily = arimoFontFamily,
-                fontWeight = FontWeight.Bold
-            )
-        ) {
-            append(privacyPolicy)
-        }
-
-    }
-
-
-    ClickableText(text = annotatedString,
-        modifier = Modifier.padding(start = 40.dp),
-        onClick = { offset ->
-
-            annotatedString.getStringAnnotations(offset, offset)
-                .firstOrNull()?.also { span ->
-                    Log.d("ClickableText", "{$span}")
-
-                }
-        }
-    )
-}
-
 
 @Preview(showBackground = true)
 @Composable
-fun SignupPreview(){
+fun SignupPreview() {
     //SignUpScreen(navController = rememberNavController(), viewModel = AuthenticationViewModel(): hiltViewModel())
     //IncomingAudioCallScreen(callerName = "Mohd Gauri", navController = rememberNavController())
 }

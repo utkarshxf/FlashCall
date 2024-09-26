@@ -1,6 +1,5 @@
 package com.example.myapplication.myapplication.flashcall.Data.model
 
-import com.example.myapplication.myapplication.flashcall.Data.model.nameMatch.Data
 import com.google.gson.annotations.SerializedName
 
 data class AadhaarResponse(
