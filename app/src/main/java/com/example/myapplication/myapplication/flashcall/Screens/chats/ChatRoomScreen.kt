@@ -97,6 +97,7 @@ import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Data.model.Resource
 import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.MessageDataClass
 import com.example.myapplication.myapplication.flashcall.R
+import com.example.myapplication.myapplication.flashcall.Screens.common.maskIfPhoneNumber
 import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.chats.ChatViewModel
 import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
@@ -173,7 +174,7 @@ fun ChatRoomScreen(
                     modifier = Modifier.padding(start = 10.dp)
                 ) {
                     Text(
-                        text = chatData?.clientName ?: "Naina Talwar", style = TextStyle(
+                        text = maskIfPhoneNumber(chatData?.clientName ?: "Naina Talwar"), style = TextStyle(
                             color = Color.White,
                             fontSize = 18.sp,
                             fontFamily = arimoFontFamily,

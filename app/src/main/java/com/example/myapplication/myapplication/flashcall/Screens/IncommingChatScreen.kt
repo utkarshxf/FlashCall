@@ -52,6 +52,7 @@ import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Data.model.Resource
 import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.ChatRequestDataClass
 import com.example.myapplication.myapplication.flashcall.R
+import com.example.myapplication.myapplication.flashcall.Screens.common.maskIfPhoneNumber
 import com.example.myapplication.myapplication.flashcall.ViewModel.chats.ChatRequestViewModel
 
 @Composable
@@ -171,7 +172,7 @@ fun IncomingChatScreen(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = chatRequestData?.clientName ?: "Unknown",
+                        text = maskIfPhoneNumber( chatRequestData?.clientId ?: "Unknown"),
                         color = Color.White,
                         style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 24.sp)
                     )
@@ -209,6 +210,7 @@ fun IncomingChatScreen(
         }
     }
 }
+
 
 @Composable
 fun ChatActionButton(

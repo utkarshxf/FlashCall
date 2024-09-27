@@ -35,6 +35,7 @@ import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Data.VideoCallRoute
 import com.example.myapplication.myapplication.flashcall.Data.model.SDKResponseState
 import com.example.myapplication.myapplication.flashcall.R
+import com.example.myapplication.myapplication.flashcall.Screens.common.maskIfPhoneNumber
 import com.example.myapplication.myapplication.flashcall.ViewModel.VideoCallViewModel
 import io.getstream.video.android.core.Call
 
@@ -168,7 +169,7 @@ fun IncomingCallScreen(
                         Spacer(modifier = Modifier.height(4.dp))
 
                         Text(
-                            text = created.value?.name.toString(),
+                            text = maskIfPhoneNumber(created.value?.id?: "Unknown"),
                             color = Color.White,
                             style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 24.sp)
                         )
@@ -212,6 +213,7 @@ fun IncomingCallScreen(
         }
     }
 }
+
 
 @Composable
 fun CallActionButton(
