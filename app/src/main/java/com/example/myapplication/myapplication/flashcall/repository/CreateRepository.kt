@@ -7,12 +7,14 @@ import com.example.myapplication.myapplication.flashcall.Data.model.LinkData
 import com.example.myapplication.myapplication.flashcall.Data.model.ShareLinkResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.UpdateUserRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.UpdateUserResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.UserAssistanceLink
 import com.example.myapplication.myapplication.flashcall.Data.model.UserDetailsResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.UserUpdateData
 import com.example.myapplication.myapplication.flashcall.Data.model.UsernameAvailabilityResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.deleteAdditionalLink.DeleteAdditionalLinks
 import com.example.myapplication.myapplication.flashcall.Data.model.deleteAdditionalLink.DeletedAdditionalLinksResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.editAdditionalLink.EditAdditionalLinkRequest
+import com.example.myapplication.myapplication.flashcall.Data.model.spacialization.SpacializationResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.todaysWallet.TodaysWalletBalanceResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.wallet.UserId
 import com.example.myapplication.myapplication.flashcall.Data.network.APIService
@@ -208,6 +210,20 @@ class CreateRepository @Inject constructor(private val apiService: APIService):S
     suspend fun getShareLink(url: String): Flow<ShareLinkResponse>{
         return flow {
             val response = apiService.getShareLink(url)
+            emit(safeApiRequest { response })
+        }
+    }
+
+    suspend fun getUserAssistanceLink(url: String): Flow<UserAssistanceLink>{
+        return flow {
+            val response = apiService.getUserAssistanceLink(url)
+            emit(safeApiRequest { response })
+        }
+    }
+
+    suspend fun getSpacializations(url: String): Flow<SpacializationResponse>{
+        return flow {
+            val response = apiService.getSpacializations(url)
             emit(safeApiRequest { response })
         }
     }

@@ -2,6 +2,7 @@ package com.example.myapplication.myapplication.flashcall.utils
 
 import android.content.Context
 import android.content.pm.PackageManager
+import java.time.LocalDate
 
 
 fun formatTime(timeInSeconds: Double): String {
@@ -25,4 +26,13 @@ fun getAppVersionName(context: Context): String {
         e.printStackTrace()
         "Unknown Version"
     }
+}
+
+fun getVerificationId(length: Int): String {
+    val allowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+    var var_id: String = (1..length)
+        .map { allowedChars.random() }
+        .joinToString("")
+
+    return ""+LocalDate.now() + var_id
 }

@@ -7,6 +7,7 @@ import com.example.myapplication.myapplication.flashcall.Data.model.CreateUserRe
 import com.example.myapplication.myapplication.flashcall.Data.model.IsUserCreatedResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.LinkData
 import com.example.myapplication.myapplication.flashcall.Data.model.UpdateUserResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.paymentSetting.LocalPaymentSetting
 import com.example.myapplication.myapplication.flashcall.Data.model.wallet.Transaction
 import com.example.myapplication.myapplication.flashcall.Data.model.wallet.TransactionGroup
 import com.example.myapplication.myapplication.flashcall.Data.model.wallet.TransactionsResponse
@@ -44,7 +45,7 @@ class UserPreferencesRepository @Inject constructor(@ApplicationContext private 
     }
 
 
-    fun storeAdditionalLinks(userId: String, additionalLinksList: List<LinkData>?) {
+    fun storeAdditionalLinks(userId: String, additionalLinksList: MutableList<LinkData>?) {
         if(additionalLinksList != null){
             val jsonString = gson.toJson(additionalLinksList)
             sharedPreferences.edit().apply {
@@ -59,7 +60,7 @@ class UserPreferencesRepository @Inject constructor(@ApplicationContext private 
         }
     }
 
-    fun retrieveAdditionalLinks(userId: String): List<LinkData>? {
+    fun retrieveAdditionalLinks(userId: String): MutableList<LinkData>? {
         val additionalLinksStr = sharedPreferences.getString("additional_links_$userId", "") ?:""
         if(additionalLinksStr.isNotEmpty()){
             return convertingStringIntoList(additionalLinksStr)
@@ -67,10 +68,10 @@ class UserPreferencesRepository @Inject constructor(@ApplicationContext private 
             return null
         }
     }
-    private fun convertingStringIntoList(stringList: String): List<LinkData>? {
+    private fun convertingStringIntoList(stringList: String): MutableList<LinkData>? {
         val gson = Gson()
-        val listType = object : TypeToken<List<LinkData>>() {}.type
-        val list: List<LinkData> = gson.fromJson(stringList, listType)
+        val listType = object : TypeToken<MutableList<LinkData>>() {}.type
+        val list: MutableList<LinkData> = gson.fromJson(stringList, listType)
         return list
     }
 
@@ -222,5 +223,45 @@ class UserPreferencesRepository @Inject constructor(@ApplicationContext private 
         }
     }
 
+    fun getUserAssistanceLink(): String{
+        return sharedPreferences.getString(PreferencesKey.UserAssistanceLink.key, "")+""
+    }
+    fun saveUserAssistanceLink(shareLink: String){
+        sharedPreferences.edit().apply{
+            putString(PreferencesKey.UserAssistanceLink.key,shareLink)
+            apply()
+        }
+    }
+    fun getUserAssistanceLinkDesc(): String{
+        return sharedPreferences.getString(PreferencesKey.UserAssistanceLinkDesc.key, "")+""
+    }
+    fun saveUserAssistanceLinkDesc(shareLink: String){
+        sharedPreferences.edit().apply{
+            putString(PreferencesKey.UserAssistanceLinkDesc.key,shareLink)
+            apply()
+        }
+    }
 
+    fun savePaymentSettings(model: LocalPaymentSetting){
+        sharedPreferences.edit().apply {
+            putBoolean(PreferencesKey.IsPayment.key, model.isPayment)
+            putString(PreferencesKey.PaymentMode.key, model.paymentMode)
+            putString(PreferencesKey.VPA.key, model.vpa)
+            putString(PreferencesKey.AccountNumber.key, model.accountNumber)
+            putString(PreferencesKey.IFSC.key, model.ifsc)
+            apply()
+        }
+    }
+
+    fun getPaymentSettings(): LocalPaymentSetting{
+        var model = LocalPaymentSetting(
+            isPayment = sharedPreferences.getBoolean(PreferencesKey.IsPayment.key, false),
+            paymentMode = sharedPreferences.getString(PreferencesKey.PaymentMode.key,"")+""
+            , vpa = sharedPreferences.getString(PreferencesKey.VPA.key,"")+""
+            , accountNumber = sharedPreferences.getString(PreferencesKey.AccountNumber.key,"")+""
+            , ifsc = sharedPreferences.getString(PreferencesKey.IFSC.key,"")+""
+        )
+        return model
+
+    }
 }

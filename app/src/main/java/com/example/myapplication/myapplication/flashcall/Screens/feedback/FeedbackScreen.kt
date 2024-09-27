@@ -52,9 +52,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.myapplication.myapplication.flashcall.Data.model.feedback.Feedback
-import com.example.myapplication.myapplication.flashcall.Data.model.feedback.FeedbackX
 import com.example.myapplication.myapplication.flashcall.Data.model.feedback.UpdateFeedback
+import com.example.myapplication.myapplication.flashcall.Data.model.userFeedbacks.Feedback
+import com.example.myapplication.myapplication.flashcall.Data.model.userFeedbacks.FeedbackX
 import com.example.myapplication.myapplication.flashcall.R
 import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.feedback.FeedbackViewModel
@@ -62,6 +62,7 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.ProfileBackground
 import com.example.myapplication.myapplication.flashcall.ui.theme.RatingColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
+import com.jetpack.draganddroplist.move
 import java.time.ZonedDateTime
 import java.util.Date
 
@@ -76,7 +77,7 @@ fun FeedbackScreen(
     val uid = userData?._id
 
     // Collect the feedbacks from the ViewModel
-    val feedbacks by feedbackViewModel.feedbacks.collectAsState()
+    val feedbacks = feedbackViewModel.userFeedbackState.list
 
     LaunchedEffect(Unit) {
         feedbackViewModel.getFeedbacks(uid.toString())
@@ -124,31 +125,41 @@ fun FeedbackScreen(
             Spacer(modifier = Modifier.height(30.dp))
 
             // Check if feedbacks are available
-            if (feedbacks.isEmpty()) {
+            if (feedbacks?.feedbacks?.isEmpty() != null && feedbacks.feedbacks?.isEmpty()!!) {
                 Text("No feedbacks available")
             } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(feedbacks) { feedbackResponse ->
-                        feedbackResponse.feedbacks?.forEach { feedback ->
-                            FeedbackListUtil(feedback) {
-                                feedbackViewModel.updateFeedback(
-                                    UpdateFeedback(
-                                        clientId = feedback.clientId?._id,
-                                        createdAt = feedback.createdAt,
-                                        creatorId = feedbackResponse.creatorId?._id,
-                                        feedbackText = feedback.feedback,
-                                        rating = feedback.rating,
-                                        showFeedback = it
+
+
+//                feedbacks?.feedbacks?.let {
+//                    DragDropFeedbackList(feedbacks = it,
+//                        onMove = { fromIndex, toIndex -> feedbacks.feedbacks?.move(fromIndex, toIndex)})
+//                }
+
+                if(feedbacks?.feedbacks != null){
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(feedbacks.feedbacks!!) { feedbackResponse ->
+                            feedbackResponse.feedbacks?.forEach { feedback ->
+                                FeedbackListUtil(feedback) {
+                                    feedbackViewModel.updateFeedback(
+                                        UpdateFeedback(
+                                            clientId = feedback.clientId?.id,
+                                            createdAt = feedback.createdAt,
+                                            creatorId = feedbackResponse.creatorId,
+                                            feedbackText = feedback.feedback,
+                                            rating = feedback.rating,
+                                            showFeedback = it
+                                        )
                                     )
-                                )
+                                }
+                                Spacer(modifier = Modifier.height(12.dp))
                             }
-                            Spacer(modifier = Modifier.height(12.dp))
                         }
                     }
                 }
+
             }
         }
     }

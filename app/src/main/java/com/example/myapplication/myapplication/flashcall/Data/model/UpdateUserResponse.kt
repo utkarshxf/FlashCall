@@ -31,5 +31,5 @@ data class UpdatedUser(
     val createdAt: String,
     val updatedAt: String,
     val __v: Int,
-    val links: List<LinkData>?
+    val links: MutableList<LinkData>?
 )

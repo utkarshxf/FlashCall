@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class DeleteAdditionalLinks(
     @SerialName("link")
-    var link: LinkData?,
+    var link: LinkData,
     @SerialName("userId")
     var userId: String?
 )

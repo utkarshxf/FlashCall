@@ -1,11 +1,18 @@
 package com.example.myapplication.myapplication.flashcall.Screens
 
+import android.Manifest
+import android.content.Context
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -50,6 +57,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -57,10 +65,12 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import co.hyperverge.hyperkyc.data.models.HyperKycConfig
 import com.composeuisuite.ohteepee.OhTeePeeInput
@@ -75,8 +85,21 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.OTPBorder
 import com.example.myapplication.myapplication.flashcall.ui.theme.ProfileBackground
 import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
 import com.example.myapplication.myapplication.flashcall.utils.LoadingIndicator
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberPermissionState
 import java.io.File
 import java.time.LocalDateTime
+import androidx.camera.core.Preview
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
+import com.example.myapplication.myapplication.flashcall.utils.getVerificationId
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.shouldShowRationale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -98,6 +121,8 @@ fun KYCScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(start = 16.dp, end = 16.dp)
+                .verticalScroll(rememberScrollState()),
+
         ) {
             IconButton(onClick = { navController.popBackStack() }) {
                 Icon(
@@ -123,22 +148,20 @@ fun KYCScreen(
 
             AadharKYC(viewModel)
 
-            LivelinessKYC(viewModel)
+            LivelinessKYC(viewModel, navController = navController)
 
             val panState = viewModel.panState
             val aadharState = viewModel.aadharState
             val livelinessState = viewModel.livelinessState
             if(panState.isPanVerified && aadharState.isAadharVerified && livelinessState.isLivelinessVerified){
-                viewModel.makeKycDone()
-                Row (modifier = Modifier.fillMaxWidth().padding(top = 15.dp), horizontalArrangement = Arrangement.Center){
+                viewModel.makeKycDone(isDone = true)
+                Row (modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 15.dp), horizontalArrangement = Arrangement.Center){
                     Text("KYC Completed", color = MainColor, textAlign = TextAlign.Center, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                 }
 
             }
-
-
-
-
         }
     }
 }
@@ -146,12 +169,7 @@ fun KYCScreen(
 @Composable
 fun PanKYC(vm: KycViewModel) {
     var isExpand by remember { mutableStateOf(false) }
-    var panState = vm.panState
-    val iconResId = if(panState.isPanVerified){
-        R.drawable.baseline_verified_24
-    }else{
-        R.drawable.exclamation1
-    }
+    val panState = vm.panState
 
 
     Card(
@@ -170,13 +188,24 @@ fun PanKYC(vm: KycViewModel) {
             ) {
                 Text(text = "PAN", fontWeight = FontWeight.Medium, fontSize = 16.sp)
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Image(
-                        painter = painterResource(id = iconResId),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .height(24.dp)
-                            .width(24.dp)
-                    )
+                    if(panState.isPanVerified){
+                        Image(
+                            painter = painterResource(id = R.drawable.baseline_verified_24),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(MainColor),
+                            modifier = Modifier
+                                .height(24.dp)
+                                .width(24.dp)
+                        )
+                    }else{
+                        Image(
+                            painter = painterResource(id = R.drawable.exclamation1),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .height(24.dp)
+                                .width(24.dp)
+                        )
+                    }
                     Spacer(modifier = Modifier.width(8.dp))
                     if (!panState.isPanVerified) {
                         Icon(
@@ -230,12 +259,7 @@ fun PanKYC(vm: KycViewModel) {
 @Composable
 fun AadharKYC(vm: KycViewModel){
     var expanded by remember { mutableStateOf(false) }
-    var aadharState = vm.aadharState
-    val iconResId = if(aadharState.isAadharVerified){
-        R.drawable.baseline_verified_24
-    }else{
-        R.drawable.exclamation1
-    }
+    val aadharState = vm.aadharState
 
     Card(
         modifier = Modifier
@@ -253,13 +277,24 @@ fun AadharKYC(vm: KycViewModel){
             ) {
                 Text(text = "Aadhaar", fontWeight = FontWeight.Medium, fontSize = 16.sp)
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Image(
-                        painter = painterResource(id = iconResId),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .height(24.dp)
-                            .width(24.dp)
-                    )
+                    if(aadharState.isAadharVerified){
+                        Image(
+                            painter = painterResource(id = R.drawable.baseline_verified_24),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(MainColor),
+                            modifier = Modifier
+                                .height(24.dp)
+                                .width(24.dp)
+                        )
+                    }else{
+                        Image(
+                            painter = painterResource(id = R.drawable.exclamation1),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .height(24.dp)
+                                .width(24.dp)
+                        )
+                    }
                     Spacer(modifier = Modifier.width(8.dp))
                     if(!aadharState.isAadharVerified){
                         Icon(
@@ -460,14 +495,13 @@ fun AadharKYC(vm: KycViewModel){
 }
 
 @Composable
-fun LivelinessKYC(vm: KycViewModel){
+fun LivelinessKYC(vm: KycViewModel, navController: NavController){
     var expanded by remember { mutableStateOf(false) }
     var livelinessState = vm.livelinessState
-    val iconResId = if(livelinessState.isLivelinessVerified){
-        R.drawable.baseline_verified_24
-    }else{
-        R.drawable.exclamation1
-    }
+
+//    var isUploadingImage by remember {
+//        mutableStateOf(false)
+//    }
 
 
     Card(
@@ -486,13 +520,24 @@ fun LivelinessKYC(vm: KycViewModel){
             ) {
                 Text(text = "Liveliness Check", fontWeight = FontWeight.Medium, fontSize = 16.sp)
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Image(
-                        painter = painterResource(id = iconResId),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .height(24.dp)
-                            .width(24.dp)
-                    )
+                    if(livelinessState.isLivelinessVerified){
+                        Image(
+                            painter = painterResource(id = R.drawable.baseline_verified_24),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(MainColor),
+                            modifier = Modifier
+                                .height(24.dp)
+                                .width(24.dp)
+                        )
+                    }else{
+                        Image(
+                            painter = painterResource(id = R.drawable.exclamation1),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .height(24.dp)
+                                .width(24.dp)
+                        )
+                    }
                     Spacer(modifier = Modifier.width(8.dp))
                     if(!livelinessState.isLivelinessVerified){
                         Icon(
@@ -500,90 +545,106 @@ fun LivelinessKYC(vm: KycViewModel){
                             contentDescription = if (expanded) "Collapse" else "Expand",
                             tint = Color.Gray,
                             modifier = Modifier.clickable {
-                                expanded = !expanded
+                                navController.navigate(ScreenRoutes.CaptureImageScreen.route)
+//                                expanded = !expanded
                             }
                         )
                     }
                 }
             }
 
-            if(!livelinessState.isLivelinessVerified){
-                if (expanded) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    var fileName by remember { mutableStateOf("No file chosen") }
-                    val context = LocalContext.current
-                    val destinationFile = File(context.cacheDir, "${LocalDateTime.now()}_img.tmp")
-                    var uriImg: Uri? = null
-                    var imageUriStr: String? = null
-
-                    val launcher = rememberLauncherForActivityResult(
-                        contract = ActivityResultContracts.GetContent()
-                    ) { uri: Uri? ->
-                        uri?.let {
-                            uriImg = it
-                            uploadImageToFirebase(uri, context) { imgUrl ->
-                                imageUriStr = imgUrl
-                            }
-
-                        }
-                    }
-                    Button(
-                        onClick = {
-                            launcher.launch("image/*")
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text("Choose File", color = Color.Black)
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(fileName, color = Color.Gray)
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    if (livelinessState.isLoading) {
-                        LoadingIndicator()
-                    }
-                    if (livelinessState.error != null) {
-                        ShowError(error = ""+livelinessState.error)
-                    }
-
-                    Button(
-                        onClick = {
-                            if (uriImg != null && imageUriStr != null) {
-                                val file = vm.getFileFromUri(context, uriImg!!, destinationFile)
-                                if (file != null) {
-                                    var verificationId = vm.getVerificationId(10)
-                                    if (file.length() < 1_048_576) {
-                                        vm.uploadLiveliness(file, verificationId, imageUriStr!!)
-                                    } else {
-                                        val compressedFile = vm.compressImageToCache(context, file, 80)
-                                        if (compressedFile != null) {
-                                            vm.uploadLiveliness(file, verificationId, imageUriStr!!)
-                                        } else {
-                                            vm.largeImageUploadingError()
-                                        }
-                                    }
-                                } else {
-                                    Toast.makeText(context, "Image Not Found", Toast.LENGTH_SHORT).show()
-                                }
-                            } else {
-                                Toast.makeText(context, "Processing...", Toast.LENGTH_SHORT).show()
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text("Verify", color = Color.White)
-                    }
-                }
-            }
-
+//            if(!livelinessState.isLivelinessVerified){
+//                if (expanded) {
+//                    Spacer(modifier = Modifier.height(16.dp))
+//                    var fileName by remember { mutableStateOf("No file chosen") }
+//                    val context = LocalContext.current
+//                    val destinationFile = File(context.cacheDir, "${LocalDateTime.now()}_img.tmp")
+//                    var uri: Uri? = null
+//                    var uriImg by remember {
+//                        mutableStateOf(uri)
+//                    }
+//                    var imageUriStr by remember {
+//                        mutableStateOf("")
+//                    }
+//
+//                    val launcher = rememberLauncherForActivityResult(
+//                        contract = ActivityResultContracts.GetContent()
+//                    ) { uri: Uri? ->
+//                        uri?.let {
+//                            isUploadingImage = !isUploadingImage
+//                            uriImg = it
+//                            uploadImageToFirebase(uri, context) { imgUrl ->
+//                                imageUriStr = imgUrl
+//                                Log.d("ImageUploaded", "url: $imageUriStr, uri: $uriImg")
+//                                isUploadingImage = !isUploadingImage
+//                            }
+//
+//                        }
+//                    }
+//                    Button(
+//                        onClick = {
+//                            launcher.launch("image/*")
+//                        },
+//                        modifier = Modifier.fillMaxWidth(),
+//                        colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray),
+//                        shape = RoundedCornerShape(8.dp)
+//                    ) {
+//                        Text("Choose File", color = Color.Black)
+//                    }
+//                    Spacer(modifier = Modifier.height(8.dp))
+//                    if(imageUriStr != null){
+//                        fileName = "Image Selected"
+//                    }
+//                    Text(fileName, color = Color.Gray)
+//                    Spacer(modifier = Modifier.height(16.dp))
+//
+//                    if (livelinessState.isLoading || isUploadingImage) {
+//                        LoadingIndicator()
+//                    }
+//                    if (livelinessState.error != null) {
+//                        ShowError(error = ""+livelinessState.error)
+//                    }
+//
+//                    Button(
+//                        onClick = {
+//                            if (uriImg != null && imageUriStr != null) {
+//                                val file = vm.getFileFromUri(context, uriImg!!, destinationFile)
+//                                if (file != null) {
+//                                    var verificationId = getVerificationId(10)
+//                                    if (file.length() < 1_048_576) {
+//                                        vm.uploadLiveliness(file, verificationId, imageUriStr!!)
+//                                    } else {
+//                                        val compressedFile = vm.compressImageToCache(context, file, 80)
+//                                        if (compressedFile != null) {
+//                                            vm.uploadLiveliness(file, verificationId, imageUriStr!!)
+//                                        } else {
+//                                            vm.largeImageUploadingError()
+//                                        }
+//                                    }
+//                                } else {
+//                                    Toast.makeText(context, "Image Not Found", Toast.LENGTH_SHORT).show()
+//                                }
+//                            } else {
+//                                if(uriImg == null){
+//                                    Toast.makeText(context, "Uri Processing...", Toast.LENGTH_SHORT).show()
+//                                }
+//                                if(imageUriStr == null){
+//                                    Toast.makeText(context, "Image Processing...", Toast.LENGTH_SHORT).show()
+//                                }
+//
+//                            }
+//                        },
+//                        modifier = Modifier.fillMaxWidth(),
+//                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+//                        shape = RoundedCornerShape(8.dp)
+//                    ) {
+//                        Text("Verify", color = Color.White)
+//                    }
+//                }
+//            }
         }
     }
 }
-
 
 @Composable
 fun ShowError(error: String){
@@ -594,9 +655,14 @@ fun ShowError(error: String){
     Spacer(modifier = Modifier.height(16.dp))
 }
 
-@Preview
-@Composable
-fun KycScreenPreview() {
+
+
+
+
+
+//@Preview
+//@Composable
+//fun KycScreenPreview() {
     //panVerification(vm)
     //KYCScreen(navController = rememberNavController())
-}
+//}

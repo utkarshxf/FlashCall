@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -30,6 +31,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -44,6 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -79,7 +82,9 @@ fun ProfileScreen(
     var isKyc by remember {
         mutableStateOf(registrationViewModel.getIsKycRequired())
     }
-    val isPaymentDetails = true
+    var isPaymentDetails by remember {
+        mutableStateOf(registrationViewModel.getIsPaymentDetails())
+    }
     val context = LocalContext.current
     val uid = registrationViewModel.getStoredUserData("_id")
     val userData = authenticationViewModel.getUserFromPreferences(context)
@@ -104,21 +109,11 @@ fun ProfileScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(170.dp)
+                    .wrapContentHeight()
             ) {
                 Column(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    IconButton(onClick = {
-                        // navController.popBackStack()
-                    }) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                            contentDescription = "Back",
-                            tint = Color.Black,
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -128,9 +123,8 @@ fun ProfileScreen(
                         Box(
                             modifier = Modifier
                                 .size(100.dp)
-//                                .padding(6.dp)
                         ) {
-                            ImageFromUrl(imageUrl = profilePic!!)
+                            ImageFromUrl(imageUrl = profilePic?:"")
                         }
                         Spacer(modifier = Modifier.width(16.dp))
                         Column(
@@ -157,7 +151,7 @@ fun ProfileScreen(
                     }
                 }
             }
-
+            Spacer(modifier = Modifier.height(15.dp))
             HorizontalDivider(
                 thickness = 1.dp, color = BorderColor2
             )
@@ -218,15 +212,24 @@ fun ProfileScreen(
                                     .height(24.dp)
                                     .width(24.dp)
                             )
+                            Icon(
+                                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                contentDescription = "Next",
+                                tint = Color.Black,
+                                modifier = Modifier.size(36.dp)
+                            )
 
+                        }else{
+                            Image(
+                                painter = painterResource(id = R.drawable.baseline_verified_24),
+                                contentDescription = null,
+                                colorFilter = ColorFilter.tint(MainColor),
+                                modifier = Modifier
+                                    .height(24.dp)
+                                    .width(24.dp)
+                            )
                         }
 
-                        Icon(
-                            Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                            contentDescription = "Next",
-                            tint = Color.Black,
-                            modifier = Modifier.size(36.dp)
-                        )
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -338,14 +341,23 @@ fun ProfileScreen(
                                     .height(24.dp)
                                     .width(24.dp)
                             )
+                            Icon(
+                                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                contentDescription = "Next",
+                                tint = Color.Black,
+                                modifier = Modifier.size(36.dp)
+                            )
                         }
-
-                        Icon(
-                            Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                            contentDescription = "Next",
-                            tint = Color.Black,
-                            modifier = Modifier.size(36.dp)
-                        )
+                        else{
+                            Image(
+                                painter = painterResource(id = R.drawable.baseline_verified_24),
+                                contentDescription = null,
+                                colorFilter = ColorFilter.tint(MainColor),
+                                modifier = Modifier
+                                    .height(24.dp)
+                                    .width(24.dp)
+                            )
+                        }
                     }
 
                 }
@@ -451,18 +463,18 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(15.dp))
 
 
-
-
             //Logout Confirmation Dialog
             if(isLogout){
                 LogoutConfirmationDialog(cancel = {
                     isLogout = !isLogout
                 }, confirm = {
-                    authenticationViewModel.deleteTokenFromPreferences()
+//                    authenticationViewModel.deleteTokenFromPreferences()
+
                     navController.navigate(ScreenRoutes.SignUpScreen.route) {
                         popUpTo(0) { inclusive = true } // Clear the backstack
                     }
                     isLogout = !isLogout
+                    authenticationViewModel.logoutUser()
                 })
             }
 
@@ -475,27 +487,25 @@ fun ProfileScreen(
 @Composable
 fun LogoutConfirmationDialog(confirm: () -> Unit, cancel: () -> Unit) {
     AlertDialog(
-        onDismissRequest = { cancel() }, // Dismiss the dialog on outside touch or back press
-        title = {
-            Text(text = "Logout Confirmation")
-        },
-        text = {
-            Text("Are you sure you want to log out?")
-        },
+        onDismissRequest = { cancel() },
+        title = { Text("Logout Confirmation") },
+        text = { Text("Are you sure you want to log out?") },
         confirmButton = {
             Button(
                 onClick = {
                     confirm()
-                }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
             ) {
-                Text("Confirm")
+                Text("Yes")
             }
         },
         dismissButton = {
             Button(
-                onClick = { cancel()}
+                onClick = { cancel() },
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
             ) {
-                Text("Cancel")
+                Text("No")
             }
         }
     )
