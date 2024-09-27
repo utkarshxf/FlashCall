@@ -1,5 +1,6 @@
 package com.example.myapplication.myapplication.flashcall.Screens
 
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -27,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Data.VideoCallRoute
 import com.example.myapplication.myapplication.flashcall.Data.model.SDKResponseState
@@ -138,7 +140,11 @@ fun IncomingCallScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Image(
-                                painter = painterResource(id = R.drawable.vector_1),
+                                painter = if(created.value?.image!= "/images/defaultProfile.png"){
+                                    rememberAsyncImagePainter(model =created.value?.image)
+                                }else{
+                                    painterResource(id = R.drawable.vector_1)
+                                },
                                 contentDescription = "Profile Picture",
                                 modifier = Modifier
                                     .size(82.dp)

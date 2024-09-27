@@ -169,7 +169,6 @@ fun HomeScreen(
 //    }
     val createUserState1 by registrationViewModel.createUserState.collectAsState()
     val userData = authenticationViewModel.getUserFromPreferences(context)
-//    Log.v("qwerty" , userData.toString())
     if (userData != null) {
         uid = userData._id ?: ""
         username = userData.username ?: ""

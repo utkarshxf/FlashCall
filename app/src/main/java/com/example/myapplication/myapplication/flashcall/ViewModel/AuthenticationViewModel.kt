@@ -126,8 +126,6 @@ class AuthenticationViewModel @Inject constructor(
             viewModelScope.launch {
 
                 try {
-                    Log.e("qwerty" , "$phone $otp" )
-
                     authenticationRepository.verifyOtp(
                         "api/v1/verify-otp", phone, otp
                     ).collect {

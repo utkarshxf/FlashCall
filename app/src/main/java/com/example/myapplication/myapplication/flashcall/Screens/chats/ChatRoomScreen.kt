@@ -477,7 +477,7 @@ fun MessageItem(
         Box(
             modifier = Modifier
                 .background(
-                    color = if (isOwnMessage) Color(0xFF25D366) else Color.White,
+                    color = if (isOwnMessage) Color.White else Color(0xFF25D366),
                     shape = RoundedCornerShape(10.dp)
                 )
                 .drawBehind {
@@ -545,7 +545,7 @@ fun MessageItem(
 
                     drawPath(
                         path = bubblePath,
-                        color = if (isOwnMessage) Color(0xFF25D366) else Color.White,
+                        color = if (isOwnMessage) Color.White else Color(0xFF25D366),
                     )
                 }
                 .padding(8.dp)
@@ -555,7 +555,7 @@ fun MessageItem(
                 if (message.text != null && message.img == null && message.audio == null) {
                     Text(
                         text = message.text,
-                        color = if (isOwnMessage) Color.White else Color.Black,
+                        color = if (isOwnMessage) Color.Black else Color.White,
                         style = LocalTextStyle.current.copy(
                             fontSize = 16.sp, fontFamily = arimoFontFamily
                         )
@@ -573,28 +573,27 @@ fun MessageItem(
                     Card {
                         Box(
                             modifier = Modifier
-                                .size(300.dp, 400.dp) // Set maximum size for the box
-                                .clip(RoundedCornerShape(10.dp)) // Optional: Rounded corners
+                                .size(300.dp, 400.dp)
+                                .clip(RoundedCornerShape(10.dp))
                         ) {
                             Image(
                                 painter = rememberAsyncImagePainter(model = message.img),
                                 contentDescription = "Sent image",
-                                modifier = Modifier.fillMaxSize(), // Fill the box
-                                contentScale = ContentScale.Fit, // Maintain aspect ratio
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Fit,
                                 alignment = Alignment.Center,
                             )
                         }
                         if (message.text != "") {
                             Text(
                                 text = message.text,
-                                color = if (isOwnMessage) Color.White else Color.Black,
+                                color = if (isOwnMessage) Color.Black else Color.White,
                                 style = LocalTextStyle.current.copy(
                                     fontSize = 16.sp, fontFamily = arimoFontFamily
                                 ),
                                 modifier = Modifier.padding(8.dp),
                             )
                         }
-
                     }
                 }
                 if (message.audio != null) {
@@ -609,19 +608,22 @@ fun MessageItem(
                 ) {
                     Text(
                         text = formattedTime,
-                        color = if (isOwnMessage) Color.White.copy(alpha = 0.7f) else Color.Gray,
+                        color = if (isOwnMessage) Color.Gray else Color.White.copy(alpha = 0.7f),
                         style = LocalTextStyle.current.copy(
                             fontSize = 10.sp, fontFamily = arimoFontFamily
                         )
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = if (message.seen == true) "✓✓" else "✓",
-                        color = if (isOwnMessage) Color.White.copy(alpha = 0.7f) else Color.Gray,
-                        style = LocalTextStyle.current.copy(
-                            fontSize = 10.sp, fontFamily = arimoFontFamily
+                    if(isOwnMessage)
+                    {
+                        Text(
+                            text = if (message.seen == true) "✓✓" else "✓✓",
+                            color = Color.Gray,
+                            style = LocalTextStyle.current.copy(
+                                fontSize = 10.sp, fontFamily = arimoFontFamily
+                            )
                         )
-                    )
+                    }
                 }
             }
         }
@@ -633,7 +635,6 @@ fun MessageItem(
         }
     }
 }
-
 // UI Button logic
 @kotlin.OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -757,7 +758,7 @@ fun AudioPlayerComponent(audioUrl: String, isOwnMessage: Boolean) {
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
-                        color = if (isOwnMessage) Color.White else MaterialTheme.colorScheme.primary,
+                        color = if (isOwnMessage)MaterialTheme.colorScheme.primary  else Color.White ,
                         modifier = Modifier.size(24.dp)
                     )
                 } else {
@@ -783,7 +784,7 @@ fun AudioPlayerComponent(audioUrl: String, isOwnMessage: Boolean) {
                         Icon(
                             imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                             contentDescription = if (isPlaying) "Pause" else "Play",
-                            tint = if (isOwnMessage) Color.White else Color.Black
+                            tint = if (isOwnMessage) Color.Black else Color.White
                         )
                     }
                 }
@@ -801,17 +802,12 @@ fun AudioPlayerComponent(audioUrl: String, isOwnMessage: Boolean) {
                             Log.d("AudioPlayerComponent", "Slider moved. Progress: $progress, New position: $newPosition")
                         }
                     },
-                    enabled = isPrepared && !isLoading,
-                    colors = SliderDefaults.colors(
-                        thumbColor = if (isOwnMessage) Color.White else MaterialTheme.colorScheme.primary,
-                        activeTrackColor = if (isOwnMessage) Color.White else MaterialTheme.colorScheme.primary,
-                        inactiveTrackColor = if (isOwnMessage) Color.White.copy(alpha = 0.3f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
-                    )
+                    enabled = isPrepared && !isLoading
                 )
 
                 Text(
                     text = "${formatTime(currentPosition.toLong())} / ${formatTime(if (duration > 0) duration.toLong() else manualDuration.toLong())}",
-                    color = if (isOwnMessage) Color.White else Color.Black,
+                    color = if (isOwnMessage) Color.Black else  Color.White,
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.align(Alignment.End)
                 )
@@ -827,7 +823,12 @@ fun AudioPlayerComponent(audioUrl: String, isOwnMessage: Boolean) {
             )
         }
     }
-
+    fun resetToInitialState() {
+        isPlaying = false
+        progress = 0f
+        currentPosition = 0
+        mediaPlayer.seekTo(0)
+    }
     LaunchedEffect(isPlaying) {
         while (isPlaying) {
             delay(100)
@@ -850,16 +851,15 @@ fun AudioPlayerComponent(audioUrl: String, isOwnMessage: Boolean) {
 
     DisposableEffect(Unit) {
         mediaPlayer.setOnCompletionListener {
-            isPlaying = false
-            progress = 1f
-            currentPosition = if (duration > 0) duration else manualDuration.toInt()
-            Log.d("AudioPlayerComponent", "Playback completed")
+            resetToInitialState()
         }
         onDispose {
             mediaPlayer.release()
         }
     }
+
 }
+
 
 
 private fun formatTime(timeMs: Long): String {
