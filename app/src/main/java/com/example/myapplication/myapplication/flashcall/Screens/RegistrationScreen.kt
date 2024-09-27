@@ -283,7 +283,7 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(color = Color.White)
+                        .background(color = Color.White, shape = RoundedCornerShape(10.dp))
                         .border(1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp)),
                     placeholder = {
                         Text(
@@ -334,7 +334,7 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(color = Color.White)
+                        .background(color = Color.White, shape = RoundedCornerShape(10.dp))
                         .border(1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp)),
                     placeholder = {
                         Text(
@@ -391,7 +391,7 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                         modifier = Modifier
                             .width(100.dp)
                             .height(50.dp)
-                            .background(Color.White)
+                            .background(Color.White, shape = RoundedCornerShape(10.dp))
                             .border(
                                 if (genderMale) 4.dp else 2.dp,
                                 color = BorderColor2,
@@ -421,7 +421,7 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                         modifier = Modifier
                             .width(100.dp)
                             .height(50.dp)
-                            .background(Color.White)
+                            .background(Color.White, shape = RoundedCornerShape(10.dp))
                             .border(
                                 if (genderFemale) 4.dp else 2.dp,
                                 color = BorderColor2,
@@ -451,7 +451,7 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                         modifier = Modifier
                             .width(100.dp)
                             .height(50.dp)
-                            .background(Color.White)
+                            .background(Color.White, shape = RoundedCornerShape(10.dp))
                             .border(
                                 if (genderOthers) 4.dp else 2.dp,
                                 color = BorderColor2,
@@ -515,7 +515,7 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                     Row(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Color.White),
+                            .background(Color.White, shape = RoundedCornerShape(10.dp)),
                         verticalAlignment = Alignment.CenterVertically,
 
                         ) {
@@ -572,6 +572,12 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
 //                        uploadImageToFirebase(uri, context)
 //                    }
 //                }
+                var createUserState = registrationViewModel.createUserState.collectAsState()
+
+
+
+
+
 
                 Button(
                     shape = RoundedCornerShape(10.dp),

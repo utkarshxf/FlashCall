@@ -1,9 +1,8 @@
 package com.example.myapplication.myapplication.flashcall.Screens.profileOptions
 
-import androidx.compose.foundation.Image
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,20 +13,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -41,6 +36,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,28 +47,33 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.myapplication.myapplication.flashcall.R
+import com.example.myapplication.myapplication.flashcall.ViewModel.PaymentSettingViewModel
 import com.example.myapplication.myapplication.flashcall.ui.theme.BorderColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.BorderColor2
 import com.example.myapplication.myapplication.flashcall.ui.theme.BottomBackground
 import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryText
 import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
+import com.example.myapplication.myapplication.flashcall.utils.LoadingIndicator
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun PaymentSettings(
-    navController : NavController
+    navController : NavController, viewModel: PaymentSettingViewModel = hiltViewModel()
 ){
+    var paymentData = viewModel.paymentSettingState.paymentDetails
+    LaunchedEffect(key1 = Unit) {
+        viewModel.getPaymentSettings()
+    }
 
     var upiRadioButton by remember {
         mutableStateOf(false)
@@ -106,7 +107,6 @@ fun PaymentSettings(
                     modifier = Modifier
                         .fillMaxSize()
                 ){
-
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.KeyboardArrowLeft, contentDescription = "Back", tint = Color.Black, modifier = Modifier.size(28.dp))
                     }
@@ -182,7 +182,7 @@ fun PaymentSettings(
                         onClick = {
                             bankRadioButton = !bankRadioButton
                             upiRadioButton = false
-                            selectedPaymentMethod = "Bank Transfer / NEFT"
+                            selectedPaymentMethod = "BANK_TRANSFER"
                         },
                         colors = RadioButtonDefaults.colors(
                             selectedColor= Color.Black,
@@ -201,31 +201,10 @@ fun PaymentSettings(
             Spacer(modifier = Modifier.height(10.dp))
 
             if(selectedPaymentMethod.equals("UPI")){
-                UpiPaymentBlock()
-            }else if(selectedPaymentMethod.equals("Bank Transfer / NEFT")){
-                BankPaymentBlock()
-            }else{
-
+                UpiPaymentBlock(viewModel = viewModel, upiId = paymentData.vpa+"")
+            }else if(selectedPaymentMethod.equals("BANK_TRANSFER")){
+                BankPaymentBlock(viewModel = viewModel, acc_num = paymentData.accountNumber, ifsc = paymentData.ifsc)
             }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.Bottom
-            ) {
-                Button(
-                    onClick = {  },
-                    modifier = Modifier.fillMaxWidth().align(Alignment.CenterVertically),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Black
-                    ),
-                    shape = RoundedCornerShape(5.dp)
-                ) {
-                    Text(text = "Save", color = Color.White)
-                }
-            }
-
-
-
 
         }
     }
@@ -233,17 +212,16 @@ fun PaymentSettings(
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun UpiPaymentBlock() {
-
-
+fun UpiPaymentBlock(viewModel: PaymentSettingViewModel, upiId: String) {
+    var addUPIIDState = viewModel.addUpiState
     var upiId by remember {
-        mutableStateOf("")
+        mutableStateOf(upiId)
     }
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(100.dp)
     ) {
         Column(
             modifier = Modifier
@@ -272,7 +250,7 @@ fun UpiPaymentBlock() {
                 maxLines = 1,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(color = Color.White)
+                    .background(color = Color.White, shape = RoundedCornerShape(10.dp))
                     .border(1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp)),
                 placeholder = {
                     Text(
@@ -290,39 +268,142 @@ fun UpiPaymentBlock() {
                     cursorColor = MainColor
                 )
             )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            if(addUPIIDState.isLoading){
+                LoadingIndicator()
+            }
+
+            if(addUPIIDState.error != null){
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                    Text(text = "error: ${addUPIIDState.error}", color = Color.Red)
+                }
+            }
+
+            if(addUPIIDState.varified){
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                    Text(text = "UPI Verified Successfully", color = MainColor)
+                }
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Bottom
+            ) {
+                Button(
+                    onClick = {
+                        if(upiId.isNotEmpty()){
+                            viewModel.addUpiId(upiId)
+                        }else{
+                            Toast.makeText(context, "Enter UPI ID", Toast.LENGTH_SHORT).show()
+                        }
+
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.CenterVertically),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Black
+                    ),
+                    shape = RoundedCornerShape(5.dp)
+                ) {
+                    Text(text = "Save", color = Color.White)
+                }
+            }
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BankPaymentBlock() {
+fun BankPaymentBlock(viewModel: PaymentSettingViewModel, acc_num: String, ifsc: String) {
+//    var data = viewModel.paymentSettingState.paymentDetails
+    var addBankDetailsState = viewModel.addBankDetailsState
 
     var ifscNumber by remember {
-        mutableStateOf("")
+        mutableStateOf(ifsc)
     }
     var accountNumber by remember {
-        mutableStateOf("")
+        mutableStateOf(acc_num)
     }
-    var accountType by remember {
-        mutableStateOf("")
-    }
+//    var accountType by remember {
+//        mutableStateOf("")
+//    }
+//
+//    var expanded by remember {
+//        mutableStateOf(false)
+//    }
+//
+//    var textFiledSize by remember {
+//        mutableStateOf(Size.Zero)
+//    }
 
-    var expanded by remember {
-        mutableStateOf(false)
-    }
+//    var listOfAccountType = listOf("Saving", "Current")
 
-    var textFiledSize by remember {
-        mutableStateOf(Size.Zero)
+//    val icon = if (expanded) {
+//        Icons.Filled.KeyboardArrowUp
+//    } else {
+//        Icons.Filled.KeyboardArrowDown
+//    }
 
-    }
+    val context = LocalContext.current
 
-    var listOfAccountType = listOf("Saving", "Current")
 
-    val icon = if (expanded) {
-        Icons.Filled.KeyboardArrowUp
-    } else {
-        Icons.Filled.KeyboardArrowDown
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(100.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
+
+            Text(
+                modifier = Modifier.padding(start = 8.dp),
+                text = "Account Number",
+                style = TextStyle(
+                    fontFamily = arimoFontFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    color = Color.Black
+                )
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            OutlinedTextField(
+                shape = RoundedCornerShape(10.dp),
+                value = accountNumber,
+                onValueChange = { accountNumber = it },
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Next
+                ),
+                maxLines = 1,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(color = Color.White, shape = RoundedCornerShape(10.dp))
+                    .border(1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp)),
+                placeholder = {
+                    Text(
+                        text = "Enter Your Account Number",
+                        color = SecondaryText,
+                        style = TextStyle(
+                            fontFamily = arimoFontFamily,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    )
+                },
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = Color.Transparent,
+                    unfocusedBorderColor = Color.Transparent,
+                    cursorColor = MainColor
+                )
+            )
+        }
     }
 
 
@@ -360,7 +441,7 @@ fun BankPaymentBlock() {
                 maxLines = 1,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(color = Color.White)
+                    .background(color = Color.White, shape = RoundedCornerShape(10.dp))
                     .border(1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp)),
                 placeholder = {
                     Text(
@@ -381,150 +462,137 @@ fun BankPaymentBlock() {
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(100.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
 
-            Text(
-                modifier = Modifier.padding(start = 8.dp),
-                text = "Account Number",
-                style = TextStyle(
-                    fontFamily = arimoFontFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    color = Color.Black
-                )
-            )
 
-            Spacer(modifier = Modifier.height(10.dp))
+//    Box(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .height(100.dp)
+//    ) {
+//        Column(
+//            modifier = Modifier
+//                .fillMaxSize()
+//        ) {
+//
+//            Text(
+//                modifier = Modifier.padding(start = 8.dp),
+//                text = "Account Type",
+//                style = TextStyle(
+//                    fontFamily = arimoFontFamily,
+//                    fontWeight = FontWeight.Bold,
+//                    fontSize = 16.sp,
+//                    color = Color.Black
+//                )
+//            )
+//
+//            Spacer(modifier = Modifier.height(10.dp))
+//
+//
+//
+//            ExposedDropdownMenuBox(
+//                expanded = expanded,
+//                onExpandedChange = {
+//                    expanded = !expanded
+//                }
+//            ) {
+//                OutlinedTextField(
+//                    shape = RoundedCornerShape(10.dp),
+//                    value = accountType,
+//                    onValueChange = { accountType = it },
+//                    keyboardOptions = KeyboardOptions(
+//                        imeAction = ImeAction.Done
+//                    ),
+//                    maxLines = 1,
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .menuAnchor()
+//                        .background(color = Color.White)
+//                        .onGloballyPositioned { coordinates ->
+//                            textFiledSize = coordinates.size.toSize()
+//
+//                        }
+//                        .border(1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp)),
+//                    trailingIcon = {
+//                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+//                    },
+//                    readOnly = true,
+//                    placeholder = {
+//                        Text(
+//                            text = "Select Your Account Type",
+//                            color = SecondaryText,
+//                            style = TextStyle(
+//                                fontFamily = arimoFontFamily,
+//                                fontWeight = FontWeight.Bold,
+//                            )
+//                        )
+//                    },
+//                    colors = TextFieldDefaults.outlinedTextFieldColors(
+//                        focusedBorderColor = Color.Transparent,
+//                        unfocusedBorderColor = Color.Transparent,
+//                        cursorColor = MainColor
+//                    )
+//                )
+//
+//                ExposedDropdownMenu(
+//                    expanded = expanded,
+//                    onDismissRequest = {
+//                        expanded = false
+//                    },
+//                    modifier = Modifier.background(Color.White)
+//                ) {
+//                    listOfAccountType.forEach { item ->
+//                        DropdownMenuItem(
+//                            text = { Text(text = item) },
+//                            onClick = {
+//                                accountType = item
+//                                expanded = false
+//                            },
+//                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+//                        )
+//                    }
+//                }
+//            }
+//        }
+//    }
 
-            OutlinedTextField(
-                shape = RoundedCornerShape(10.dp),
-                value = accountNumber,
-                onValueChange = { accountNumber = it },
-                keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Next
-                ),
-                maxLines = 1,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(color = Color.White)
-                    .border(1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp)),
-                placeholder = {
-                    Text(
-                        text = "Enter Your Account Number",
-                        color = SecondaryText,
-                        style = TextStyle(
-                            fontFamily = arimoFontFamily,
-                            fontWeight = FontWeight.Bold,
-                        )
-                    )
-                },
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent,
-                    cursorColor = MainColor
-                )
-            )
+    if(addBankDetailsState.isLoading){
+        LoadingIndicator()
+    }
+
+    if(addBankDetailsState.error != null){
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+            Text(text = "error: ${addBankDetailsState.error}", color = Color.Red)
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(100.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-
-            Text(
-                modifier = Modifier.padding(start = 8.dp),
-                text = "Account Type",
-                style = TextStyle(
-                    fontFamily = arimoFontFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    color = Color.Black
-                )
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-
-
-            ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = {
-                    expanded = !expanded
-                }
-            ) {
-                OutlinedTextField(
-                    shape = RoundedCornerShape(10.dp),
-                    value = accountType,
-                    onValueChange = { accountType = it },
-                    keyboardOptions = KeyboardOptions(
-                        imeAction = ImeAction.Done
-                    ),
-                    maxLines = 1,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .menuAnchor()
-                        .background(color = Color.White)
-                        .onGloballyPositioned { coordinates ->
-                            textFiledSize = coordinates.size.toSize()
-
-                        }
-                        .border(1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp)),
-                    trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-                    },
-                    readOnly = true,
-                    placeholder = {
-                        Text(
-                            text = "Select Your Account Type",
-                            color = SecondaryText,
-                            style = TextStyle(
-                                fontFamily = arimoFontFamily,
-                                fontWeight = FontWeight.Bold,
-                            )
-                        )
-                    },
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = Color.Transparent,
-                        unfocusedBorderColor = Color.Transparent,
-                        cursorColor = MainColor
-                    )
-                )
-
-                ExposedDropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = {
-                        expanded = false
-                    },
-                    modifier = Modifier.background(Color.White)
-                ) {
-                    listOfAccountType.forEach { item ->
-                        DropdownMenuItem(
-                            text = { Text(text = item) },
-                            onClick = {
-                                accountType = item
-                                expanded = false
-                            },
-                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
-                        )
-                    }
-                }
-
-
-            }
+    if(addBankDetailsState.varified){
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+            Text(text = "Bank Details Verified Successfully", color = MainColor)
         }
     }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.Bottom
+    ) {
+        Button(
+            onClick = {
+                if(accountNumber.isNotEmpty() && ifscNumber.isNotEmpty()){
+                    viewModel.addBankDetails(accountNumber, ifscNumber)
+                }else{
+                    Toast.makeText(context, "Enter Details Please",Toast.LENGTH_SHORT).show()
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.CenterVertically),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Black
+            ),
+            shape = RoundedCornerShape(5.dp)
+        ) {
+            Text(text = "Save", color = Color.White)
+        }
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.example.myapplication.myapplication.flashcall.Screens.wallet
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -54,6 +55,7 @@ import com.example.myapplication.myapplication.flashcall.ViewModel.wallet.Wallet
 import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.ProfileBackground
 import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
+import com.example.myapplication.myapplication.flashcall.utils.LoadingIndicator
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.math.abs
@@ -161,9 +163,32 @@ fun WalletScreen(navController: NavController, walletViewModel: WalletViewModel 
 
             }
 
+            val withdrawState = walletViewModel.requestWithdrawState
+
             Spacer(modifier = Modifier.height(10.dp))
+
+            if(withdrawState.isLoading){
+                LoadingIndicator()
+                Spacer(modifier = Modifier.height(10.dp))
+            }
+            if(withdrawState.error != null){
+                Text(text = "error: ${withdrawState.error}", color = Color.Red, fontSize = 12.sp)
+                Spacer(modifier = Modifier.height(10.dp))
+            }
+            if(withdrawState.success){
+                Text(text = "success: ${withdrawState.message}", color = MainColor, fontSize = 12.sp)
+                Spacer(modifier = Modifier.height(10.dp))
+            }
+
+
             Button(
-                onClick = { /*TODO*/ },
+                onClick = {
+                    if(walletViewModel.isWithdrawable()){
+                        walletViewModel.withdrawRequest()
+                    }else{
+                        Toast.makeText(context, "Your payment setting or kyc not done",Toast.LENGTH_SHORT).show()
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
@@ -171,7 +196,8 @@ fun WalletScreen(navController: NavController, walletViewModel: WalletViewModel 
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MainColor,
                     contentColor = Color.White
-                )
+                ),
+                enabled = (userData?.walletBalance?.roundToInt() != null && userData?.walletBalance?.roundToInt()!! > 500)
             ) {
 
                 Text(
@@ -329,7 +355,9 @@ fun TransactionItem(transaction: Transaction, isLastInGroup: Boolean) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Column(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                Column(modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)) {
                     Text("Transaction ID:\n ${transaction._id}", fontWeight = FontWeight.SemiBold)
                     Text(text = createdAtTime, fontSize = 14.sp)
                 }

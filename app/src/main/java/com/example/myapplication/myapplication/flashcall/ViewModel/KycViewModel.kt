@@ -10,8 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.myapplication.flashcall.Data.model.faceMatch.FaceMatchRequest
-import com.example.myapplication.myapplication.flashcall.Data.model.nameMatch.NameMatchRequest
+import com.example.myapplication.myapplication.flashcall.Data.model.VerifyAadhaarOtpRequest
 import com.example.myapplication.myapplication.flashcall.Screens.imageUrl
 import com.example.myapplication.myapplication.flashcall.repository.KycRepository
 import com.example.myapplication.myapplication.flashcall.repository.UserPreferencesRepository
@@ -36,17 +35,10 @@ class KycViewModel @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
-    data class AadharVerified(
-        var verified: Boolean = false,
-        var name: String? = null,
-        var image: String? = null
+    data class ImageUploaded(
+        var success: Boolean = false,
+        var imageUrl: String? = null
     )
-
-    data class PanVerified(
-        var verified: Boolean = false,
-        var name: String? = null
-    )
-
     data class VerificationState(
         var isLoading: Boolean = false,
         val error: String? = null,
@@ -56,6 +48,7 @@ class KycViewModel @Inject constructor(
     )
 
     data class RequiredDataToStartVerification(
+        var aadharNo: String? = null,
         var ref_id: String? = null,
         var otpCheckStart: Boolean = false
     )
@@ -75,7 +68,7 @@ class KycViewModel @Inject constructor(
     var aadharOTPVerificationState by mutableStateOf(
         AadharOTPVerificationState(
             isLoading = false,
-            otpVerificationStart = RequiredDataToStartVerification(ref_id = null, false)
+            otpVerificationStart = RequiredDataToStartVerification(ref_id = null, aadharNo = null, otpCheckStart = false)
         )
     )
         private set
@@ -92,11 +85,14 @@ class KycViewModel @Inject constructor(
                 repository.verifyPan("api/v1/userkyc/verifyPan", panNumber, userId)
                     .collect { response ->
                         Log.d("panNumber", "response: ${response?.success}")
-                        if (response?.success!! && response.data != null) {
+                        if (response?.success!= null && response.success == true) {
                             panState = panState.copy(
                                 isLoading = false,
                                 isPanVerified = true
                             )
+                            if(response.kycStatus){
+                                makeKycDone()
+                            }
                         } else {
                             panState = panState.copy(
                                 isLoading = false,
@@ -136,16 +132,12 @@ class KycViewModel @Inject constructor(
                         aadharOTPVerificationState = aadharOTPVerificationState.copy(
                             isLoading = false,
                             otpVerificationStart = RequiredDataToStartVerification(
+                                aadharNo = aadhar,
                                 response.data.ref_id,
                                 true
                             ),
                             error = null,
                             verified = false
-                        )
-                    } else {
-                        aadharState = aadharState.copy(
-                            isLoading = false,
-                            error = "unable to generate ref_id, server error"
                         )
                     }
                 }
@@ -161,35 +153,31 @@ class KycViewModel @Inject constructor(
 
     fun aadharOTPVerification(aadharOTP: String, ref_id: String) {
         aadharOTPVerificationState = aadharOTPVerificationState.copy(isLoading = true)
+        val aadharNo = aadharOTPVerificationState.otpVerificationStart.aadharNo+""
+        val rqBody = VerifyAadhaarOtpRequest(aadharOTP,aadharNo,ref_id,userId)
+        Log.d("AadharOtpVerification", "requestModel: $rqBody")
         viewModelScope.launch {
             try {
                 repository.verifyAadharOTP(
-                    "api/v1/userkyc/verifyAadhaarOtp",
-                    aadharOTP,
-                    ref_id,
-                    userId
+                    url ="api/v1/userkyc/verifyAadhaarOtp", body = rqBody
                 ).collect { response ->
                     Log.d("AadharOtpVerification","response: $response")
                     if (response.success != null && response.success == true) {
-                        if (response.data != null && response.data?.name != null && response.data?.photo_link != null) {
-                            aadharOTPVerificationState = aadharOTPVerificationState.copy(
-                                isLoading = false,
-                                verified = true
-                            )
-                            aadharState = aadharState.copy(
-                                isLoading = false,
-                                isAadharVerified = true
-                            )
-                        } else {
-                            aadharOTPVerificationState = aadharOTPVerificationState.copy(
-                                isLoading = false,
-                                error = "otp verification failed, server error"
-                            )
+                        aadharOTPVerificationState = aadharOTPVerificationState.copy(
+                            isLoading = false,
+                            verified = true
+                        )
+                        aadharState = aadharState.copy(
+                            isLoading = false,
+                            isAadharVerified = true
+                        )
+                        if(response.kycStatus){
+                            makeKycDone()
                         }
                     } else {
                         aadharOTPVerificationState = aadharOTPVerificationState.copy(
                             isLoading = false,
-                            error = "otp verification failed"
+                            error = "otp verification failed: $response"
                         )
                     }
                 }
@@ -213,29 +201,26 @@ class KycViewModel @Inject constructor(
             try {
                 repository.uploadLiveliness(imagePart, verificationIdPart, userIdPart, imgUrlPart)
                     .collect { response ->
+                        Log.d("LivelinessResp","response: $response")
                         if (response.success != null && response.success == true) {
-                            if (response.data != null && response.data?.status.equals("SUCCESS")) {
-                                livelinessState = livelinessState.copy(
-                                    isLoading = false,
-                                    isLivelinessVerified = true
-                                )
-                            } else {
-                                livelinessState = livelinessState.copy(
-                                    isLoading = false,
-                                    error = "liveliness status unsuccessful, server error"
-                                )
+                            livelinessState = livelinessState.copy(
+                                isLoading = false,
+                                isLivelinessVerified = true
+                            )
+                            if(response.kycStatus){
+                                makeKycDone()
                             }
                         } else {
                             livelinessState = livelinessState.copy(
                                 isLoading = false,
-                                error = "liveliness server error"
+                                error = "liveliness server error: ${response}"
                             )
                         }
                     }
             } catch (e: Exception) {
                 livelinessState = livelinessState.copy(
                     isLoading = false,
-                    error = "internal error"
+                    error = "internal error: ${e.message}"
                 )
             }
         }
