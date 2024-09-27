@@ -1,6 +1,8 @@
 package com.example.myapplication.myapplication.flashcall.Screens
 
 import android.Manifest
+import android.content.Context
+import android.media.AudioManager
 import android.os.Build
 import android.util.Log
 import androidx.compose.foundation.background
@@ -17,9 +19,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
@@ -70,7 +78,6 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun OngoingVideoCallScreen(
-    videoCall : Boolean,
     viewModel: VideoCallViewModel,
     navController:NavController
 ){
@@ -83,7 +90,6 @@ fun OngoingVideoCallScreen(
             Log.d("VideoCall", "VideoCall:${(uiState as SDKResponseState.Success).data} ")
             VideoCallContent(
                 call =  (uiState as SDKResponseState.Success).data,
-                videoCall = true,
                 viewModel = viewModel,
                 navController = navController
             )
@@ -101,24 +107,32 @@ fun OngoingVideoCallScreen(
 @Composable
 fun VideoCallContent(
     call : Call,
-    videoCall : Boolean,
     viewModel: VideoCallViewModel,
     navController:NavController
 ){
+    val videoCall = call.type == "default"
     val me by call.state.me.collectAsState()
     var parentSize: IntSize by remember { mutableStateOf(IntSize(0, 0)) }
 
     val isCameraEnabled by call.camera.isEnabled.collectAsStateWithLifecycle(lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current)
     val isMicrophoneEnabled by call.microphone.isEnabled.collectAsStateWithLifecycle(lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current)
+    var isMainSpeakerEnabled by remember { mutableStateOf(false) }
     val isSpeakerphoneEnabled by call.speaker.isEnabled.collectAsStateWithLifecycle(lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current)
     val activeVideoCall = viewModel.state.activeCall
     val timeLeft = viewModel.timeLeft
     var showEndCallConfirmation by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val audioManager = remember { context.getSystemService(Context.AUDIO_SERVICE) as AudioManager }
 
     // Listen to call status changes and end call if necessary
     LaunchedEffect(call) {
+        viewModel.observeTimeLeft(call.id)
         if (call.type != "default") {
             call.camera.setEnabled(false)
+            call.speaker.setEnabled(false)
+        }else{
+            call.speaker.setEnabled(true)
+            call.camera.setEnabled(true)
         }
     }
     LaunchedEffect(activeVideoCall) {
@@ -129,10 +143,6 @@ fun VideoCallContent(
                 popUpTo(ScreenRoutes.InCallScreen.route) { inclusive = true }
             }
         }
-    }
-    LaunchedEffect(Unit) {
-        call.speaker.setEnabled(true)
-        viewModel.observeTimeLeft(call.id)
     }
     CompositionLocalProvider(
         androidx.lifecycle.compose.LocalLifecycleOwner provides androidx.compose.ui.platform.LocalLifecycleOwner.current,
@@ -171,7 +181,8 @@ fun VideoCallContent(
                                     actions = listOf {
                                         Row(
                                             modifier = Modifier.width(350.dp),
-                                            horizontalArrangement = Arrangement.SpaceBetween
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             ToggleCameraAction(
                                                 modifier = Modifier
@@ -179,12 +190,6 @@ fun VideoCallContent(
                                                     .padding(start = 10.dp),
                                                 isCameraEnabled = isCameraEnabled,
                                                 onCallAction = { viewModel.toggleCamera(it.isEnabled) }
-                                            )
-                                            ToggleSpeakerphoneAction(isSpeakerphoneEnabled = isSpeakerphoneEnabled
-                                                ,modifier = Modifier
-                                                    .size(52.dp)
-                                                    .padding(start = 10.dp),
-                                                onCallAction = { viewModel.toggleSpeaker(it.isEnabled) }
                                             )
                                             ToggleMicrophoneAction(
                                                 modifier = Modifier
@@ -206,29 +211,33 @@ fun VideoCallContent(
                         } else {
                             ControlActions(
                                 call = call,
-                                actions = listOf(
-                                    {
-                                        ToggleMicrophoneAction(
-                                            modifier = Modifier.size(52.dp),
-                                            isMicrophoneEnabled = isMicrophoneEnabled,
-                                            onCallAction = { call.microphone.setEnabled(it.isEnabled) }
+                                actions = listOf {
+                                    Row(
+                                        modifier = Modifier.width(350.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        ToggleSpeakerphoneAction(isSpeakerphoneEnabled = isSpeakerphoneEnabled,
+                                            modifier = Modifier
+                                                .size(52.dp)
+                                                .padding(start = 10.dp),
+                                            onCallAction = { viewModel.toggleSpeaker(it.isEnabled) }
                                         )
-                                    },
-                                    {
+                                        ToggleMicrophoneAction(
+                                            modifier = Modifier
+                                                .size(52.dp)
+                                                .padding(horizontal = 20.dp),
+                                            isMicrophoneEnabled = isMicrophoneEnabled,
+                                            onCallAction = { viewModel.toggleMicrophone(it.isEnabled) }
+                                        )
                                         LeaveCallAction(
                                             modifier = Modifier.size(52.dp),
                                             onCallAction = {
                                                 showEndCallConfirmation = true
                                             }
                                         )
-                                    }, {
-                                        ToggleSpeakerphoneAction(
-                                            modifier = Modifier.size(52.dp),
-                                            isSpeakerphoneEnabled = isSpeakerphoneEnabled ){
-                                                onCallAction -> call.speaker.setEnabled(onCallAction.isEnabled)
-                                        }
                                     }
-                                )
+                                }
                             )
                         }
                     },
@@ -269,7 +278,23 @@ fun VideoCallContent(
         )
     }
 }
-
+@Composable
+fun SwitchSpeakerAction(
+    modifier: Modifier = Modifier,
+    isMainSpeakerEnabled: Boolean,
+    onCallAction: () -> Unit
+) {
+    IconButton(
+        onClick = onCallAction,
+        modifier = modifier
+    ) {
+        Icon(
+            imageVector = if (isMainSpeakerEnabled) Icons.Filled.VolumeUp else Icons.Filled.Phone,
+            contentDescription = if (isMainSpeakerEnabled) "Switch to earpiece" else "Switch to main speaker",
+            tint = Color.White
+        )
+    }
+}
 
 @Composable
 fun VideoCallError(viewModel: VideoCallViewModel,navController:NavController)
