@@ -358,8 +358,6 @@ fun ProfileScreen(
                                     .width(24.dp)
                             )
                         }
-
-
                     }
 
                 }

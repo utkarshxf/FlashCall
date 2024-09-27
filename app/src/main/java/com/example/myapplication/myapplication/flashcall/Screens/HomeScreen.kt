@@ -539,7 +539,6 @@ fun addExtraLink(
 
 @Composable
 fun CopyBar(viewModel: RegistrationViewModel) {
-
     LaunchedEffect(key1 = Unit) {
         viewModel.getShareLink()
     }
@@ -1251,6 +1250,7 @@ fun ShareTextButton(shareLink: String, bio: String) {
     if(bio.isNotEmpty()){
         sharingContent += "About me: $bio"
     }
+
     val launcher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {

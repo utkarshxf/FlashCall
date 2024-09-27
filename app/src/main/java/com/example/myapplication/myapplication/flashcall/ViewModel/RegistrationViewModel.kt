@@ -564,6 +564,7 @@ class RegistrationViewModel @Inject constructor(
                     shareLinkState = shareLinkState.copy(shareLink = userPreferencesRepository.getShareLink())
                 }
             }
+
         }
     }
 

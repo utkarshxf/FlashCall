@@ -183,12 +183,10 @@ interface APIService {
     ):Response < DeletedAdditionalLinksResponse>
 
 
-
     @GET
     suspend fun getShareLink(
         @Url url: String
     ):Response < ShareLinkResponse>
-
 
     @GET
     suspend fun getUserAssistanceLink(
@@ -220,7 +218,6 @@ interface APIService {
         @Url url: String,
         @Body body: RequestWithdraw
     ): Response<RequestWithdrawResponse>
-
 
 
 }

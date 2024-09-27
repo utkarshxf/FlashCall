@@ -223,7 +223,6 @@ class UserPreferencesRepository @Inject constructor(@ApplicationContext private 
         }
     }
 
-
     fun getUserAssistanceLink(): String{
         return sharedPreferences.getString(PreferencesKey.UserAssistanceLink.key, "")+""
     }
@@ -265,6 +264,4 @@ class UserPreferencesRepository @Inject constructor(@ApplicationContext private 
         return model
 
     }
-
-
 }

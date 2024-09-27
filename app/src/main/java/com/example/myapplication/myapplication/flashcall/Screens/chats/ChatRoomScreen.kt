@@ -3,16 +3,11 @@ package com.example.myapplication.myapplication.flashcall.Screens.chats
 //import androidx.compose.ui.R
 //import com.example.myapplication.myapplication.flashcall.ViewModel.chats.WakeLockManager
 import android.Manifest
-import android.content.Context
-import android.content.pm.PackageManager
 import android.media.MediaPlayer
-import android.media.MediaRecorder
 import android.net.Uri
-import android.os.Build
-import android.os.Environment
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.OptIn
@@ -22,18 +17,20 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.isImeVisible
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -44,10 +41,12 @@ import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MicOff
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -55,10 +54,13 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -66,21 +68,24 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.paint
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
@@ -98,15 +103,16 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.coroutines.delay
-import java.io.File
-import java.io.IOException
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
-import java.util.Timer
-import java.util.TimerTask
 import java.util.concurrent.TimeUnit
 
+@kotlin.OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ChatRoomScreen(
     navController: NavController,
@@ -121,27 +127,21 @@ fun ChatRoomScreen(
     val chatData by chatViewModel.chatData.collectAsState()
     val callEnded by chatViewModel.endedCall.collectAsState()
     val listState = rememberLazyListState()
-    var previousSize = listState.layoutInfo.totalItemsCount
     var imageUri by remember { mutableStateOf<Uri?>(null) }
-    var cameraImageUri by remember { mutableStateOf<Uri?>(null) }
-    var micRecordingUri by remember { mutableStateOf<Uri?>(null) }
+    val isRecording = chatViewModel.isRecording.value
+    var previousSize = listState.layoutInfo.totalItemsCount
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         imageUri = uri
     }
-    val cameraLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicture()
-    ) { success ->
-        if (success) {
-            imageUri = cameraImageUri
-        }
-    }
-    val isRecording = chatViewModel.isRecording.value
+    val isKeyboardVisible by rememberUpdatedState(WindowInsets.isImeVisible)
+    val density = LocalDensity.current
+    val navigationBarHeight = WindowInsets.navigationBars.getBottom(density)
+    var showChatCallConfirmation by remember { mutableStateOf(false) }
+
     LaunchedEffect(messages) {
-        if (listState.layoutInfo.totalItemsCount > previousSize) listState.animateScrollToItem(
-            listState.layoutInfo.totalItemsCount - 1
-        )
+        if (listState.layoutInfo.totalItemsCount > previousSize) listState.animateScrollToItem(0)
         previousSize = listState.layoutInfo.totalItemsCount
     }
     LaunchedEffect(callEnded) {
@@ -152,274 +152,311 @@ fun ChatRoomScreen(
             }
         }
     }
-    DisposableEffect(Unit) {
-        val callback = object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                chatViewModel.endChat {
-                    navController.navigate(ScreenRoutes.MainScreen.route) {
-                        popUpTo(ScreenRoutes.ChatRoomScreen.route) { inclusive = true }
-                    }
-                }
-            }
-        }
-        val dispatcher = (context as? ComponentActivity)?.onBackPressedDispatcher
-        dispatcher?.addCallback(callback)
-        onDispose {
-            callback.remove()
-        }
+    BackHandler {
+        showChatCallConfirmation = true
     }
 
-    Surface(
-        color = Color(0xFF1E1E1E)
-    ) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape),
+                            painter = painterResource(id = R.drawable.profile_picture_holder),
+                            contentDescription = "Chat Client Image"
+                        )
+                        Column(
+                            modifier = Modifier.padding(start = 10.dp)
+                        ) {
+                            Text(
+                                text = chatData?.clientName ?: "Naina Talwar",
+                                style = TextStyle(
+                                    color = Color.White,
+                                    fontSize = 18.sp,
+                                    fontFamily = arimoFontFamily,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+                            Text(
+                                text = "${formatTimeLeft(chatData?.timeLeft ?: 0.0)} mins",
+                                style = TextStyle(
+                                    fontSize = 14.sp,
+                                    color = Color.White,
+                                    fontFamily = arimoFontFamily,
+                                    fontWeight = FontWeight.Normal
+                                )
+                            )
+                            Text(
+                                text = "Ongoing Chat",
+                                style = TextStyle(
+                                    fontSize = 14.sp,
+                                    color = Color.Green,
+                                    fontFamily = arimoFontFamily,
+                                    fontWeight = FontWeight.Normal
+                                )
+                            )
+                        }
+                    }
+                },
+                actions = {
+                    Button(
+                        onClick = {
+                            showChatCallConfirmation = true
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFff5151),
+                            contentColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(6.dp)
+                    ) {
+                        Text("End")
+                    }
+                },
+                colors = TopAppBarDefaults.smallTopAppBarColors(
+                    containerColor = Color(0xFF6b7280)
+                )
+            )
+        }
+    ) { innerPadding ->
         Box(
-            modifier = Modifier
+            modifier = Modifier.padding(innerPadding)
                 .fillMaxSize()
                 .paint(
                     painter = painterResource(id = R.drawable.bg_chat_image),
                     contentScale = ContentScale.Crop
                 )
-                .background(Color(0xff232323).copy(alpha = 0.5f))
-        )
-        Column(
-            modifier = Modifier.fillMaxSize()
+                .background(Color(0xffe5ddd5).copy(alpha = 0.5f))
         ) {
-            // Header Section
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFF2C2C2C))
-                    .padding(16.dp)
+            Column(
+                modifier = Modifier.fillMaxSize()
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    reverseLayout = true
                 ) {
-                    Image(
-                        modifier = Modifier.size(40.dp),
-                        painter = painterResource(id = R.drawable.profile_picture_holder),
-                        contentDescription = "Chat Client Image"
-                    )
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(start = 10.dp)
-                    ) {
-                        Text(
-                            text = "On going chat with", style = TextStyle(
-                                color = Color.White,
-                                fontSize = 12.sp,
-                                fontFamily = arimoFontFamily,
-                                fontWeight = FontWeight.Normal
-                            )
-                        )
-                        Text(
-                            text = chatData?.clientName ?: "Naina Talwar", style = TextStyle(
-                                color = Color.White,
-                                fontSize = 18.sp,
-                                fontFamily = arimoFontFamily,
-                                fontWeight = FontWeight.Bold
-                            )
-                        )
-                    }
-                    Button(
-                        onClick = {
-                            chatViewModel.endChat {
-                                navController.navigate(ScreenRoutes.MainScreen.route) {
-                                    popUpTo(ScreenRoutes.ChatRoomScreen.route) { inclusive = true }
+                    when (messages) {
+                        is Resource.Success<*> -> {
+                            val messageList = messages.data ?: emptyList()
+                            val sortedMessages = messageList.sortedByDescending { it.createdAt ?: 0 }
+                            var LastMessageDate:LocalDate? = null
+                            itemsIndexed(sortedMessages) { index, message ->
+                                val currentMessageDate = Instant.ofEpochMilli(sortedMessages[index].createdAt ?: 0)
+                                    .atZone(ZoneId.systemDefault())
+                                    .toLocalDate()
+                                MessageItem(
+                                    message = message,
+                                    creatorId = uid.toString(),
+                                    onMessageSeen = chatViewModel::markMessageAsSeen,
+                                )
+                                if (index < sortedMessages.size - 1) {
+                                    val nextMessageDate = Instant.ofEpochMilli(sortedMessages[index + 1].createdAt ?: 0)
+                                        .atZone(ZoneId.systemDefault())
+                                        .toLocalDate()
+
+                                    if (nextMessageDate != currentMessageDate) {
+                                        DateSeparator(date = currentMessageDate)
+                                    }
+                                } else if (index == sortedMessages.size - 1) {
+                                    DateSeparator(date = currentMessageDate)
                                 }
                             }
-                        },
-                        modifier = Modifier
-                            .width(100.dp)
-                            .height(40.dp),
-                        shape = RoundedCornerShape(5.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFFF4D4F), contentColor = Color.White
-                        )
-                    ) {
-                        Text(
-                            text = "End", style = TextStyle(
-                                color = Color.White,
-                                fontFamily = arimoFontFamily,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 14.sp
-                            )
-                        )
-                    }
-                }
-            }
-
-            // Timer Section
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFF800000)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Time Left: ${formatTimeLeft(chatData?.timeLeft ?: 0.0)}",
-                    style = TextStyle(
-                        fontSize = 14.sp,
-                        color = Color.White,
-                        fontFamily = arimoFontFamily,
-                        fontWeight = FontWeight.Normal
-                    ),
-                    modifier = Modifier.padding(vertical = 5.dp)
-                )
-            }
-
-            // Messages List
-            LazyColumn(
-                state = listState,
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                reverseLayout = false
-            ) {
-                item {
-                    Text(
-                        text = "07 Dec 2024",
-                        style = TextStyle(
-                            color = Color.Gray, fontSize = 12.sp, fontFamily = arimoFontFamily
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        textAlign = TextAlign.Center
-                    )
-                }
-                when (messages) {
-                    is Resource.Success<*> -> {
-                        val messageList = messages.data ?: emptyList()
-                        val sortedMessages = messageList.sortedBy { it.createdAt ?: 0 }
-                        items(sortedMessages) { message ->
-                            MessageItem(
-                                message = message,
-                                creatorId = uid.toString(),
-                                onMessageSeen = chatViewModel::markMessageAsSeen,
-                            )
                         }
+                        is Resource.Error -> {}
+                        is Resource.Loading -> {}
                     }
-
-                    is Resource.Error -> {}
-                    is Resource.Loading -> {}
                 }
-            }
 
-            Column {
-                if (imageUri != null) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color(0xFF3E3E3E))
-                            .padding(8.dp)
-                    ) {
-                        Image(
-                            painter = rememberAsyncImagePainter(imageUri),
-                            contentDescription = "Selected Image",
+                // Message Input Section
+                Column {
+                    if (imageUri != null) {
+                        Box(
                             modifier = Modifier
-                                .height(100.dp)
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp)),
-                            contentScale = ContentScale.Crop
-                        )
-                        IconButton(
-                            onClick = { imageUri = null },
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .background(Color(0x80000000), CircleShape)
+                                .background(Color(0xFF6b7280))
+                                .padding(8.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = "Remove Image",
-                                tint = Color.White
+                            Image(
+                                painter = rememberAsyncImagePainter(imageUri),
+                                contentDescription = "Selected Image",
+                                modifier = Modifier
+                                    .height(100.dp)
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp)),
+                                contentScale = ContentScale.Crop
                             )
+                            IconButton(
+                                onClick = { imageUri = null },
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .background(Color(0x80000000), CircleShape)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Remove Image",
+                                    tint = Color.White
+                                )
+                            }
                         }
                     }
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (!isRecording)
-                    {
-                        OutlinedTextField(
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(end = 8.dp),
-                            value = messageText,
-                            onValueChange = { messageText = it },
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedContainerColor = Color(0xFF3E3E3E),
-                                unfocusedContainerColor = Color(0xFF3E3E3E),
-                                focusedTextColor = Color.White,
-                                unfocusedTextColor = Color.White,
-                                unfocusedBorderColor = Color.Transparent,
-                                focusedBorderColor = Color.Transparent
-                            ),
-                            placeholder = {
-                                Text(
-                                    text = "Message", style = TextStyle(
-                                        color = Color.Gray,
-                                        fontSize = 16.sp,
-                                        fontFamily = arimoFontFamily
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (!isRecording) {
+                            OutlinedTextField(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(end = 8.dp),
+                                value = messageText,
+                                onValueChange = { messageText = it },
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedContainerColor = Color(0xFFffffff),
+                                    unfocusedContainerColor = Color(0xFFffffff),
+                                    focusedTextColor = Color.Black,
+                                    unfocusedTextColor = Color.Black,
+                                    unfocusedBorderColor = Color.Transparent,
+                                    focusedBorderColor = Color.Transparent
+                                ),
+                                placeholder = {
+                                    Text(
+                                        text = "Message",
+                                        style = TextStyle(
+                                            color = Color.Gray,
+                                            fontSize = 16.sp,
+                                            fontFamily = arimoFontFamily
+                                        )
                                     )
-                                )
-                            },
-                            shape = RoundedCornerShape(20.dp)
-                        )
-                        Icon(painter = painterResource(id = R.drawable.attach_file_chat),
-                            contentDescription = "Attach File",
-                            tint = Color.Gray,
-                            modifier = Modifier
-                                .size(24.dp)
-                                .clickable { imagePickerLauncher.launch("image/*") })
-                        Spacer(modifier = Modifier.width(8.dp))
-                    }
-                    if (messageText.isNotBlank() || imageUri != null) {
-                        IconButton(
-                            onClick = {
-                                if (imageUri != null) {
-                                    chatViewModel.onImageSelected(imageUri!!, messageText)
-                                } else {
-                                    chatViewModel.sendMessage(
-                                        messageContent = messageText,
-                                        messageType = MessageType.TEXT,
-                                        text = null
+                                },
+                                shape = RoundedCornerShape(32.dp),
+                                trailingIcon = {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.attach_file_chat),
+                                        contentDescription = "Attach File",
+                                        tint = Color.Gray,
+                                        modifier = Modifier
+                                            .size(24.dp)
+                                            .clickable { imagePickerLauncher.launch("image/*") }
                                     )
                                 }
-                                messageText = ""
-                                imageUri = null
-                            },
-                            modifier = Modifier
-                                .size(40.dp)
-                                .background(Color(0xFF25D366), CircleShape)
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.Send,
-                                contentDescription = "Send Message",
-                                tint = Color.White
                             )
+                            Spacer(modifier = Modifier.width(8.dp))
                         }
-                    } else {
-                        AudioRecorderButton(chatViewModel)
+                        if (messageText.isNotBlank() || imageUri != null) {
+                            IconButton(
+                                onClick = {
+                                    if (imageUri != null) {
+                                        chatViewModel.onImageSelected(imageUri!!, messageText)
+                                    } else {
+                                        chatViewModel.sendMessage(
+                                            messageContent = messageText,
+                                            messageType = MessageType.TEXT,
+                                            text = null
+                                        )
+                                    }
+                                    messageText = ""
+                                    imageUri = null
+                                },
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .background(Color(0xFF25D366), CircleShape)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.Send,
+                                    contentDescription = "Send Message",
+                                    tint = Color.White
+                                )
+                            }
+                        } else {
+                            AudioRecorderButton(chatViewModel)
+                        }
                     }
                 }
             }
         }
     }
+    if (showChatCallConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showChatCallConfirmation = false },
+            title = { Text("Are you sure?") },
+            text = { Text("Proceeding further will End the Ongoing Chat.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showChatCallConfirmation = false
+                        chatViewModel.endChat {
+                            navController.navigate(ScreenRoutes.MainScreen.route) {
+                                popUpTo(ScreenRoutes.ChatRoomScreen.route) { inclusive = true }
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                ) {
+                    Text("Proceed")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = { showChatCallConfirmation = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 }
-
 fun formatTimeLeft(timeLeftInSeconds: Double): String {
     val minutes = (timeLeftInSeconds / 60).toInt()
     val seconds = (timeLeftInSeconds % 60).toInt().toString().padStart(2, '0')
     return "$minutes:$seconds"
 }
+@Composable
+fun DateSeparator(date: LocalDate) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        contentAlignment = Alignment.TopCenter
+    ) {
+        Surface(
+            color = Color(0xFFE1F3FB),
+            shape = RoundedCornerShape(8.dp),
+            modifier = Modifier.align(Alignment.Center)
+        ) {
+            Text(
+                text = formatDate(date),
+                style = TextStyle(
+                    color = Color.Gray,
+                    fontSize = 12.sp,
+                    fontFamily = arimoFontFamily
+                ),
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+            )
+        }
+    }
+}
 
+fun formatDate(date: LocalDate): String {
+    val today = LocalDate.now()
+    val yesterday = today.minusDays(1)
+
+    return when (date) {
+        today -> "Today"
+        yesterday -> "Yesterday"
+        else -> date.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))
+    }
+}
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -443,7 +480,76 @@ fun MessageItem(
                     color = if (isOwnMessage) Color(0xFF25D366) else Color.White,
                     shape = RoundedCornerShape(10.dp)
                 )
+                .drawBehind {
+                    val bubblePath = Path().apply {
+                        val cornerRadius = 16.dp.toPx()
+                        val triangleHeight = 8.dp.toPx()
+                        val triangleWidth = 12.dp.toPx()
+
+                        if (isOwnMessage) {
+                            moveTo(size.width, cornerRadius)
+                            lineTo(size.width, triangleHeight)
+                            lineTo(size.width + triangleWidth, 0f)
+                            lineTo(size.width, 0f)
+                            lineTo(size.width - cornerRadius, 0f)
+                        } else {
+                            moveTo(0f, cornerRadius)
+                            lineTo(0f, triangleHeight)
+                            lineTo(-triangleWidth, 0f)
+                            lineTo(0f, 0f)
+                            lineTo(size.width - cornerRadius, 0f)
+                        }
+
+                        arcTo(
+                            rect = Rect(
+                                size.width - 2 * cornerRadius,
+                                0f,
+                                size.width,
+                                2 * cornerRadius
+                            ),
+                            startAngleDegrees = 270f,
+                            sweepAngleDegrees = 90f,
+                            forceMoveTo = false
+                        )
+
+                        lineTo(size.width, size.height - cornerRadius)
+                        arcTo(
+                            rect = Rect(
+                                size.width - 2 * cornerRadius,
+                                size.height - 2 * cornerRadius,
+                                size.width,
+                                size.height
+                            ),
+                            startAngleDegrees = 0f,
+                            sweepAngleDegrees = 90f,
+                            forceMoveTo = false
+                        )
+
+                        lineTo(cornerRadius, size.height)
+
+                        arcTo(
+                            rect = Rect(
+                                0f,
+                                size.height - 2 * cornerRadius,
+                                2 * cornerRadius,
+                                size.height
+                            ),
+                            startAngleDegrees = 90f,
+                            sweepAngleDegrees = 90f,
+                            forceMoveTo = false
+                        )
+
+                        lineTo(0f, cornerRadius)
+                        close()
+                    }
+
+                    drawPath(
+                        path = bubblePath,
+                        color = if (isOwnMessage) Color(0xFF25D366) else Color.White,
+                    )
+                }
                 .padding(8.dp)
+
         ) {
             Column {
                 if (message.text != null && message.img == null && message.audio == null) {
@@ -754,6 +860,7 @@ fun AudioPlayerComponent(audioUrl: String, isOwnMessage: Boolean) {
         }
     }
 }
+
 
 private fun formatTime(timeMs: Long): String {
     val minutes = TimeUnit.MILLISECONDS.toMinutes(timeMs)

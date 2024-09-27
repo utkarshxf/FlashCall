@@ -213,7 +213,6 @@ class CreateRepository @Inject constructor(private val apiService: APIService):S
         }
     }
 
-
     suspend fun getUserAssistanceLink(url: String): Flow<UserAssistanceLink>{
         return flow {
             val response = apiService.getUserAssistanceLink(url)

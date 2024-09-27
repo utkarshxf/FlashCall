@@ -35,7 +35,6 @@ class KycViewModel @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
-
     data class ImageUploaded(
         var success: Boolean = false,
         var imageUrl: String? = null
