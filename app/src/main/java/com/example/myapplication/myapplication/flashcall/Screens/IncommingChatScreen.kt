@@ -172,7 +172,7 @@ fun IncomingChatScreen(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = maskIfPhoneNumber( chatRequestData?.clientId ?: "Unknown"),
+                        text = maskIfPhoneNumber( chatRequestData?.clientName ?: "Unknown"),
                         color = Color.White,
                         style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 24.sp)
                     )
