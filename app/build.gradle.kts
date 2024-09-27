@@ -119,7 +119,10 @@ dependencies {
 
     implementation("androidx.media3:media3-exoplayer:1.3.1")
     implementation("androidx.media3:media3-ui:1.3.1")
-    implementation("androidx.compose.material:material-icons-extended:1.3.0-beta04")
+//    implementation("androidx.compose.material:material-icons-extended:1.3.0-beta04")
+    implementation("androidx.compose.material:material-icons-extended:1.5.0")
+    implementation ("androidx.compose.material3:material3:1.0.1") // Check latest version on Google's site
+
 
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
     implementation("com.google.firebase:firebase-analytics")

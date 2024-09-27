@@ -564,6 +564,7 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                             Box(contentAlignment = Alignment.Center) {
 
                                 Button(onClick = {
+                                    themeSelected = "#000000"
                                     blackTheme = true
                                     grayTheme = false
                                     darkBlueTheme = false
@@ -574,7 +575,6 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                                     purpleTheme = false
                                     yellowTheme = false
                                     orangeTheme = false
-
                                 },
                                     shape = CircleShape,
                                     colors = ButtonDefaults.buttonColors(Color.Black),
@@ -604,6 +604,7 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                             Box(contentAlignment = Alignment.Center) {
 
                                 Button(onClick = {
+                                    themeSelected = "#a5a5a5"
                                     blackTheme = false
                                     grayTheme = true
                                     darkBlueTheme = false
@@ -643,6 +644,7 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                             Box(contentAlignment = Alignment.Center) {
 
                                 Button(onClick = {
+                                    themeSelected = "#223367"
                                     blackTheme = false
                                     grayTheme = false
                                     darkBlueTheme = true
@@ -681,6 +683,7 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                             Box(contentAlignment = Alignment.Center) {
 
                                 Button(onClick = {
+                                    themeSelected = "#16bed8"
                                     blackTheme = false
                                     grayTheme = false
                                     darkBlueTheme = false
@@ -720,6 +723,7 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                             Box(contentAlignment = Alignment.Center) {
 
                                 Button(onClick = {
+                                    themeSelected = "#b3315d"
                                     blackTheme = false
                                     grayTheme = false
                                     darkBlueTheme = false
@@ -760,6 +764,7 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                             Box(contentAlignment = Alignment.Center) {
 
                                 Button(onClick = {
+                                    themeSelected = "#EB5657"
                                     blackTheme = false
                                     grayTheme = false
                                     darkBlueTheme = false
@@ -810,6 +815,7 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                             Box(contentAlignment = Alignment.Center) {
 
                                 Button(onClick = {
+                                    themeSelected = "#50a65c"
                                     blackTheme = false
                                     grayTheme = false
                                     darkBlueTheme = false
@@ -848,6 +854,7 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                             Box(contentAlignment = Alignment.Center) {
 
                                 Button(onClick = {
+                                    themeSelected = "#d764c3"
                                     blackTheme = false
                                     grayTheme = false
                                     darkBlueTheme = false
@@ -887,6 +894,7 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                             Box(contentAlignment = Alignment.Center) {
 
                                 Button(onClick = {
+                                    themeSelected = "#ffee83"
                                     blackTheme = false
                                     grayTheme = false
                                     darkBlueTheme = false
@@ -926,6 +934,7 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                             Box(contentAlignment = Alignment.Center) {
 
                                 Button(onClick = {
+                                    themeSelected = "#f85900"
                                     blackTheme = false
                                     grayTheme = false
                                     darkBlueTheme = false
