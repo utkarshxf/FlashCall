@@ -45,6 +45,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -156,75 +157,66 @@ fun ChatRoomScreen(
         showChatCallConfirmation = true
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Image(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape),
-                            painter = painterResource(id = R.drawable.profile_picture_holder),
-                            contentDescription = "Chat Client Image"
-                        )
-                        Column(
-                            modifier = Modifier.padding(start = 10.dp)
-                        ) {
-                            Text(
-                                text = chatData?.clientName ?: "Naina Talwar",
-                                style = TextStyle(
-                                    color = Color.White,
-                                    fontSize = 18.sp,
-                                    fontFamily = arimoFontFamily,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            )
-                            Text(
-                                text = "${formatTimeLeft(chatData?.timeLeft ?: 0.0)} mins",
-                                style = TextStyle(
-                                    fontSize = 14.sp,
-                                    color = Color.White,
-                                    fontFamily = arimoFontFamily,
-                                    fontWeight = FontWeight.Normal
-                                )
-                            )
-                            Text(
-                                text = "Ongoing Chat",
-                                style = TextStyle(
-                                    fontSize = 14.sp,
-                                    color = Color.Green,
-                                    fontFamily = arimoFontFamily,
-                                    fontWeight = FontWeight.Normal
-                                )
-                            )
-                        }
-                    }
-                },
-                actions = {
-                    Button(
-                        onClick = {
-                            showChatCallConfirmation = true
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFff5151),
-                            contentColor = Color.White
-                        ),
-                        shape = RoundedCornerShape(6.dp)
-                    ) {
-                        Text("End")
-                    }
-                },
-                colors = TopAppBarDefaults.smallTopAppBarColors(
-                    containerColor = Color(0xFF6b7280)
+    Scaffold(topBar = {
+        TopAppBar(title = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape),
+                    painter = painterResource(id = R.drawable.profile_picture_holder),
+                    contentDescription = "Chat Client Image"
                 )
-            )
-        }
-    ) { innerPadding ->
+                Column(
+                    modifier = Modifier.padding(start = 10.dp)
+                ) {
+                    Text(
+                        text = chatData?.clientName ?: "Naina Talwar", style = TextStyle(
+                            color = Color.White,
+                            fontSize = 18.sp,
+                            fontFamily = arimoFontFamily,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                    Text(
+                        text = "${formatTimeLeft(chatData?.timeLeft ?: 0.0)} mins",
+                        style = TextStyle(
+                            fontSize = 14.sp,
+                            color = Color.White,
+                            fontFamily = arimoFontFamily,
+                            fontWeight = FontWeight.Normal
+                        )
+                    )
+                    Text(
+                        text = "Ongoing Chat", style = TextStyle(
+                            fontSize = 14.sp,
+                            color = Color.Green,
+                            fontFamily = arimoFontFamily,
+                            fontWeight = FontWeight.Normal
+                        )
+                    )
+                }
+            }
+        }, actions = {
+            Button(
+                onClick = {
+                    showChatCallConfirmation = true
+                }, colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFff5151), contentColor = Color.White
+                ), shape = RoundedCornerShape(6.dp)
+            ) {
+                Text("End")
+            }
+        }, colors = TopAppBarDefaults.smallTopAppBarColors(
+            containerColor = Color(0xFF6b7280)
+        )
+        )
+    }) { innerPadding ->
         Box(
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier
+                .padding(innerPadding)
                 .fillMaxSize()
                 .paint(
                     painter = painterResource(id = R.drawable.bg_chat_image),
@@ -246,21 +238,22 @@ fun ChatRoomScreen(
                     when (messages) {
                         is Resource.Success<*> -> {
                             val messageList = messages.data ?: emptyList()
-                            val sortedMessages = messageList.sortedByDescending { it.createdAt ?: 0 }
-                            var LastMessageDate:LocalDate? = null
+                            val sortedMessages =
+                                messageList.sortedByDescending { it.createdAt ?: 0 }
+                            var LastMessageDate: LocalDate? = null
                             itemsIndexed(sortedMessages) { index, message ->
-                                val currentMessageDate = Instant.ofEpochMilli(sortedMessages[index].createdAt ?: 0)
-                                    .atZone(ZoneId.systemDefault())
-                                    .toLocalDate()
+                                val currentMessageDate =
+                                    Instant.ofEpochMilli(sortedMessages[index].createdAt ?: 0)
+                                        .atZone(ZoneId.systemDefault()).toLocalDate()
                                 MessageItem(
                                     message = message,
                                     creatorId = uid.toString(),
                                     onMessageSeen = chatViewModel::markMessageAsSeen,
                                 )
                                 if (index < sortedMessages.size - 1) {
-                                    val nextMessageDate = Instant.ofEpochMilli(sortedMessages[index + 1].createdAt ?: 0)
-                                        .atZone(ZoneId.systemDefault())
-                                        .toLocalDate()
+                                    val nextMessageDate = Instant.ofEpochMilli(
+                                        sortedMessages[index + 1].createdAt ?: 0
+                                    ).atZone(ZoneId.systemDefault()).toLocalDate()
 
                                     if (nextMessageDate != currentMessageDate) {
                                         DateSeparator(date = currentMessageDate)
@@ -270,6 +263,7 @@ fun ChatRoomScreen(
                                 }
                             }
                         }
+
                         is Resource.Error -> {}
                         is Resource.Loading -> {}
                     }
@@ -314,10 +308,9 @@ fun ChatRoomScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         if (!isRecording) {
-                            OutlinedTextField(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(end = 8.dp),
+                            OutlinedTextField(modifier = Modifier
+                                .weight(1f)
+                                .padding(end = 8.dp),
                                 value = messageText,
                                 onValueChange = { messageText = it },
                                 colors = OutlinedTextFieldDefaults.colors(
@@ -330,8 +323,7 @@ fun ChatRoomScreen(
                                 ),
                                 placeholder = {
                                     Text(
-                                        text = "Message",
-                                        style = TextStyle(
+                                        text = "Message", style = TextStyle(
                                             color = Color.Gray,
                                             fontSize = 16.sp,
                                             fontFamily = arimoFontFamily
@@ -340,16 +332,13 @@ fun ChatRoomScreen(
                                 },
                                 shape = RoundedCornerShape(32.dp),
                                 trailingIcon = {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.attach_file_chat),
+                                    Icon(painter = painterResource(id = R.drawable.attach_file_chat),
                                         contentDescription = "Attach File",
                                         tint = Color.Gray,
                                         modifier = Modifier
                                             .size(24.dp)
-                                            .clickable { imagePickerLauncher.launch("image/*") }
-                                    )
-                                }
-                            )
+                                            .clickable { imagePickerLauncher.launch("image/*") })
+                                })
                             Spacer(modifier = Modifier.width(8.dp))
                         }
                         if (messageText.isNotBlank() || imageUri != null) {
@@ -386,8 +375,7 @@ fun ChatRoomScreen(
         }
     }
     if (showChatCallConfirmation) {
-        AlertDialog(
-            onDismissRequest = { showChatCallConfirmation = false },
+        AlertDialog(onDismissRequest = { showChatCallConfirmation = false },
             title = { Text("Are you sure?") },
             text = { Text("Proceeding further will End the Ongoing Chat.") },
             confirmButton = {
@@ -399,8 +387,7 @@ fun ChatRoomScreen(
                                 popUpTo(ScreenRoutes.ChatRoomScreen.route) { inclusive = true }
                             }
                         }
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                    }, colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
                 ) {
                     Text("Proceed")
                 }
@@ -412,15 +399,16 @@ fun ChatRoomScreen(
                 ) {
                     Text("Cancel")
                 }
-            }
-        )
+            })
     }
 }
+
 fun formatTimeLeft(timeLeftInSeconds: Double): String {
     val minutes = (timeLeftInSeconds / 60).toInt()
     val seconds = (timeLeftInSeconds % 60).toInt().toString().padStart(2, '0')
     return "$minutes:$seconds"
 }
+
 @Composable
 fun DateSeparator(date: LocalDate) {
     Box(
@@ -435,13 +423,9 @@ fun DateSeparator(date: LocalDate) {
             modifier = Modifier.align(Alignment.Center)
         ) {
             Text(
-                text = formatDate(date),
-                style = TextStyle(
-                    color = Color.Gray,
-                    fontSize = 12.sp,
-                    fontFamily = arimoFontFamily
-                ),
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                text = formatDate(date), style = TextStyle(
+                    color = Color.Gray, fontSize = 12.sp, fontFamily = arimoFontFamily
+                ), modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
             )
         }
     }
@@ -474,81 +458,65 @@ fun MessageItem(
             .padding(vertical = 4.dp),
         horizontalAlignment = if (isOwnMessage) Alignment.End else Alignment.Start
     ) {
-        Box(
-            modifier = Modifier
-                .background(
-                    color = if (isOwnMessage) Color.White else Color(0xFF25D366),
-                    shape = RoundedCornerShape(10.dp)
-                )
-                .drawBehind {
-                    val bubblePath = Path().apply {
-                        val cornerRadius = 16.dp.toPx()
-                        val triangleHeight = 8.dp.toPx()
-                        val triangleWidth = 12.dp.toPx()
+        Box(modifier = Modifier
+            .background(
+                color = if (isOwnMessage) Color.White else Color(0xFF25D366),
+                shape = RoundedCornerShape(10.dp)
+            )
+            .drawBehind {
+                val bubblePath = Path().apply {
+                    val cornerRadius = 16.dp.toPx()
+                    val triangleHeight = 8.dp.toPx()
+                    val triangleWidth = 12.dp.toPx()
 
-                        if (isOwnMessage) {
-                            moveTo(size.width, cornerRadius)
-                            lineTo(size.width, triangleHeight)
-                            lineTo(size.width + triangleWidth, 0f)
-                            lineTo(size.width, 0f)
-                            lineTo(size.width - cornerRadius, 0f)
-                        } else {
-                            moveTo(0f, cornerRadius)
-                            lineTo(0f, triangleHeight)
-                            lineTo(-triangleWidth, 0f)
-                            lineTo(0f, 0f)
-                            lineTo(size.width - cornerRadius, 0f)
-                        }
-
-                        arcTo(
-                            rect = Rect(
-                                size.width - 2 * cornerRadius,
-                                0f,
-                                size.width,
-                                2 * cornerRadius
-                            ),
-                            startAngleDegrees = 270f,
-                            sweepAngleDegrees = 90f,
-                            forceMoveTo = false
-                        )
-
-                        lineTo(size.width, size.height - cornerRadius)
-                        arcTo(
-                            rect = Rect(
-                                size.width - 2 * cornerRadius,
-                                size.height - 2 * cornerRadius,
-                                size.width,
-                                size.height
-                            ),
-                            startAngleDegrees = 0f,
-                            sweepAngleDegrees = 90f,
-                            forceMoveTo = false
-                        )
-
-                        lineTo(cornerRadius, size.height)
-
-                        arcTo(
-                            rect = Rect(
-                                0f,
-                                size.height - 2 * cornerRadius,
-                                2 * cornerRadius,
-                                size.height
-                            ),
-                            startAngleDegrees = 90f,
-                            sweepAngleDegrees = 90f,
-                            forceMoveTo = false
-                        )
-
-                        lineTo(0f, cornerRadius)
-                        close()
+                    if (isOwnMessage) {
+                        moveTo(size.width, cornerRadius)
+                        lineTo(size.width, triangleHeight)
+                        lineTo(size.width + triangleWidth, 0f)
+                        lineTo(size.width, 0f)
+                        lineTo(size.width - cornerRadius, 0f)
+                    } else {
+                        moveTo(0f, cornerRadius)
+                        lineTo(0f, triangleHeight)
+                        lineTo(-triangleWidth, 0f)
+                        lineTo(0f, 0f)
+                        lineTo(size.width - cornerRadius, 0f)
                     }
 
-                    drawPath(
-                        path = bubblePath,
-                        color = if (isOwnMessage) Color.White else Color(0xFF25D366),
+                    arcTo(
+                        rect = Rect(
+                            size.width - 2 * cornerRadius, 0f, size.width, 2 * cornerRadius
+                        ), startAngleDegrees = 270f, sweepAngleDegrees = 90f, forceMoveTo = false
                     )
+
+                    lineTo(size.width, size.height - cornerRadius)
+                    arcTo(
+                        rect = Rect(
+                            size.width - 2 * cornerRadius,
+                            size.height - 2 * cornerRadius,
+                            size.width,
+                            size.height
+                        ), startAngleDegrees = 0f, sweepAngleDegrees = 90f, forceMoveTo = false
+                    )
+
+                    lineTo(cornerRadius, size.height)
+
+                    arcTo(
+                        rect = Rect(
+                            0f, size.height - 2 * cornerRadius, 2 * cornerRadius, size.height
+                        ), startAngleDegrees = 90f, sweepAngleDegrees = 90f, forceMoveTo = false
+                    )
+
+                    lineTo(0f, cornerRadius)
+                    close()
                 }
-                .padding(8.dp)
+
+                drawPath(
+                    path = bubblePath,
+                    color = if (isOwnMessage) Color.White else Color(0xFF25D366),
+                )
+            }
+            .padding(8.dp)
 
         ) {
             Column {
@@ -570,7 +538,7 @@ fun MessageItem(
                     )
                 }
                 if (message.img != null && message.text != null) {
-                    Card {
+                    Card() {
                         Box(
                             modifier = Modifier
                                 .size(300.dp, 400.dp)
@@ -584,22 +552,21 @@ fun MessageItem(
                                 alignment = Alignment.Center,
                             )
                         }
-                        if (message.text != "") {
-                            Text(
-                                text = message.text,
-                                color = if (isOwnMessage) Color.Black else Color.White,
-                                style = LocalTextStyle.current.copy(
-                                    fontSize = 16.sp, fontFamily = arimoFontFamily
-                                ),
-                                modifier = Modifier.padding(8.dp),
-                            )
-                        }
+                    }
+                    if (message.text != "") {
+                        Text(
+                            text = message.text,
+                            color = if (isOwnMessage) Color.Black else Color.White,
+                            style = LocalTextStyle.current.copy(
+                                fontSize = 16.sp, fontFamily = arimoFontFamily
+                            ),
+                            modifier = Modifier.padding(8.dp),
+                        )
                     }
                 }
                 if (message.audio != null) {
                     AudioPlayerComponent(
-                        audioUrl = message.audio,
-                        isOwnMessage = isOwnMessage
+                        audioUrl = message.audio, isOwnMessage = isOwnMessage
                     )
                 }
                 Row(
@@ -614,8 +581,7 @@ fun MessageItem(
                         )
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    if(isOwnMessage)
-                    {
+                    if (isOwnMessage) {
                         Text(
                             text = if (message.seen == true) "✓✓" else "✓✓",
                             color = Color.Gray,
@@ -635,6 +601,7 @@ fun MessageItem(
         }
     }
 }
+
 // UI Button logic
 @kotlin.OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -677,11 +644,8 @@ fun AudioRecorderButton(
                         } else {
                             chatViewModel.stopRecording()
                         }
-                    },
-                    modifier = Modifier
-                        .background(
-                            if (isRecording) Color.Red else Color(0xFF25D366),
-                            CircleShape
+                    }, modifier = Modifier.background(
+                            if (isRecording) Color.Red else Color(0xFF25D366), CircleShape
                         )
                 ) {
                     Icon(
@@ -729,7 +693,10 @@ fun AudioPlayerComponent(audioUrl: String, isOwnMessage: Boolean) {
                 duration = mp.duration
                 Log.d("AudioPlayerComponent", "Audio prepared. MediaPlayer Duration: $duration ms")
                 if (duration <= 0) {
-                    Log.w("AudioPlayerComponent", "Invalid duration from MediaPlayer, will use manual tracking")
+                    Log.w(
+                        "AudioPlayerComponent",
+                        "Invalid duration from MediaPlayer, will use manual tracking"
+                    )
                 }
                 isLoading = false
             }
@@ -753,34 +720,34 @@ fun AudioPlayerComponent(audioUrl: String, isOwnMessage: Boolean) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.size(48.dp)
+                contentAlignment = Alignment.Center, modifier = Modifier.size(48.dp)
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
-                        color = if (isOwnMessage)MaterialTheme.colorScheme.primary  else Color.White ,
+                        color = if (isOwnMessage) MaterialTheme.colorScheme.primary else Color.White,
                         modifier = Modifier.size(24.dp)
                     )
                 } else {
-                    IconButton(
-                        onClick = {
-                            if (!isPrepared && !isLoading) {
-                                prepareMediaPlayer()
-                            } else if (isPrepared) {
-                                if (isPlaying) {
-                                    mediaPlayer.pause()
-                                    isPlaying = false
-                                    manualDuration += System.currentTimeMillis() - startTime
-                                } else {
-                                    mediaPlayer.seekTo(currentPosition)
-                                    mediaPlayer.start()
-                                    isPlaying = true
-                                    startTime = System.currentTimeMillis()
-                                }
-                                Log.d("AudioPlayerComponent", "Play/Pause clicked. isPlaying: $isPlaying")
+                    IconButton(onClick = {
+                        if (!isPrepared && !isLoading) {
+                            prepareMediaPlayer()
+                        } else if (isPrepared) {
+                            if (isPlaying) {
+                                mediaPlayer.pause()
+                                isPlaying = false
+                                manualDuration += System.currentTimeMillis() - startTime
+                            } else {
+                                mediaPlayer.seekTo(currentPosition)
+                                mediaPlayer.start()
+                                isPlaying = true
+                                startTime = System.currentTimeMillis()
                             }
+                            Log.d(
+                                "AudioPlayerComponent",
+                                "Play/Pause clicked. isPlaying: $isPlaying"
+                            )
                         }
-                    ) {
+                    }) {
                         Icon(
                             imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                             contentDescription = if (isPlaying) "Pause" else "Play",
@@ -792,22 +759,24 @@ fun AudioPlayerComponent(audioUrl: String, isOwnMessage: Boolean) {
 
             Column(modifier = Modifier.weight(1f)) {
                 Slider(
-                    value = progress,
-                    onValueChange = { newProgress ->
+                    value = progress, onValueChange = { newProgress ->
                         if (isPrepared) {
                             progress = newProgress
-                            val newPosition = (if (duration > 0) duration else manualDuration.toInt()) * progress
+                            val newPosition =
+                                (if (duration > 0) duration else manualDuration.toInt()) * progress
                             mediaPlayer.seekTo(newPosition.toInt())
                             currentPosition = newPosition.toInt()
-                            Log.d("AudioPlayerComponent", "Slider moved. Progress: $progress, New position: $newPosition")
+                            Log.d(
+                                "AudioPlayerComponent",
+                                "Slider moved. Progress: $progress, New position: $newPosition"
+                            )
                         }
-                    },
-                    enabled = isPrepared && !isLoading
+                    }, enabled = isPrepared && !isLoading
                 )
 
                 Text(
                     text = "${formatTime(currentPosition.toLong())} / ${formatTime(if (duration > 0) duration.toLong() else manualDuration.toLong())}",
-                    color = if (isOwnMessage) Color.Black else  Color.White,
+                    color = if (isOwnMessage) Color.Black else Color.White,
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.align(Alignment.End)
                 )
@@ -840,9 +809,13 @@ fun AudioPlayerComponent(audioUrl: String, isOwnMessage: Boolean) {
                     // Manual tracking
                     val elapsedTime = System.currentTimeMillis() - startTime
                     currentPosition = (manualDuration + elapsedTime).toInt()
-                    progress = if (currentPosition > 0) currentPosition.toFloat() / (manualDuration + elapsedTime) else 0f
+                    progress =
+                        if (currentPosition > 0) currentPosition.toFloat() / (manualDuration + elapsedTime) else 0f
                 }
-                Log.d("AudioPlayerComponent", "Updated position: $currentPosition, Progress: $progress")
+                Log.d(
+                    "AudioPlayerComponent",
+                    "Updated position: $currentPosition, Progress: $progress"
+                )
             } else {
                 isPlaying = false
             }
@@ -859,7 +832,6 @@ fun AudioPlayerComponent(audioUrl: String, isOwnMessage: Boolean) {
     }
 
 }
-
 
 
 private fun formatTime(timeMs: Long): String {
