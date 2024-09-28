@@ -20,6 +20,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
@@ -59,6 +60,7 @@ import com.example.myapplication.myapplication.flashcall.ViewModel.chats.Chattin
 import com.example.myapplication.myapplication.flashcall.ViewModel.wallet.WalletViewModel
 import com.example.myapplication.myapplication.flashcall.ui.theme.FlashCallTheme
 import com.example.myapplication.myapplication.flashcall.utils.rememberImeState
+import com.google.accompanist.insets.ProvideWindowInsets
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -112,9 +114,8 @@ class MainActivity : ComponentActivity() {
             }
 
         setContent {
-
             FlashCallTheme {
-
+                WindowCompat.setDecorFitsSystemWindows(window, false)
                 val imeState = rememberImeState()
                 val scrollState = rememberScrollState()
 
