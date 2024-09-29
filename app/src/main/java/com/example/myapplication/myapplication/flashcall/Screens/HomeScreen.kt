@@ -1,5 +1,6 @@
 package com.example.myapplication.myapplication.flashcall.Screens
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -117,6 +118,7 @@ var creatorUid: String = ""
 var token: String = ""
 var creatorUserName: String = ""
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun HomeScreen(
     navController: NavController,
@@ -210,7 +212,6 @@ fun HomeScreen(
         Column(
             modifier = Modifier
                 .wrapContentSize()
-                .padding(it)
                 .background(Color.Black)
                 .verticalScroll(scrollState)
         ) {
