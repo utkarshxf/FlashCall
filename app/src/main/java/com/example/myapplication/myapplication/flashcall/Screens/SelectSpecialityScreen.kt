@@ -49,37 +49,49 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.myapplication.myapplication.flashcall.BaseClass
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.R
+import com.example.myapplication.myapplication.flashcall.ViewModel.RegistrationViewModel
 import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.PrimaryBackGround
+import com.example.myapplication.myapplication.flashcall.utils.LoadingIndicator
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun SelectSpecialityScreen(navController: NavController) {
+fun SelectSpecialityScreen(navController: NavController, viewModel: RegistrationViewModel = hiltViewModel()) {
     var selectedIndex by remember { mutableStateOf(-1) } // Track the selected item
 
-    val items = listOf(
-        "Astrologer", "Designer", "Nutritionist", "Fitness", "Yoga", "Aayurved",
-        "Share Market", "Marketing", "Legal Advisor", "Relationship", "Other"
-    )
+//    val items = listOf(
+//        "Astrologer", "Designer", "Nutritionist", "Fitness", "Yoga", "Aayurved",
+//        "Share Market", "Marketing", "Legal Advisor", "Relationship", "Other"
+//    )
+//
+//    val images = listOf(
+//        R.drawable.group_26, R.drawable.group_27, R.drawable.group_28,
+//        R.drawable.group_29, R.drawable.group_30, R.drawable.group_31,
+//        R.drawable.group_32, R.drawable.group_33, R.drawable.group_34,
+//        R.drawable.group_35, R.drawable.group_36
+//    )
 
-    val images = listOf(
-        R.drawable.group_26, R.drawable.group_27, R.drawable.group_28,
-        R.drawable.group_29, R.drawable.group_30, R.drawable.group_31,
-        R.drawable.group_32, R.drawable.group_33, R.drawable.group_34,
-        R.drawable.group_35, R.drawable.group_36
-    )
+    LaunchedEffect(key1 = Unit) {
+        viewModel.getSpacialization()
+    }
+
+    val spacializationState = viewModel.spacializationState
 
     Surface(
         modifier = Modifier
@@ -117,21 +129,32 @@ fun SelectSpecialityScreen(navController: NavController) {
                     Spacer(modifier = Modifier.height(20.dp))
 
                     // Constraining the height of LazyVerticalGrid
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(3),
-                        modifier = Modifier
-                            .height(maxHeight * 0.7f) // Give LazyVerticalGrid a fixed height relative to available space
-                            .padding(10.dp)
-                    ) {
-                        items(items.size) { index ->
-                            SpecialityItem(
-                                index = index,
-                                items = items,
-                                imageRes = images[index],
-                                isSelected = index == selectedIndex, // Check if the current item is selected
-                                onClick = { selectedIndex = index } // Update the selected item on click
-                            )
+
+                    if(spacializationState.list != null){
+
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(3),
+                            modifier = Modifier
+                                .height(maxHeight * 0.7f) // Give LazyVerticalGrid a fixed height relative to available space
+                                .padding(10.dp)
+                        ) {
+                            items(spacializationState.list!!.size) { index ->
+                                SpecialityItem(
+                                    name = spacializationState.list!!.get(index)?.name?: "default",
+                                    imageUrl = spacializationState.list!!.get(index)?.icon?: "default",
+                                    isSelected = index == selectedIndex, // Check if the current item is selected
+                                    onClick = { selectedIndex = index } // Update the selected item on click
+                                )
+                            }
                         }
+                    }
+
+                    if(spacializationState.isLoading){
+                        LoadingIndicator()
+                    }
+
+                    if(spacializationState.error != null){
+                        Text(text = "${spacializationState.error}", color = Color.Red)
                     }
 
                     Spacer(modifier = Modifier.height(60.dp))
@@ -170,9 +193,8 @@ fun ButtonSpeciality(isSelected: Boolean, navController: NavController) {
 }
 @Composable
 fun SpecialityItem(
-    index: Int,
-    items: List<String>,
-    imageRes: Int,
+    name: String,
+    imageUrl: String,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
@@ -197,13 +219,23 @@ fun SpecialityItem(
                 .shadow(8.dp, CircleShape), // Add shadow for 3D effect
             contentAlignment = Alignment.Center
         ) {
-            Image(
-                painter = painterResource(id = imageRes),
+
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current).data(imageUrl).crossfade(true).build(),
                 contentDescription = null,
-                modifier = Modifier.fillMaxSize()
+                placeholder = painterResource(id = R.drawable.profile_picture_holder),
+                modifier = Modifier
+                    .fillMaxSize()  // Ensure a consistent size
+                    .clip(CircleShape),  // Clip to a circle
+                contentScale = ContentScale.Crop  // Crop the image to fit within the circle
             )
+//            Image(
+//                painter = painterResource(id = imageRes),
+//                contentDescription = null,
+//                modifier = Modifier.fillMaxSize()
+//            )
         }
-        Text(text = items[index], fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal)
+        Text(text = name, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal)
     }
 }
 

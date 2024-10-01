@@ -62,6 +62,7 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.ProfileBackground
 import com.example.myapplication.myapplication.flashcall.ui.theme.RatingColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
+import com.jetpack.draganddroplist.move
 import java.time.ZonedDateTime
 import java.util.Date
 
@@ -124,16 +125,22 @@ fun FeedbackScreen(
             Spacer(modifier = Modifier.height(30.dp))
 
             // Check if feedbacks are available
-            if (feedbacks?.feedbacks?.isEmpty() != null && feedbacks?.feedbacks?.isEmpty()!!) {
+            if (feedbacks?.feedbacks?.isEmpty() != null && feedbacks.feedbacks?.isEmpty()!!) {
                 Text("No feedbacks available")
             } else {
+
+
+//                feedbacks?.feedbacks?.let {
+//                    DragDropFeedbackList(feedbacks = it,
+//                        onMove = { fromIndex, toIndex -> feedbacks.feedbacks?.move(fromIndex, toIndex)})
+//                }
 
                 if(feedbacks?.feedbacks != null){
                     LazyColumn(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        items(feedbacks?.feedbacks!!) { feedbackResponse ->
+                        items(feedbacks.feedbacks!!) { feedbackResponse ->
                             feedbackResponse.feedbacks?.forEach { feedback ->
                                 FeedbackListUtil(feedback) {
                                     feedbackViewModel.updateFeedback(

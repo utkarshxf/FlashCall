@@ -7,5 +7,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class UserFeedbaks(
     @SerialName("feedbacks")
-    var feedbacks: List<Feedback>?
+    var feedbacks: MutableList<Feedback>?
 )

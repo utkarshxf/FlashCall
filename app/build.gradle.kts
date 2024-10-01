@@ -131,6 +131,11 @@ dependencies {
 
 
 
-
+    implementation ("com.google.accompanist:accompanist-permissions:0.32.0") // check for the latest version
+    implementation ("androidx.camera:camera-core:1.1.0")
+    implementation ("androidx.camera:camera-camera2:1.1.0")
+    implementation ("androidx.camera:camera-lifecycle:1.1.0")
+    implementation ("androidx.camera:camera-view:1.1.0")
+    implementation ("androidx.camera:camera-extensions:1.1.0")
 //    implementation("com.google.accompanist:accompanist-insets-ui.0.24.7-alpha")
 }

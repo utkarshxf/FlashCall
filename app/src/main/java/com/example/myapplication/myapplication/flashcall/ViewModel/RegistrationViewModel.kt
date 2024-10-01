@@ -21,6 +21,7 @@ import com.example.myapplication.myapplication.flashcall.Data.model.deleteAdditi
 import com.example.myapplication.myapplication.flashcall.Data.model.editAdditionalLink.EditAdditionalLinkRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.editAdditionalLink.EditUserLink
 import com.example.myapplication.myapplication.flashcall.Data.model.firestore.UserServicesResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.spacialization.Profession
 import com.example.myapplication.myapplication.flashcall.Data.model.wallet.UserId
 import com.example.myapplication.myapplication.flashcall.repository.CreateRepository
 import com.example.myapplication.myapplication.flashcall.repository.UserPreferencesRepository
@@ -39,6 +40,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import java.net.MalformedURLException
+import java.net.URL
 import java.time.LocalDate
 import javax.inject.Inject
 import kotlin.math.roundToInt
@@ -400,6 +403,7 @@ class RegistrationViewModel @Inject constructor(
         return userPreferencesRepository.getStoredUserData(preferencesKey)
     }
 
+
     fun updateUserLinks(link: LinkData?) {
         val userId = userPreferencesRepository.getUser()?._id?:""
         viewModelScope.launch {
@@ -423,10 +427,15 @@ class RegistrationViewModel @Inject constructor(
         }
     }
 
-    fun editUserLinks(link: LinkData?) {
+    fun isActiveAdditionalLink(index: Int){
         val userId = userPreferencesRepository.getUser()?._id?:""
+        addAditionalLinkState.linksList?.get(index)?.isActive = !addAditionalLinkState.linksList?.get(index)?.isActive!!
 
-        val body = EditAdditionalLinkRequest(userId = userId, user = EditUserLink(link))
+        addAditionalLinkState = addAditionalLinkState.copy(linksList = addAditionalLinkState.linksList)
+
+        Log.d("isActiveAdditionalLink", "val: ${addAditionalLinkState.linksList?.get(index)?.isActive!!}")
+
+        val body = EditAdditionalLinkRequest(userId = userId, user = EditUserLink(links = addAditionalLinkState.linksList))
         viewModelScope.launch {
             editAdditionalLinkState = editAdditionalLinkState.copy(isLoading = true)
             try {
@@ -445,6 +454,45 @@ class RegistrationViewModel @Inject constructor(
             } catch (e: Exception) {
 
             }
+        }
+    }
+
+
+    fun editUserLinks(link: LinkData?) {
+        val userId = userPreferencesRepository.getUser()?._id?:""
+
+        addAditionalLinkState.linksList?.get(editAdditionalLinkState.editingLayout.index)?.url = link?.url
+        addAditionalLinkState.linksList?.get(editAdditionalLinkState.editingLayout.index)?.title = link?.title
+        addAditionalLinkState.linksList?.get(editAdditionalLinkState.editingLayout.index)?.isActive = link?.isActive
+
+        val body = EditAdditionalLinkRequest(userId = userId, user = EditUserLink(links = addAditionalLinkState.linksList))
+        viewModelScope.launch {
+            editAdditionalLinkState = editAdditionalLinkState.copy(isLoading = true)
+            try {
+                repository.editAdditionalLink(
+                    "api/v1/creator/updateUser",
+                    body
+                ).collect { response ->
+                    if(response.updatedUser.links != null){
+                        userPreferencesRepository.storeAdditionalLinks(userId, response.updatedUser.links)
+                    }else{
+                        userPreferencesRepository.storeAdditionalLinks(userId, null)
+                    }
+                    editAdditionalLinkState = editAdditionalLinkState.copy(isLoading = false ,editingLayout = ShowEditingLayout(showEditingLayout = false, -1))
+                    addAditionalLinkState = addAditionalLinkState.copy(showAddLinkLayout = false,linksList = userPreferencesRepository.retrieveAdditionalLinks(userId), isLoading = false)
+                }
+            } catch (e: Exception) {
+
+            }
+        }
+    }
+
+    fun isValidUrl(url: String): Boolean {
+        return try {
+            URL(url)
+            true
+        } catch (e: MalformedURLException) {
+            false
         }
     }
 
@@ -521,14 +569,14 @@ class RegistrationViewModel @Inject constructor(
     }
 
 
-    fun deleteAdditionalLinks(body: LinkData){
+    fun deleteAdditionalLinks(item: LinkData){
         viewModelScope.launch {
             val userId = userPreferencesRepository.getUser()?._id?:""
-            addAditionalLinkState = addAditionalLinkState.copy(linksList = userPreferencesRepository.retrieveAdditionalLinks(userId))
-            Log.d("DeletingAdditionalLink","requestBody: $userId, $body")
+//            addAditionalLinkState = addAditionalLinkState.copy(linksList = userPreferencesRepository.retrieveAdditionalLinks(userId))
+            Log.d("DeletingAdditionalLink","requestBody: $userId")
             viewModelScope.launch {
                 try {
-                    repository.daleteAdditionalLink(body = DeleteAdditionalLinks(body,userId))
+                    repository.daleteAdditionalLink(body = DeleteAdditionalLinks(userId = userId, link = LinkData(title = item.title, url = item.url, isActive = item.isActive)))
                     .collect { response ->
                         Log.d("DeletingAdditionalLink","responseBody: $response")
                         userPreferencesRepository.storeAdditionalLinks(userId, response.links)
@@ -599,7 +647,33 @@ class RegistrationViewModel @Inject constructor(
     fun getMyBio(): String{
         return userPreferencesRepository.getStoredUserData(PreferencesKey.Bio.key)+""
     }
+
+    var spacializationState by mutableStateOf(SpacializationState())
+    fun getSpacialization(){
+        spacializationState = spacializationState.copy(isLoading = true)
+        try {
+            viewModelScope.launch {
+                repository.getSpacializations(url = "https://backend.flashcall.me/api/v1/profession/selectProfession").collect{response ->
+                    if (response != null){
+                        spacializationState = spacializationState.copy(isLoading = false, list = response.professions)
+                    }else{
+                        spacializationState = spacializationState.copy(isLoading = false, error = "Data Not Found")
+                    }
+                }
+            }
+        }catch (e: Exception){
+            spacializationState = spacializationState.copy(isLoading = false, error = "exception: ${e.message}")
+        }
+
+    }
+
 }
+
+data class SpacializationState(
+    var isLoading: Boolean = false,
+    var error: String? = null,
+    var list: List<Profession?>? = null
+)
 
 data class UserAssistanceLinkState(
     var linkUrl: String? = null,
@@ -623,7 +697,7 @@ data class ShowEditingLayout(
 )
 data class AddAditionalLinkState(
     val showAddLinkLayout: Boolean = false,
-    val linksList: List<LinkData>? = null,
+    val linksList: MutableList<LinkData>? = null,
     val isLoading: Boolean = false
 )
 data class TodaysWalletBalanceState(

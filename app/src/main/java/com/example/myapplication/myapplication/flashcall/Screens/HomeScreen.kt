@@ -106,12 +106,8 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.PrimaryBackGro
 import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryBackGround
 import com.example.myapplication.myapplication.flashcall.ui.theme.SwitchColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.helveticaFontFamily
-import com.example.myapplication.myapplication.flashcall.utils.LoadingIndicator
 import com.jetpack.draganddroplist.DragDropList
 import com.jetpack.draganddroplist.move
-import com.jetpack.draganddroplist.rememberDragDropListState
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 
 //var uriImg: Uri? = null
 var creatorUid: String = ""
@@ -404,24 +400,35 @@ fun HomeScreenBottom(
 
                 if (!additionalLinksList.isNullOrEmpty()) {
 
-//                    additionalLinksList.toMutableStateList()
+                    DragDropList(
+                        items = additionalLinksList,
+                        onMove = { fromIndex, toIndex -> additionalLinksList.move(fromIndex, toIndex)},
+                        viewModel = viewModel
+                    )
+
 //                    DragDropList(
-//                        items = additionalLinksList,
-//                        onMove = { fromIndex, toIndex -> additionalLinksList.move(fromIndex, toIndex)}
+//                        items = ReorderItem,
+//                        onMove = { fromIndex, toIndex -> ReorderItem.move(fromIndex, toIndex)},
+//                        viewModel = viewModel
 //                    )
 
-                    for (i in additionalLinksList.indices) {
-                        AddedLinkLayout(item = additionalLinksList[i], isActive = {
-                            additionalLinksList[i].isActive = !additionalLinksList[i].isActive!!
-                            viewModel.updateUserLinks(LinkData(additionalLinksList[i].title,
-                                additionalLinksList[i].url, additionalLinksList[i].isActive))
-                        }, edit = {
-                            viewModel.showEditingAdditionalLayout(true, i)
-                        }) {
-                            viewModel.deleteAdditionalLinks(body = additionalLinksList[i])
-                        }
-                    }
+
+
+
+//                    for (i in additionalLinksList.indices) {
+//                        AddedLinkLayout(item = additionalLinksList[i], isActive = {
+//                            additionalLinksList[i].isActive = !additionalLinksList[i].isActive!!
+//                            viewModel.updateUserLinks(LinkData(additionalLinksList[i].title,
+//                                additionalLinksList[i].url, additionalLinksList[i].isActive))
+//                        }, edit = {
+//                            viewModel.showEditingAdditionalLayout(true, i)
+//                        }) {
+//                            viewModel.deleteAdditionalLinks(body = additionalLinksList[i])
+//                        }
+//                    }
                 }
+
+
 
                 if(editAdditionalLinkState.editingLayout.showEditingLayout && editAdditionalLinkState.editingLayout.index > -1){
                     EditLinkLayout(viewModel, model = additionalLinksList?.get(editAdditionalLinkState.editingLayout.index))
@@ -1206,15 +1213,25 @@ fun copyToClipboard(
 @Composable
 fun ImageFromUrl(imageUrl: String) {
     // Use the AsyncImage directly for simplicity
-    AsyncImage(
-        model = ImageRequest.Builder(LocalContext.current).data(imageUrl).crossfade(true).build(),
-        contentDescription = null,
-        modifier = Modifier
-            .size(120.dp)  // Ensure a consistent size
-            .clip(CircleShape)
-            .border(1.dp, color = MainColor, shape = CircleShape),  // Clip to a circle
-        contentScale = ContentScale.Crop  // Crop the image to fit within the circle
-    )
+    if(imageUrl.isNotEmpty()){
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current).data(imageUrl).crossfade(true).build(),
+            contentDescription = null,
+            placeholder = painterResource(id = R.drawable.profile_picture_holder),
+            modifier = Modifier
+                .size(120.dp)  // Ensure a consistent size
+                .clip(CircleShape)
+                .border(1.dp, color = MainColor, shape = CircleShape),  // Clip to a circle
+            contentScale = ContentScale.Crop  // Crop the image to fit within the circle
+        )
+    }else{
+        Image(painter = painterResource(id = R.drawable.profile_picture_holder), contentDescription = "profile",
+            modifier = Modifier
+                .size(120.dp)  // Ensure a consistent size
+                .clip(CircleShape)
+                .border(1.dp, color = MainColor, shape = CircleShape),  // Clip to a circle
+            contentScale = ContentScale.Crop)
+    }
 }
 
 
@@ -1307,7 +1324,8 @@ fun DemoText(viewModel: RegistrationViewModel) {
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .clickable {
-                            val urlIntent = Intent(Intent.ACTION_VIEW, Uri.parse(userAssistanceLink+""))
+                            val urlIntent =
+                                Intent(Intent.ACTION_VIEW, Uri.parse(userAssistanceLink + ""))
                             context.startActivity(urlIntent)
                         }, style = TextStyle(
                         textDecoration = TextDecoration.Underline,
@@ -1347,7 +1365,7 @@ fun walletIcon() {
 fun AddedLinkLayout(item: LinkData, isActive: () -> Unit, edit: () -> Unit, delete: () -> Unit) {
     var mDisplayMenu by remember { mutableStateOf(false) }
 
-    Box(modifier = Modifier.padding(bottom = 10.dp)) {
+    Box(modifier = Modifier) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -1503,7 +1521,7 @@ fun AddLinkLayout(
                 .border(1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp)),
             placeholder = {
                 Text(
-                    text = "Past URL link here",
+                    text = "Ex: https://example.com",
                     color = Color.Black,
                     style = TextStyle(
                         fontFamily = helveticaFontFamily,
@@ -1511,7 +1529,7 @@ fun AddLinkLayout(
                     )
                 )
             },
-            maxLines = 1,
+//            maxLines = 1,
             trailingIcon = {
                 Icon(
                     painter = painterResource(id = R.drawable.link_24dp_2),
@@ -1563,13 +1581,17 @@ fun AddLinkLayout(
                 ),
                 onClick = {
                     if (linkTitle.isNotEmpty() && link.isNotEmpty()) {
-                        registrationViewModel.updateUserLinks(
-                            link = LinkData(
-                                linkTitle,
-                                link,
-                                true
+                        if(registrationViewModel.isValidUrl(link)){
+                            registrationViewModel.updateUserLinks(
+                                link = LinkData(
+                                    linkTitle,
+                                    link,
+                                    true
+                                )
                             )
-                        )
+                        }else{
+                            Toast.makeText(context, "Invalid URL", Toast.LENGTH_SHORT).show()
+                        }
                     } else {
                         Toast.makeText(context, "Enter Details Please", Toast.LENGTH_SHORT).show()
                     }
@@ -1645,7 +1667,7 @@ fun EditLinkLayout(
                 .border(1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp)),
             placeholder = {
                 Text(
-                    text = "Past URL link here",
+                    text = "Ex: https://example.com",
                     color = Color.Black,
                     style = TextStyle(
                         fontFamily = helveticaFontFamily,
@@ -1653,7 +1675,7 @@ fun EditLinkLayout(
                     )
                 )
             },
-            maxLines = 1,
+//            maxLines = 1,
             trailingIcon = {
                 Icon(
                     painter = painterResource(id = R.drawable.link_24dp_2),
@@ -1706,13 +1728,17 @@ fun EditLinkLayout(
                 onClick = {
 
                     if (linkTitle.isNotEmpty() && link.isNotEmpty()) {
-                        viewModel.editUserLinks(
-                            link = LinkData(
-                                linkTitle,
-                                link,
-                                isActive
+                        if(viewModel.isValidUrl(link)){
+                            viewModel.editUserLinks(
+                                link = LinkData(
+                                    linkTitle,
+                                    link,
+                                    isActive
+                                )
                             )
-                        )
+                        }else{
+                            Toast.makeText(context, "Invalid URL",Toast.LENGTH_SHORT).show()
+                        }
                     } else {
                         Toast.makeText(context, "Enter Details Please", Toast.LENGTH_SHORT).show()
                     }
@@ -1722,6 +1748,32 @@ fun EditLinkLayout(
 
     }
 }
+
+
+//Static value
+val ReorderItem = listOf(
+    "Item 1",
+    "Item 2",
+    "Item 3",
+    "Item 4",
+    "Item 5",
+    "Item 6",
+    "Item 7",
+    "Item 8",
+    "Item 9",
+    "Item 10",
+    "Item 11",
+    "Item 12",
+    "Item 13",
+    "Item 14",
+    "Item 15",
+    "Item 16",
+    "Item 17",
+    "Item 18",
+    "Item 19",
+    "Item 20"
+).toMutableStateList()
+
 
 
 @Preview(showBackground = false)

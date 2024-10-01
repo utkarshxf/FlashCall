@@ -31,6 +31,7 @@ import co.hyperverge.hyperkyc.HyperKyc
 import co.hyperverge.hyperkyc.data.models.HyperKycConfig
 import co.hyperverge.hyperkyc.data.models.result.HyperKycStatus
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
+import com.example.myapplication.myapplication.flashcall.Screens.CaptureImageScreen
 import com.example.myapplication.myapplication.flashcall.Screens.EditProfileScreen
 import com.example.myapplication.myapplication.flashcall.Screens.HomeScreen
 import com.example.myapplication.myapplication.flashcall.Screens.IncomingCallScreen
@@ -231,6 +232,9 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
         }
         composable(route = ScreenRoutes.KycScreen.route) {
             KYCScreen(navController = navController, hyperKycLauncher)
+        }
+        composable(route = ScreenRoutes.CaptureImageScreen.route) {
+            CaptureImageScreen(navController = navController)
         }
         composable(route = ScreenRoutes.TermAndCondition.route) {
             TermAndCondition()

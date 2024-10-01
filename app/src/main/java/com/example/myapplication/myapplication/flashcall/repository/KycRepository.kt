@@ -1,5 +1,6 @@
 package com.example.myapplication.myapplication.flashcall.repository
 
+import android.util.Log
 import com.example.myapplication.myapplication.flashcall.Data.model.AadhaarRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.AadhaarResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.VerifyAadhaarOtpRequest
@@ -36,17 +37,18 @@ class KycRepository @Inject constructor(private val apiService: APIService): Saf
             emit(response)
         }
     }
-    suspend fun uploadLiveliness(
-        imagePart: MultipartBody.Part,
-        verificationIdPart: RequestBody,
-        userIdPart: RequestBody,
-        imgUrlPart: RequestBody
-    ): Flow<KycResponse>{
-        return flow {
-            val response = safeApiRequest {apiService.uploadLiveliness(imagePart , verificationIdPart , userIdPart , imgUrlPart)}
-            emit(response)
-        }
-    }
+//    suspend fun uploadLiveliness(
+//        imagePart: MultipartBody.Part,
+//        verificationIdPart: RequestBody,
+//        userIdPart: RequestBody,
+//        imgUrlPart: RequestBody
+//    ): Flow<KycResponse> {
+//        Log.d("ImageUploaded","repository")
+//        return flow {
+//            val response = safeApiRequest {apiService.uploadLiveliness(imagePart , verificationIdPart , userIdPart , imgUrlPart)}
+//            emit(response)
+//        }
+//    }
 
     suspend fun getKycStatus(url: String): Flow<KycStatusResponse>{
         return flow {

@@ -31,6 +31,7 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.moshi.MoshiConverterFactory
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @Module
@@ -43,7 +44,7 @@ object APIModule {
         val moshi = GsonConverterFactory.create()
         return Retrofit.Builder()
             .baseUrl("https://flashcall.me/")
-            .client(OkHttpClient())
+            .client(provideOkHttpClient())
             .addConverterFactory(moshi)
             .build()
 
@@ -59,6 +60,9 @@ object APIModule {
     @Singleton
     fun provideOkHttpClient(): OkHttpClient {
         return OkHttpClient.Builder()
+            .connectTimeout(60, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
+            .writeTimeout(60, TimeUnit.SECONDS)
             .build()
     }
 

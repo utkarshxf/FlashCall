@@ -34,5 +34,6 @@ sealed class ScreenRoutes(val route: String) {
     data object InComingChatScreen : ScreenRoutes("InComingChatScreen")
 
     data object KycScreen : ScreenRoutes("KycScreen")
+    data object CaptureImageScreen : ScreenRoutes("CaptureImageScreen")
 
 }

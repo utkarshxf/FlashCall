@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -586,11 +587,17 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                                     Icon(painter =  painterResource(id = R.drawable.selected_check_icon),
                                         contentDescription = null,
                                         tint = Color.White,
-                                        modifier = Modifier.size(36.dp)
+                                        modifier = Modifier
+                                            .size(36.dp)
                                             .drawBehind {
-                                                drawCircle(color = Color.Black, style = Stroke(width = 5f,
-                                                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
-                                                )
+                                                drawCircle(
+                                                    color = Color.Black, style = Stroke(
+                                                        width = 5f,
+                                                        pathEffect = PathEffect.dashPathEffect(
+                                                            floatArrayOf(5f, 5f),
+                                                            0f
+                                                        )
+                                                    )
                                                 )
                                             }
                                     )
@@ -626,11 +633,17 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                                     Icon(painter =  painterResource(id = R.drawable.selected_check_icon),
                                         contentDescription = null,
                                         tint = Color.White,
-                                        modifier = Modifier.size(36.dp)
+                                        modifier = Modifier
+                                            .size(36.dp)
                                             .drawBehind {
-                                                drawCircle(color = ThemeColorGray, style = Stroke(width = 5f,
-                                                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
-                                                )
+                                                drawCircle(
+                                                    color = ThemeColorGray, style = Stroke(
+                                                        width = 5f,
+                                                        pathEffect = PathEffect.dashPathEffect(
+                                                            floatArrayOf(5f, 5f),
+                                                            0f
+                                                        )
+                                                    )
                                                 )
                                             }
                                     )
@@ -666,11 +679,17 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                                     Icon(painter =  painterResource(id = R.drawable.selected_check_icon),
                                         contentDescription = null,
                                         tint = Color.White,
-                                        modifier = Modifier.size(36.dp)
+                                        modifier = Modifier
+                                            .size(36.dp)
                                             .drawBehind {
-                                                drawCircle(color = ThemeColorDarkBlue, style = Stroke(width = 5f,
-                                                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
-                                                )
+                                                drawCircle(
+                                                    color = ThemeColorDarkBlue, style = Stroke(
+                                                        width = 5f,
+                                                        pathEffect = PathEffect.dashPathEffect(
+                                                            floatArrayOf(5f, 5f),
+                                                            0f
+                                                        )
+                                                    )
                                                 )
                                             }
                                     )
@@ -705,11 +724,17 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                                     Icon(painter =  painterResource(id = R.drawable.selected_check_icon),
                                         contentDescription = null,
                                         tint = Color.White,
-                                        modifier = Modifier.size(36.dp)
+                                        modifier = Modifier
+                                            .size(36.dp)
                                             .drawBehind {
-                                                drawCircle(color = ThemeColorLightBlue, style = Stroke(width = 5f,
-                                                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
-                                                )
+                                                drawCircle(
+                                                    color = ThemeColorLightBlue, style = Stroke(
+                                                        width = 5f,
+                                                        pathEffect = PathEffect.dashPathEffect(
+                                                            floatArrayOf(5f, 5f),
+                                                            0f
+                                                        )
+                                                    )
                                                 )
                                             }
                                     )
@@ -745,11 +770,17 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                                     Icon(painter =  painterResource(id = R.drawable.selected_check_icon),
                                         contentDescription = null,
                                         tint = Color.White,
-                                        modifier = Modifier.size(36.dp)
+                                        modifier = Modifier
+                                            .size(36.dp)
                                             .drawBehind {
-                                                drawCircle(color = ThemeColorMaroon, style = Stroke(width = 5f,
-                                                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
-                                                )
+                                                drawCircle(
+                                                    color = ThemeColorMaroon, style = Stroke(
+                                                        width = 5f,
+                                                        pathEffect = PathEffect.dashPathEffect(
+                                                            floatArrayOf(5f, 5f),
+                                                            0f
+                                                        )
+                                                    )
                                                 )
                                             }
                                     )
@@ -786,11 +817,17 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                                     Icon(painter =  painterResource(id = R.drawable.selected_check_icon),
                                         contentDescription = null,
                                         tint = Color.White,
-                                        modifier = Modifier.size(36.dp)
+                                        modifier = Modifier
+                                            .size(36.dp)
                                             .drawBehind {
-                                                drawCircle(color = ThemeColorLightMaroon, style = Stroke(width = 5f,
-                                                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
-                                                )
+                                                drawCircle(
+                                                    color = ThemeColorLightMaroon, style = Stroke(
+                                                        width = 5f,
+                                                        pathEffect = PathEffect.dashPathEffect(
+                                                            floatArrayOf(5f, 5f),
+                                                            0f
+                                                        )
+                                                    )
                                                 )
                                             }
                                     )
@@ -837,11 +874,17 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                                     Icon(painter =  painterResource(id = R.drawable.selected_check_icon),
                                         contentDescription = null,
                                         tint = Color.White,
-                                        modifier = Modifier.size(36.dp)
+                                        modifier = Modifier
+                                            .size(36.dp)
                                             .drawBehind {
-                                                drawCircle(color = MainColor, style = Stroke(width = 5f,
-                                                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
-                                                )
+                                                drawCircle(
+                                                    color = MainColor, style = Stroke(
+                                                        width = 5f,
+                                                        pathEffect = PathEffect.dashPathEffect(
+                                                            floatArrayOf(5f, 5f),
+                                                            0f
+                                                        )
+                                                    )
                                                 )
                                             }
                                     )
@@ -876,11 +919,17 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                                     Icon(painter =  painterResource(id = R.drawable.selected_check_icon),
                                         contentDescription = null,
                                         tint = Color.White,
-                                        modifier = Modifier.size(36.dp)
+                                        modifier = Modifier
+                                            .size(36.dp)
                                             .drawBehind {
-                                                drawCircle(color = ThemeColorPurple, style = Stroke(width = 5f,
-                                                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
-                                                )
+                                                drawCircle(
+                                                    color = ThemeColorPurple, style = Stroke(
+                                                        width = 5f,
+                                                        pathEffect = PathEffect.dashPathEffect(
+                                                            floatArrayOf(5f, 5f),
+                                                            0f
+                                                        )
+                                                    )
                                                 )
                                             }
                                     )
@@ -916,11 +965,17 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                                     Icon(painter =  painterResource(id = R.drawable.selected_check_icon),
                                         contentDescription = null,
                                         tint = Color.White,
-                                        modifier = Modifier.size(36.dp)
+                                        modifier = Modifier
+                                            .size(36.dp)
                                             .drawBehind {
-                                                drawCircle(color = ThemeColorYellow, style = Stroke(width = 5f,
-                                                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
-                                                )
+                                                drawCircle(
+                                                    color = ThemeColorYellow, style = Stroke(
+                                                        width = 5f,
+                                                        pathEffect = PathEffect.dashPathEffect(
+                                                            floatArrayOf(5f, 5f),
+                                                            0f
+                                                        )
+                                                    )
                                                 )
                                             }
                                     )
@@ -956,13 +1011,19 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                                     Icon(painter =  painterResource(id = R.drawable.selected_check_icon),
                                         contentDescription = null,
                                         tint = Color.White,
-                                        modifier = Modifier.size(36.dp)
+                                        modifier = Modifier
+                                            .size(36.dp)
                                             .drawBehind {
-                                            drawCircle(color = ThemeColorOrange, style = Stroke(width = 5f,
-                                                pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
-                                            )
-                                            )
-                                        }
+                                                drawCircle(
+                                                    color = ThemeColorOrange, style = Stroke(
+                                                        width = 5f,
+                                                        pathEffect = PathEffect.dashPathEffect(
+                                                            floatArrayOf(5f, 5f),
+                                                            0f
+                                                        )
+                                                    )
+                                                )
+                                            }
                                     )
 
                                 }
@@ -1018,21 +1079,31 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                                 fontSize = 16.sp
                             ),
                             onClick = {
-                                registrationViewModel.updateUser(
-                                    userId = uid,
-                                    username = username,
-                                    phone = phone ,
-                                    fullName = capitalizeAfterSpace(edit_profile_name),
-                                    firstName = firstName,
-                                    lastName= lastName,
-                                    photo = imageUrl,
-                                    profession = profession,
-                                    themeSelected = themeSelected,
-                                    gender = gender,
-                                    dob = dob,
-                                    bio = edit_profile_bio,
-                                    navController = navController,
-                                ){ loading = it }
+                                if(edit_profile_name.isNotEmpty() && edit_profile_bio.isNotEmpty()){
+                                    registrationViewModel.updateUser(
+                                        userId = uid,
+                                        username = username,
+                                        phone = phone,
+                                        fullName = capitalizeAfterSpace(edit_profile_name),
+                                        firstName = firstName,
+                                        lastName= lastName,
+                                        photo = imageUrl,
+                                        profession = profession,
+                                        themeSelected = themeSelected,
+                                        gender = gender,
+                                        dob = dob,
+                                        bio = edit_profile_bio,
+                                        navController = navController,
+                                    ){ loading = it }
+                                }else{
+                                    if(edit_profile_name.isEmpty()){
+                                        Toast.makeText(context,"Name Shouldn't Be Empty", Toast.LENGTH_SHORT).show()
+                                    }
+                                    if(edit_profile_bio.isEmpty()){
+                                        Toast.makeText(context,"Bio Shouldn't Be Empty", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+
                             }
                         )
                     }
@@ -1062,6 +1133,7 @@ fun MyTextField(
             if(charCount <= maxChar)
                 onValueChange(it)
         },
+
         modifier = modifier,
         maxLines = 5,
         textStyle = TextStyle(
@@ -1069,7 +1141,6 @@ fun MyTextField(
             fontSize = 18.sp
         ),
         decorationBox = { innerTextField ->
-
                 Box(
                     Modifier
                         .padding(12.dp)
@@ -1086,11 +1157,13 @@ fun MyTextField(
                     }
 
 
-                Spacer(Modifier.height(50.dp))
-                Row(modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.Bottom) {
-                    Spacer(Modifier.weight(1f))
-                    Text(text = charCount.toString() + "/100")
-                }
+                    Column {
+                        Spacer(Modifier.height(95.dp))
+                        Row(modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.Bottom) {
+                            Spacer(Modifier.weight(1f))
+                            Text(text = charCount.toString() + "/100")
+                        }
+                    }
             }
         }
     )

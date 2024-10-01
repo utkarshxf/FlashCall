@@ -31,6 +31,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -122,9 +123,8 @@ fun ProfileScreen(
                         Box(
                             modifier = Modifier
                                 .size(100.dp)
-//                                .padding(6.dp)
                         ) {
-                            ImageFromUrl(imageUrl = profilePic!!)
+                            ImageFromUrl(imageUrl = profilePic?:"")
                         }
                         Spacer(modifier = Modifier.width(16.dp))
                         Column(
@@ -463,18 +463,18 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(15.dp))
 
 
-
-
             //Logout Confirmation Dialog
             if(isLogout){
                 LogoutConfirmationDialog(cancel = {
                     isLogout = !isLogout
                 }, confirm = {
-                    authenticationViewModel.deleteTokenFromPreferences()
+//                    authenticationViewModel.deleteTokenFromPreferences()
+
                     navController.navigate(ScreenRoutes.SignUpScreen.route) {
                         popUpTo(0) { inclusive = true } // Clear the backstack
                     }
                     isLogout = !isLogout
+                    authenticationViewModel.logoutUser()
                 })
             }
 
@@ -487,27 +487,25 @@ fun ProfileScreen(
 @Composable
 fun LogoutConfirmationDialog(confirm: () -> Unit, cancel: () -> Unit) {
     AlertDialog(
-        onDismissRequest = { cancel() }, // Dismiss the dialog on outside touch or back press
-        title = {
-            Text(text = "Logout Confirmation")
-        },
-        text = {
-            Text("Are you sure you want to log out?")
-        },
+        onDismissRequest = { cancel() },
+        title = { Text("Logout Confirmation") },
+        text = { Text("Are you sure you want to log out?") },
         confirmButton = {
             Button(
                 onClick = {
                     confirm()
-                }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
             ) {
-                Text("Confirm")
+                Text("Yes")
             }
         },
         dismissButton = {
             Button(
-                onClick = { cancel()}
+                onClick = { cancel() },
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
             ) {
-                Text("Cancel")
+                Text("No")
             }
         }
     )
