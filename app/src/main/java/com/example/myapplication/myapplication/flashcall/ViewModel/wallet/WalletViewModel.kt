@@ -30,11 +30,6 @@ class WalletViewModel @Inject constructor(
     private val _transactions = MutableStateFlow<TransactionsResponse>(TransactionsResponse())
     val transactions: StateFlow<TransactionsResponse> = _transactions
     val userId = userPreferencesRepository.getUser()?._id
-    init {
-        if (userId != null) {
-            fetchTransactions(userId)
-        }
-    }
 
     fun fetchTransactions(uid: String) {
         viewModelScope.launch {

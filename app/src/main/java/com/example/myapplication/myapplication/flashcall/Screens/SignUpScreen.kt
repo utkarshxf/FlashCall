@@ -24,6 +24,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -290,15 +292,9 @@ fun BottomSignUpBar(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .wrapContentHeight()
-//            .pointerInput(Unit) {
-//                // Detect taps anywhere on the screen
-//                detectTapGestures {
-//                    // Clear focus when tapping outside the input field
-//                    focusManager.clearFocus()
-//                }
-//            }
-        ,
+            .navigationBarsPadding()
+            .imePadding()
+            .wrapContentHeight(),
         shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
     ) {
         Box(
@@ -533,7 +529,7 @@ fun BottomSignUpBar(
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(40.dp))
+                Spacer(modifier = Modifier.height(80.dp))
             }
         }
     }

@@ -122,7 +122,6 @@ class ChatViewModel @Inject constructor(
     fun endChat(onComplete: () -> Unit) {
         viewModelScope.launch {
             try {
-                Log.e("qwerty", "addOnSuccessListener")
                 if (chatId != null) {
                     firestore.collection("chats").document(chatId).update(
                         mapOf(

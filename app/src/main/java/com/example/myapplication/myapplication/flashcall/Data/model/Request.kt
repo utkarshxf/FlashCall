@@ -20,6 +20,8 @@ data class VerifyRequest(
 )
 
 data class CreateUser(
+    @SerializedName("creatorId")
+    val creatorId : String,
     @SerializedName("username")
     val username : String,
     @SerializedName("phone")
