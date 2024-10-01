@@ -117,7 +117,7 @@ fun InCallScreen(
     call: Call?, navController: NavHostController, onEmptyCall: () -> Unit
 ) {
     InCallScreen(
-        callerName = call!!.user.name, timeLeft = "10:01", // Replace with actual time calculation
+        callerName = call?.user?.name?:"Null", timeLeft = "10:01", // Replace with actual time calculation
         callDuration = "11:11", // Replace with actual duration calculation
         navController = navController
     )

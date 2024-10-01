@@ -109,8 +109,10 @@ dependencies {
     implementation ("androidx.activity:activity-ktx:1.9.0")
     implementation ("androidx.fragment:fragment-ktx:1.7.1")
 
-    implementation("io.getstream:stream-video-android-ui-compose:0.5.8")
-    implementation ("io.getstream:stream-video-android-core:0.5.8")
+    implementation("io.getstream:stream-video-android-ui-compose:1.0.10")
+    implementation ("io.getstream:stream-video-android-core:1.0.10")
+    implementation("io.getstream:stream-android-push-firebase:1.1.8")
+
 
     implementation(libs.sealedx.core)
     kapt(libs.sealedx.processor)

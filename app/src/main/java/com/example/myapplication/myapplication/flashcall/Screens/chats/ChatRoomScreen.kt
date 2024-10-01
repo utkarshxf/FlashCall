@@ -210,7 +210,7 @@ fun ChatRoomScreen(
             ) {
                 Text("End")
             }
-        }, colors = TopAppBarDefaults.smallTopAppBarColors(
+        }, colors = TopAppBarDefaults.topAppBarColors(
             containerColor = Color(0xFF6b7280)
         )
         )
