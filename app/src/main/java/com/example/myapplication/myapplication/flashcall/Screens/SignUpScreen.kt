@@ -80,7 +80,6 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.PrimaryBackGro
 import com.example.myapplication.myapplication.flashcall.ui.theme.PrimaryText
 //import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryText
-import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
@@ -117,7 +116,9 @@ import kotlinx.coroutines.launch
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.input.ImeAction
+import com.example.myapplication.myapplication.flashcall.ui.theme.helveticaFontFamily
 import kotlinx.coroutines.launch
 
 var sendtoken: String? = ""
@@ -287,7 +288,6 @@ fun BottomSignUpBar(
     val focusManager = LocalFocusManager.current
 
     val sendOTPState by viewModel.sendOTPState.collectAsState()
-//    Log.d("isKeyboard2", "$isKeyboardOpen")
 
     Surface(
         modifier = Modifier
@@ -297,6 +297,8 @@ fun BottomSignUpBar(
             .wrapContentHeight(),
         shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
     ) {
+
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -320,7 +322,7 @@ fun BottomSignUpBar(
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                     color = Color.Black,
                     style = TextStyle(
-                        fontFamily = arimoFontFamily,
+                        fontFamily = helveticaFontFamily,
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp
                     )
@@ -332,8 +334,8 @@ fun BottomSignUpBar(
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                     color = PrimaryText,
                     style = TextStyle(
-                        fontFamily = arimoFontFamily,
-                        fontWeight = FontWeight.Black,
+                        fontFamily = helveticaFontFamily,
+                        fontWeight = FontWeight.Normal,
                         fontSize = 14.sp
                     )
                 )
@@ -342,8 +344,8 @@ fun BottomSignUpBar(
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                     color = PrimaryText,
                     style = TextStyle(
-                        fontFamily = arimoFontFamily,
-                        fontWeight = FontWeight.Black,
+                        fontFamily = helveticaFontFamily,
+                        fontWeight = FontWeight.Normal,
                         fontSize = 14.sp
                     )
                 )
@@ -359,17 +361,18 @@ fun BottomSignUpBar(
                     Row(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(PrimaryBackGround, shape = RoundedCornerShape(16.dp))
+                            .background(PrimaryBackGround, shape = RoundedCornerShape(16.dp)),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
 
                         Text(
                             text = "+91",
-                            modifier = Modifier.padding(start = 5.dp, top = 20.dp, bottom = 10.dp),
-                            color = SecondaryText,
+                            modifier = Modifier.padding(start = 10.dp),
+                            color = Color.Black,
                             style = TextStyle(
-                                fontFamily = arimoFontFamily,
+                                fontFamily = helveticaFontFamily,
                                 fontWeight = FontWeight.Normal,
-                                fontSize = 20.sp
+                                fontSize = 15.sp
                             )
                         )
 
@@ -377,10 +380,9 @@ fun BottomSignUpBar(
 
                         VerticalDivider(
                             modifier = Modifier
-                                .width(1.dp)
-                                .fillMaxHeight()
-                                .padding(vertical = 15.dp)
-                                .padding(start = 10.dp)
+                                .width(2.dp)
+                                .height(20.dp)
+                                .padding(start = 7.dp, end = 8.dp)
                                 .background(color = SecondaryText)
                         )
 
@@ -388,9 +390,9 @@ fun BottomSignUpBar(
                             value = phoneNumber,
                             onValueChange = { phoneNumber = it },
                             modifier = Modifier
-                                .padding(top = 7.dp)
-                                .fillMaxHeight()
-                                .width(170.dp)
+                                .wrapContentHeight()
+                                .fillMaxWidth()
+                                .weight(1f)
                                 .focusRequester(focusRequester),
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = Color.Transparent,
@@ -403,9 +405,9 @@ fun BottomSignUpBar(
                                 imeAction = ImeAction.Done
                             ),
                             textStyle = TextStyle(
-                                fontFamily = arimoFontFamily,
-                                fontWeight = FontWeight.ExtraBold,
-                                fontSize = 20.sp,
+                                fontFamily = helveticaFontFamily,
+                                fontWeight = FontWeight.Normal,
+                                fontSize = 15.sp,
                                 color = Color.Black
                             ),
                             placeholder = {
@@ -413,8 +415,9 @@ fun BottomSignUpBar(
                                     "Enter your number",
                                     color = SecondaryText,
                                     style = TextStyle(
-                                        fontFamily = arimoFontFamily,
-                                        fontWeight = FontWeight.Bold,
+                                        fontFamily = helveticaFontFamily,
+                                        fontWeight = FontWeight.Normal,
+                                        fontSize = 15.sp
                                     )
                                 )
                             }
@@ -443,13 +446,19 @@ fun BottomSignUpBar(
                                     ) { loading = it }
                                 },
                                 modifier = Modifier
-                                    .padding(top = 5.dp, end = 5.dp),
+                                    .padding(end = 10.dp)
+                                    .wrapContentSize(),
                                 shape = RoundedCornerShape(8.dp),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = MainColor,
                                     contentColor = Color.White
                                 ),
                                 text = "Get OTP",
+                                textStyle = TextStyle(
+                                    fontFamily = helveticaFontFamily,
+                                    fontWeight = FontWeight.Normal,
+                                    fontSize = 15.sp
+                                ),
                                 loading = loading,
                                 enabled = phoneNumber.length == 10
                             )
@@ -463,14 +472,14 @@ fun BottomSignUpBar(
                     text = "We’ll send you a code to confirm your phone number.",
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                     style = TextStyle(
-                        fontFamily = arimoFontFamily,
-                        fontWeight = FontWeight.Black,
+                        fontFamily = helveticaFontFamily,
+                        fontWeight = FontWeight.Normal,
                         fontSize = 13.sp,
                         color = SecondaryText
                     )
                 )
 
-                Spacer(modifier = Modifier.height(110.dp))
+                Spacer(modifier = Modifier.height(50.dp))
 
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -484,34 +493,37 @@ fun BottomSignUpBar(
                         Text(
                             text = "By signing up, you agree to our",
                             style = TextStyle(
-                                fontFamily = arimoFontFamily,
-                                fontWeight = FontWeight.Black,
-                                fontSize = 16.sp,
+                                fontFamily = helveticaFontFamily,
+                                fontWeight = FontWeight.Normal,
+                                fontSize = 14.sp,
                                 color = SecondaryText
                             )
                         )
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth()
+                                .padding(top = 5.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center
                         ) {
                             Text(
                                 text = "Terms of Service",
-                                modifier = Modifier.clickable { },
+                                modifier = Modifier.clickable {
+//                                    navController.navigate(ScreenRoutes.RegistrationScreen.route)
+                                },
                                 style = TextStyle(
-                                    fontFamily = arimoFontFamily,
+                                    fontFamily = helveticaFontFamily,
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp,
+                                    fontSize = 14.sp,
                                     color = Color.Black
                                 )
                             )
                             Text(
-                                text = " and ",
+                                text = "  and  ",
                                 modifier = Modifier.clickable { },
                                 style = TextStyle(
-                                    fontFamily = arimoFontFamily,
-                                    fontWeight = FontWeight.Black,
-                                    fontSize = 16.sp,
+                                    fontFamily = helveticaFontFamily,
+                                    fontWeight = FontWeight.Normal,
+                                    fontSize = 14.sp,
                                     color = SecondaryText
                                 )
                             )
@@ -520,16 +532,16 @@ fun BottomSignUpBar(
                                 text = "Privacy Policy",
                                 modifier = Modifier.clickable { },
                                 style = TextStyle(
-                                    fontFamily = arimoFontFamily,
+                                    fontFamily = helveticaFontFamily,
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp,
+                                    fontSize = 14.sp,
                                     color = Color.Black
                                 )
                             )
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(80.dp))
+                Spacer(modifier = Modifier.height(20.dp))
             }
         }
     }

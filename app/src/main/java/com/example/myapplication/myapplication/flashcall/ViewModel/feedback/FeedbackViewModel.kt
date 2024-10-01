@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
@@ -13,6 +14,7 @@ import com.example.myapplication.myapplication.flashcall.Data.model.chatDataMode
 import com.example.myapplication.myapplication.flashcall.Data.model.feedback.UpdateFeedback
 import com.example.myapplication.myapplication.flashcall.Data.model.feedback.UpdateFeedbackResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.userFeedbacks.Feedback
+import com.example.myapplication.myapplication.flashcall.Data.model.userFeedbacks.FeedbackX
 import com.example.myapplication.myapplication.flashcall.Data.model.userFeedbacks.UserFeedbaks
 import com.example.myapplication.myapplication.flashcall.repository.FeedbackRepo
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -41,24 +43,35 @@ class FeedbackViewModel @Inject constructor(
     private val _updateFeedback = MutableStateFlow<UpdateFeedbackResponse?>(null)
     val updateFeedback: StateFlow<UpdateFeedbackResponse?> = _updateFeedback
 
+
+    val originalFeedbackList = listOf(Feedback(null,null,null,null)).toMutableStateList()
+
+    //66ab32f4321d76e89d77464b
     fun getFeedbacks(uid: String) {
         userFeedbackState = userFeedbackState.copy(isLoading = true)
-        viewModelScope.launch {
-            feedbackRepo.getFeedbacks("https://flashcall.vercel.app/api/v1/feedback/call/getFeedbacks?creatorId=$uid")
-                .collect {response ->
-                Log.d("FeedBackViewModel", "getFeedbacks: ${response.feedbacks}")
-                userFeedbackState = userFeedbackState.copy(isLoading = false, list = response, error = null)
-                //_feedbacks.value = it.feedbacks
-
-            }
-        }
-
         try {
+            viewModelScope.launch {
+                feedbackRepo.getFeedbacks("https://flashcall.vercel.app/api/v1/feedback/call/getFeedbacks?creatorId=$uid")
+                    .collect {response ->
+                        Log.d("FeedBackViewModel", "getFeedbacks: ${response.feedbacks}")
+                        makeDragList(response)
+                        userFeedbackState = userFeedbackState.copy(isLoading = false, list = response, error = null)
 
-
+                    }
+            }
         } catch (e: Exception){
             Log.d("FeedBackViewModel", "getFeedbacks: ${e.message}")
         }
+    }
+
+    fun makeDragList(model: UserFeedbaks?){
+        originalFeedbackList.clear()
+        if(!model?.feedbacks.isNullOrEmpty()){
+            for (item in model?.feedbacks!!){
+                originalFeedbackList.add(item)
+            }
+        }
+        Log.d("originalListSize","size: ${originalFeedbackList.size}")
     }
 
      fun updateFeedback(updateFeedback: UpdateFeedback){

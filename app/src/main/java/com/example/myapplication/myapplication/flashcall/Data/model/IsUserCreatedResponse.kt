@@ -29,7 +29,7 @@ data class IsUserCreatedResponse(
     @SerializedName("gender")
     val gender: String?,
     @SerializedName("walletBalance")
-    val walletBalance: Double?,
+    var walletBalance: Double?,
     @SerializedName("audioAllowed")
     val audioAllowed: Boolean?,
     @SerializedName("chatAllowed")

@@ -33,10 +33,9 @@ class SplashViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            delay(4000L)
+            delay(3000)
             _isReady.value = true
             try{
-
                     userToken.stateIn(
                         viewModelScope,
                         SharingStarted.WhileSubscribed(),

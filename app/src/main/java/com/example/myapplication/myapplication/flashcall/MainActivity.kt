@@ -3,14 +3,18 @@ package com.example.myapplication.myapplication.flashcall
 //import com.example.myapplication.myapplication.flashcall.Screens.HomeScreenDemo
 
 //import com.example.myapplication.myapplication.flashcall.navigation.RootNavGraph
+import android.animation.ObjectAnimator
 import android.app.Application
 import android.content.ComponentCallbacks2
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.animation.OvershootInterpolator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Text
@@ -18,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
@@ -31,6 +36,7 @@ import co.hyperverge.hyperkyc.HyperKyc
 import co.hyperverge.hyperkyc.data.models.HyperKycConfig
 import co.hyperverge.hyperkyc.data.models.result.HyperKycStatus
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
+import com.example.myapplication.myapplication.flashcall.Screens.CaptureImageScreen
 import com.example.myapplication.myapplication.flashcall.Screens.EditProfileScreen
 import com.example.myapplication.myapplication.flashcall.Screens.HomeScreen
 import com.example.myapplication.myapplication.flashcall.Screens.IncomingCallScreen
@@ -67,9 +73,9 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val viewModel by viewModels<SplashViewModel>()
     private val authenticationViewModel by viewModels<AuthenticationViewModel>()
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         installSplashScreen().apply {
             setKeepOnScreenCondition {
                 !viewModel.isReady.value
@@ -231,6 +237,9 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
         }
         composable(route = ScreenRoutes.KycScreen.route) {
             KYCScreen(navController = navController, hyperKycLauncher)
+        }
+        composable(route = ScreenRoutes.CaptureImageScreen.route) {
+            CaptureImageScreen(navController = navController)
         }
         composable(route = ScreenRoutes.TermAndCondition.route) {
             TermAndCondition()

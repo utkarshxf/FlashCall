@@ -7,6 +7,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class EditUserLink(
-    @SerialName("link")
-    var link: LinkData?
+    @SerialName("links")
+    var links: List<LinkData>?
 )

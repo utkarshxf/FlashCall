@@ -17,6 +17,8 @@ import com.example.myapplication.myapplication.flashcall.Screens.InCallScreen
 import com.example.myapplication.myapplication.flashcall.Screens.IncomingCallScreen
 import com.example.myapplication.myapplication.flashcall.Screens.OngoingVideoCallScreen
 import com.example.myapplication.myapplication.flashcall.Screens.ProfileScreen
+import com.example.myapplication.myapplication.flashcall.Screens.SelectSpecialityScreen
+import com.example.myapplication.myapplication.flashcall.Screens.SplashScreen
 import com.example.myapplication.myapplication.flashcall.Screens.Support
 import com.example.myapplication.myapplication.flashcall.Screens.TermAndCondition
 import com.example.myapplication.myapplication.flashcall.Screens.wallet.WalletScreen

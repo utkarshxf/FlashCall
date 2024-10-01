@@ -36,7 +36,7 @@ data class DeletedAdditionalLinksResponse(
     @SerialName("lastName")
     var lastName: String?,
     @SerialName("links")
-    var links: List<LinkData>?,
+    var links: MutableList<LinkData>?,
     @SerialName("phone")
     var phone: String?,
     @SerialName("photo")

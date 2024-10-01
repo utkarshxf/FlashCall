@@ -14,6 +14,7 @@ import com.example.myapplication.myapplication.flashcall.Data.model.UsernameAvai
 import com.example.myapplication.myapplication.flashcall.Data.model.deleteAdditionalLink.DeleteAdditionalLinks
 import com.example.myapplication.myapplication.flashcall.Data.model.deleteAdditionalLink.DeletedAdditionalLinksResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.editAdditionalLink.EditAdditionalLinkRequest
+import com.example.myapplication.myapplication.flashcall.Data.model.spacialization.SpacializationResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.todaysWallet.TodaysWalletBalanceResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.wallet.UserId
 import com.example.myapplication.myapplication.flashcall.Data.network.APIService
@@ -217,6 +218,13 @@ class CreateRepository @Inject constructor(private val apiService: APIService):S
     suspend fun getUserAssistanceLink(url: String): Flow<UserAssistanceLink>{
         return flow {
             val response = apiService.getUserAssistanceLink(url)
+            emit(safeApiRequest { response })
+        }
+    }
+
+    suspend fun getSpacializations(url: String): Flow<SpacializationResponse>{
+        return flow {
+            val response = apiService.getSpacializations(url)
             emit(safeApiRequest { response })
         }
     }

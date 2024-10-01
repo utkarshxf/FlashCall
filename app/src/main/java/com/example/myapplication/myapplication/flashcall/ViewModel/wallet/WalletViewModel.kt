@@ -8,12 +8,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.myapplication.flashcall.Data.model.CreateUserResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.RequestWithdraw
-import com.example.myapplication.myapplication.flashcall.Data.model.UserDetailsResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.wallet.Transaction
 import com.example.myapplication.myapplication.flashcall.Data.model.wallet.TransactionsResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.wallet.UserId
 import com.example.myapplication.myapplication.flashcall.repository.UserPreferencesRepository
 import com.example.myapplication.myapplication.flashcall.repository.WalletRepo
+import com.example.myapplication.myapplication.flashcall.utils.PreferencesKey
 import com.google.api.Context
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -41,6 +41,25 @@ class WalletViewModel @Inject constructor(
                     _transactions.value = it
                     saveLocalTransactions(uid, it)
                     Log.d("TransactionViewModel", "getTransaction: $it")
+                }
+            } catch (e: Exception) {
+                Log.d("TransactionViewModel", "getTransaction: ${e.message}")
+            }
+        }
+    }
+
+    fun fetchBalance(uid: String) {
+        viewModelScope.launch {
+            try {
+                walletRepo.userDetails(
+                    "api/v1/creator/getUserById",
+                    UserId(uid)
+                ).collect { response ->
+                    var userData = userPreferencesRepository.getUser()
+                    userData?.walletBalance = response.walletBalance
+                    userData?.let {
+                        userPreferencesRepository.saveUser(it)
+                    }
                 }
             } catch (e: Exception) {
                 Log.d("TransactionViewModel", "getTransaction: ${e.message}")
@@ -81,6 +100,15 @@ class WalletViewModel @Inject constructor(
             return false
         }
     }
+
+    fun getMyBio(): String{
+        return userPreferencesRepository.getStoredUserData(PreferencesKey.Bio.key)+""
+    }
+
+    fun getShareLink(): String{
+        return userPreferencesRepository.getShareLink()
+    }
+
 
     private fun saveLocalTransactions(uid: String, transactions: TransactionsResponse) {
         userPreferencesRepository.storeTransactions(uid , transactions)

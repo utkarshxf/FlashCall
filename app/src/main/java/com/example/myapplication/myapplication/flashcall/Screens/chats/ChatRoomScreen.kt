@@ -100,7 +100,7 @@ import com.example.myapplication.myapplication.flashcall.R
 import com.example.myapplication.myapplication.flashcall.Screens.common.maskIfPhoneNumber
 import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.chats.ChatViewModel
-import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
+import com.example.myapplication.myapplication.flashcall.ui.theme.helveticaFontFamily
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -177,7 +177,7 @@ fun ChatRoomScreen(
                         text = maskIfPhoneNumber(chatData?.clientName ?: "Naina Talwar"), style = TextStyle(
                             color = Color.White,
                             fontSize = 18.sp,
-                            fontFamily = arimoFontFamily,
+                            fontFamily = helveticaFontFamily,
                             fontWeight = FontWeight.Bold
                         )
                     )
@@ -186,7 +186,7 @@ fun ChatRoomScreen(
                         style = TextStyle(
                             fontSize = 14.sp,
                             color = Color.White,
-                            fontFamily = arimoFontFamily,
+                            fontFamily = helveticaFontFamily,
                             fontWeight = FontWeight.Normal
                         )
                     )
@@ -194,7 +194,7 @@ fun ChatRoomScreen(
                         text = "Ongoing Chat", style = TextStyle(
                             fontSize = 14.sp,
                             color = Color.Green,
-                            fontFamily = arimoFontFamily,
+                            fontFamily = helveticaFontFamily,
                             fontWeight = FontWeight.Normal
                         )
                     )
@@ -327,7 +327,7 @@ fun ChatRoomScreen(
                                         text = "Message", style = TextStyle(
                                             color = Color.Gray,
                                             fontSize = 16.sp,
-                                            fontFamily = arimoFontFamily
+                                            fontFamily = helveticaFontFamily
                                         )
                                     )
                                 },
@@ -425,7 +425,7 @@ fun DateSeparator(date: LocalDate) {
         ) {
             Text(
                 text = formatDate(date), style = TextStyle(
-                    color = Color.Gray, fontSize = 12.sp, fontFamily = arimoFontFamily
+                    color = Color.Gray, fontSize = 12.sp, fontFamily = helveticaFontFamily
                 ), modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
             )
         }
@@ -526,7 +526,7 @@ fun MessageItem(
                         text = message.text,
                         color = if (isOwnMessage) Color.Black else Color.White,
                         style = LocalTextStyle.current.copy(
-                            fontSize = 16.sp, fontFamily = arimoFontFamily
+                            fontSize = 16.sp, fontFamily = helveticaFontFamily
                         )
                     )
                 }
@@ -559,7 +559,7 @@ fun MessageItem(
                             text = message.text,
                             color = if (isOwnMessage) Color.Black else Color.White,
                             style = LocalTextStyle.current.copy(
-                                fontSize = 16.sp, fontFamily = arimoFontFamily
+                                fontSize = 16.sp, fontFamily = helveticaFontFamily
                             ),
                             modifier = Modifier.padding(8.dp),
                         )
@@ -578,7 +578,7 @@ fun MessageItem(
                         text = formattedTime,
                         color = if (isOwnMessage) Color.Gray else Color.White.copy(alpha = 0.7f),
                         style = LocalTextStyle.current.copy(
-                            fontSize = 10.sp, fontFamily = arimoFontFamily
+                            fontSize = 10.sp, fontFamily = helveticaFontFamily
                         )
                     )
                     Spacer(modifier = Modifier.width(4.dp))
@@ -587,7 +587,7 @@ fun MessageItem(
                             text = if (message.seen == true) "✓✓" else "✓✓",
                             color = Color.Gray,
                             style = LocalTextStyle.current.copy(
-                                fontSize = 10.sp, fontFamily = arimoFontFamily
+                                fontSize = 10.sp, fontFamily = helveticaFontFamily
                             )
                         )
                     }
