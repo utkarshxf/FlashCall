@@ -64,7 +64,6 @@ class CustomNotificationHandler(
                 createDeclineIntent(callId)
             )
             .build()
-
         notificationManager.notify(callId.hashCode(), notification)
     }
 
