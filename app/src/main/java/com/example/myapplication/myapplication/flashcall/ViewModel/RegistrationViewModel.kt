@@ -134,12 +134,10 @@ class RegistrationViewModel @Inject constructor(
                         val fcmToken = Firebase.messaging.token.await()
                         // Create FCM document in Firestore
                         val fcmData = hashMapOf(
-                            "username" to response.username,
-                            "_id" to response._id,
-                            "FCMtoken" to fcmToken
+                            "token" to fcmToken
                         )
 
-                        firestore.collection("FCMtoken").document(response._id).set(fcmData)
+                        firestore.collection("FCMtoken").document(response.phone).set(fcmData)
                             .addOnSuccessListener {
                                 Log.d("Firestore", "FCMtoken document created successfully")
                             }.addOnFailureListener { e ->

@@ -69,7 +69,11 @@ fun WalletScreen(navController: NavController, walletViewModel: WalletViewModel 
     val userData = authenticationViewModel.getUserFromPreferences(context)
     val transactions = walletViewModel.transactions.collectAsState()
     val listOfTransactions = transactions.value.transactions
-
+    LaunchedEffect(Unit) {
+        userData?._id?.let {
+            walletViewModel.fetchTransactions(it)
+        }
+    }
     Surface(
         modifier = Modifier.wrapContentSize(),
         color = ProfileBackground
@@ -213,7 +217,7 @@ fun WalletScreen(navController: NavController, walletViewModel: WalletViewModel 
 
             Spacer(modifier = Modifier.height(10.dp))
             Row {
-                Text(text = "Transition History")
+                Text(text = "Transaction History")
                 Spacer(modifier = Modifier.weight(1f))
             }
             

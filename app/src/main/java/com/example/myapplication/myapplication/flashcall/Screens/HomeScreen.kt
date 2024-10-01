@@ -1,5 +1,6 @@
 package com.example.myapplication.myapplication.flashcall.Screens
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -113,6 +114,7 @@ var creatorUid: String = ""
 var token: String = ""
 var creatorUserName: String = ""
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun HomeScreen(
     navController: NavController,
@@ -130,7 +132,6 @@ fun HomeScreen(
     var profilePic by remember { mutableStateOf("") }
     var dob by remember { mutableStateOf("") }
     var bio by remember { mutableStateOf("") }
-
 
     val (firstName, lastName) = name.split(" ", limit = 2).let {
         if (it.size == 2) it else listOf(it[0], "")
@@ -163,7 +164,6 @@ fun HomeScreen(
 //    }
     val createUserState1 by registrationViewModel.createUserState.collectAsState()
     val userData = authenticationViewModel.getUserFromPreferences(context)
-//    Log.v("qwerty" , userData.toString())
     if (userData != null) {
         uid = userData._id ?: ""
         username = userData.username ?: ""
@@ -202,151 +202,142 @@ fun HomeScreen(
     creatorUid = uid
     creatorUserName = userId
     val scrollState = rememberScrollState()
-    Surface(
-        modifier = Modifier.wrapContentSize(), color = Color.Black
+    Scaffold(
+        modifier = Modifier.wrapContentSize(), containerColor = Color.Black
     ) {
-
-        Scaffold(
-            modifier = Modifier.wrapContentSize()
-//            bottomBar = { BottomBar(navController = navController) }
+        Column(
+            modifier = Modifier
+                .wrapContentSize()
+                .background(Color.Black)
+                .verticalScroll(scrollState)
         ) {
-            Column(
-                modifier = Modifier
-                    .wrapContentSize()
-                    .padding(it)
-                    .background(Color.Black)
-                    .verticalScroll(scrollState)
-            ) {
 
 //                BottomNavGraph(navController = navController, registrationViewModel = registrationViewModel)
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .width(30.dp)
-                        .height(50.dp)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .width(30.dp)
+                    .height(50.dp)
+            ) {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp, end = 8.dp),
+                        horizontalArrangement = Arrangement.Absolute.Right,
+                    ) {
+                        Button(colors = ButtonDefaults.buttonColors(Color.White), onClick = {
+                            navController.navigate(ScreenRoutes.EditScreen.route) {
+                                popUpTo(ScreenRoutes.MainScreen.route) { inclusive = true }
+                            }
+                        }) {
+                            Text(
+                                text = "edit profile", style = TextStyle(
+                                    fontFamily = helveticaFontFamily,
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 13.sp,
+                                    color = Color.Black
+                                )
+                            )
+                        }
+                    }
+
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(140.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Column(modifier = Modifier.fillMaxSize()) {
+                    if (profilePic == "") {
+                        val imageUri = rememberSaveable {
+                            mutableStateOf("")
+                        }
 
+                        val painter =
+                            rememberAsyncImagePainter(imageUri.value.ifEmpty { R.drawable.profile_picture_holder })
 
-                        Row(
+                        val launcher = rememberLauncherForActivityResult(
+                            contract = ActivityResultContracts.GetContent()
+                        ) { uri: Uri? ->
+                            uri?.let {
+//                                    uriImg = it
+                                imageUri.value = it.toString()
+                            }
+                        }
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = 16.dp, end = 8.dp),
-                            horizontalArrangement = Arrangement.Absolute.Right,
+                                .height(90.dp)
                         ) {
-                            Button(colors = ButtonDefaults.buttonColors(Color.White), onClick = {
-                                navController.navigate(ScreenRoutes.EditScreen.route) {
-                                    popUpTo(ScreenRoutes.MainScreen.route) { inclusive = true }
-                                }
-                            }) {
-                                Text(
-                                    text = "edit profile", style = TextStyle(
-                                        fontFamily = helveticaFontFamily,
-                                        fontWeight = FontWeight.Black,
-                                        fontSize = 13.sp,
-                                        color = Color.Black
-                                    )
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Image(
+                                    painter = painter,
+                                    contentDescription = null,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .clip(CircleShape)
+                                        .size(96.dp)
                                 )
                             }
+
+                            Box(modifier = Modifier.padding(start = 200.dp, top = 70.dp)) {
+                                Image(painter = painterResource(id = R.drawable.edit_icon),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .clip(CircleShape)
+                                        .clickable {
+                                            launcher.launch("image/*")
+
+                                        })
+                            }
+
                         }
 
+
+                    } else {
+
+                        Log.d("ProfileImageofUser", "$profilePic")
+                        ImageFromUrl(imageUrl = profilePic)
                     }
                 }
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(140.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        if (profilePic == "") {
-                            val imageUri = rememberSaveable {
-                                mutableStateOf("")
-                            }
-
-                            val painter =
-                                rememberAsyncImagePainter(imageUri.value.ifEmpty { R.drawable.profile_picture_holder })
-
-                            val launcher = rememberLauncherForActivityResult(
-                                contract = ActivityResultContracts.GetContent()
-                            ) { uri: Uri? ->
-                                uri?.let {
-//                                    uriImg = it
-                                    imageUri.value = it.toString()
-                                }
-                            }
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(90.dp)
-                            ) {
-                                Column(
-                                    modifier = Modifier.fillMaxSize(),
-                                    verticalArrangement = Arrangement.Center,
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Image(
-                                        painter = painter,
-                                        contentDescription = null,
-                                        contentScale = ContentScale.Crop,
-                                        modifier = Modifier
-                                            .clip(CircleShape)
-                                            .size(96.dp)
-                                    )
-                                }
-
-                                Box(modifier = Modifier.padding(start = 200.dp, top = 70.dp)) {
-                                    Image(painter = painterResource(id = R.drawable.edit_icon),
-                                        contentDescription = null,
-                                        modifier = Modifier
-                                            .clip(CircleShape)
-                                            .clickable {
-                                                launcher.launch("image/*")
-
-                                            })
-                                }
-
-                            }
+            }
 
 
-                        } else {
-
-                            Log.d("ProfileImageofUser", "$profilePic")
-                            ImageFromUrl(imageUrl = profilePic)
-                        }
-                    }
-
-                }
-
-
-                Text(
-                    text = name, color = Color.White, style = TextStyle(
-                        fontFamily = helveticaFontFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 24.sp,
-                    ), modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
+            Text(
+                text = name, color = Color.White, style = TextStyle(
+                    fontFamily = helveticaFontFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp,
+                ), modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
 
 
-                Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-                Text(
-                    text = "@$userId", color = Color.White, style = TextStyle(
-                        fontFamily = helveticaFontFamily,
-                        fontWeight = FontWeight.Black,
-                        fontSize = 16.sp,
-                    ), modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
+            Text(
+                text = "@$userId", color = Color.White, style = TextStyle(
+                    fontFamily = helveticaFontFamily,
+                    fontWeight = FontWeight.Black,
+                    fontSize = 16.sp,
+                ), modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
 
-                Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-                Box(modifier = Modifier.fillMaxSize()) {
-                    HomeScreenBottom(navController, username)
-                }
+            Box(modifier = Modifier.fillMaxSize()) {
+                HomeScreenBottom(navController, username)
             }
         }
     }

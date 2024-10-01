@@ -186,7 +186,7 @@ class VideoCallViewModel @Inject constructor(private val firestore: FirebaseFire
         viewModelScope.launch {
             try {
                 state.activeCall?.let { call ->
-                    call.speaker.setEnabled(enable)  // Enable or disable the camera
+                    call.speaker.setEnabled(enable)
                     Log.d("VideoCall", "Speaker toggled: ${call.id}, enabled: $enable")
                 }
             } catch (e: Exception) {

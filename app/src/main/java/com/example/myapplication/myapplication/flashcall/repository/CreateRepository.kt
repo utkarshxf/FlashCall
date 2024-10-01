@@ -96,6 +96,7 @@ class CreateRepository @Inject constructor(private val apiService: APIService):S
             val response =  apiService.createUSER(
                 url,
                 CreateUser(
+                    creatorId = phone,
                     username = username,
                     phone = phone,
                     fullName = fullName,

@@ -46,9 +46,7 @@ fun BottomNavGraph(
                 onEmptyCall = { homeNavController.navigateToHome() })
         }
         composable(route = VideoCallRoute.OngoingVideoCall.videoCallRoute) {
-            OngoingVideoCallScreen(
-                videoCall = true, viewModel = videoCallViewModel, navController = navController
-            )
+            OngoingVideoCallScreen(viewModel = videoCallViewModel, navController = navController)
         }
         composable(route = ScreenRoutes.InCallScreen.route) {
             InCallScreen(call = incomingCall,
