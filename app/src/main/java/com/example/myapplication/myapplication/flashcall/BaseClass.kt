@@ -7,6 +7,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
 import android.util.Log
+import com.example.myapplication.myapplication.flashcall.utils.CustomNotificationHandler
 import com.example.myapplication.myapplication.flashcall.utils.PreferencesKey
 import com.example.myapplication.myapplication.flashcall.utils.TimestampConverter
 import com.google.firebase.FirebaseApp
@@ -16,9 +17,14 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestoreSettings
 import com.google.gson.GsonBuilder
 import dagger.hilt.android.HiltAndroidApp
+import io.getstream.android.push.firebase.FirebasePushDeviceGenerator
 import io.getstream.video.android.core.StreamVideo
 import io.getstream.video.android.core.StreamVideoBuilder
+import io.getstream.video.android.core.logging.HttpLoggingLevel
+import io.getstream.video.android.core.logging.LoggingLevel
 import io.getstream.video.android.model.User
+import io.getstream.log.Priority
+import io.getstream.video.android.core.notifications.NotificationConfig
 
 @HiltAndroidApp
 class BaseClass : Application() {
@@ -58,8 +64,6 @@ class BaseClass : Application() {
         }
         // Log retrieved values for debugging
         Log.d("BaseClass", "userId: $userId, userName: $userName, profileImage: $profileImage")
-
-        // Build the StreamVideo session with safe nullable checks
         try {
             StreamVideoBuilder(
                 context = context,
@@ -69,18 +73,31 @@ class BaseClass : Application() {
                     id = userId,
                     name = userName,
                     image = profileImage ?: "null",
-                    role = "admin",
+                    role = "admin"
                 ),
-                ringNotification = { call -> Notification.Builder(context).build() }
+                loggingLevel = LoggingLevel(Priority.VERBOSE, HttpLoggingLevel.BODY),
+                notificationConfig = NotificationConfig(
+                    hideRingingNotificationInForeground = true,
+                    // Make sure that the provider name is equal to the "Name" of the configuration in Stream Dashboard.
+                    pushDeviceGenerators = listOf(
+                        FirebasePushDeviceGenerator(providerName = "Test"),
+                        FirebasePushDeviceGenerator(providerName = "FlashCall")
+                    ),
+                    notificationHandler = CustomNotificationHandler(
+                        context.applicationContext as Application,
+                    ),
+                )
             ).build()
         } catch (e: Exception) {
             Log.e("BaseClass", "Error initializing StreamVideo: ${e.message}")
         }
         updateUserStatus(phoneNumber, true)
     }
-    fun streamRemoveClient()
-    {
-        StreamVideo.removeClient()
+    fun streamRemoveClient() {
+        if (StreamVideo.isInstalled) {
+            StreamVideo.instance().logOut()
+            StreamVideo.removeClient()
+        }
     }
 
     private fun createNotificationChannel() {
@@ -97,10 +114,9 @@ class BaseClass : Application() {
     }
 
     companion object {
-        const val CHANNEL_ID = "CHAT_REQUEST_CHANNEL"
+        const val CHANNEL_ID = "default_channel"
     }
     fun updateUserStatus(phoneNumber: String, isOnline: Boolean) {
-        // Get Firestore instance
         val db = FirebaseFirestore.getInstance()
 
         // Reference to the user document in the "userStatus" collection
