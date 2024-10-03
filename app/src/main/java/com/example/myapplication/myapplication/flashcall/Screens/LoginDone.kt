@@ -24,12 +24,12 @@ import androidx.navigation.NavController
 import com.example.myapplication.myapplication.flashcall.BaseClass
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.R
+import io.getstream.video.android.core.StreamVideo
 import kotlinx.coroutines.delay
 
 @Composable
 fun LoginDoneScreen(navController: NavController) {
     val context = LocalContext.current
-    (context.applicationContext as? BaseClass)?.streamRemoveClient()
     (context.applicationContext as? BaseClass)?.streamBuilder(context)
     LaunchedEffect(Unit) {
         delay(2000)

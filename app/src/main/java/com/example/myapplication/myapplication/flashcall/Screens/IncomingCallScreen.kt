@@ -42,8 +42,9 @@ import io.getstream.video.android.core.Call
 @Composable
 fun IncomingCallScreen(
     call: Call,
+    videoCallViewModel: VideoCallViewModel,
     navController: NavController,
-    videoCallViewModel: VideoCallViewModel
+    endActivity: () -> Unit
 ) {
     val state = videoCallViewModel.state.sdkResponseState
     val created =call.state.createdBy.collectAsState()
@@ -65,7 +66,7 @@ fun IncomingCallScreen(
         ) {
             // Close button
             IconButton(
-                onClick = { navController.navigate(ScreenRoutes.MainScreen.route) },
+                onClick = {endActivity()},
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(16.dp)
@@ -191,9 +192,7 @@ fun IncomingCallScreen(
                         onClick = {
                             videoCallViewModel.rejectCall {
                                 videoCallViewModel.resetCallState()
-                                navController.navigate(ScreenRoutes.MainScreen.route) {
-                                    popUpTo(ScreenRoutes.IncomingCallScreen.route) { inclusive = true }
-                                }
+                                endActivity()
                             }
                         },
                         label = "Decline"
@@ -202,9 +201,7 @@ fun IncomingCallScreen(
                         icon = Icons.Default.Call,
                         color = Color(0xFF4CAF50),
                         onClick = {
-                            navController.navigate(VideoCallRoute.OngoingVideoCall.videoCallRoute) {
-                                popUpTo(ScreenRoutes.IncomingCallScreen.route) { inclusive = true }
-                            }
+                            navController.navigate(VideoCallRoute.OngoingVideoCall.videoCallRoute)
                         },
                         label = "Accept"
                     )

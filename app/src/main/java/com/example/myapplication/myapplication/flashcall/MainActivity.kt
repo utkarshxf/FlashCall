@@ -33,7 +33,6 @@ import co.hyperverge.hyperkyc.data.models.result.HyperKycStatus
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Screens.EditProfileScreen
 import com.example.myapplication.myapplication.flashcall.Screens.HomeScreen
-import com.example.myapplication.myapplication.flashcall.Screens.IncomingCallScreen
 import com.example.myapplication.myapplication.flashcall.Screens.IncomingChatScreen
 import com.example.myapplication.myapplication.flashcall.Screens.KYCScreen
 import com.example.myapplication.myapplication.flashcall.Screens.LoginDoneScreen
@@ -69,7 +68,6 @@ class MainActivity : ComponentActivity() {
     private val authenticationViewModel by viewModels<AuthenticationViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         installSplashScreen().apply {
             setKeepOnScreenCondition {
                 !viewModel.isReady.value
@@ -155,7 +153,6 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
     LaunchedEffect(key1 = Unit) {
         val token = authenticationViewModel.getTokenFromPreferences(context)
         if (!token.isNullOrEmpty()) {
-            (context.applicationContext as? BaseClass)?.streamBuilder(context)
             navController.navigate(ScreenRoutes.MainScreen.route) {
                 popUpTo(0) { inclusive = true }
             }
@@ -192,10 +189,6 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
         }
         composable(route = ScreenRoutes.WalletScreen.route) {
             WalletScreen(navController, walletViewModel, authenticationViewModel)
-        }
-
-        composable(route = ScreenRoutes.IncomingAudioCallScreen.route) {
-            IncomingCallScreen(callerName = "Audio Call Screen", navController = navController)
         }
 
         composable(route = ScreenRoutes.MainScreen.route) {
