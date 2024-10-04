@@ -38,7 +38,7 @@ import com.composeuisuite.ohteepee.configuration.OhTeePeeCellConfiguration
 import com.composeuisuite.ohteepee.configuration.OhTeePeeConfigurations
 import com.example.myapplication.myapplication.flashcall.ui.theme.OTPBackground
 import com.example.myapplication.myapplication.flashcall.ui.theme.OTPBorder
-import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
+import com.example.myapplication.myapplication.flashcall.ui.theme.helveticaFontFamily
 
 const val OTP_VIEW_TYPE_NONE = 0
 const val OTP_VIEW_TYPE_UNDERLINE = 1
@@ -163,7 +163,7 @@ fun OtpInput(otpValue: String)
         textStyle = TextStyle(
             color = Color.Black,
             fontSize = 16.sp,
-            fontFamily = arimoFontFamily,
+            fontFamily = helveticaFontFamily,
             fontWeight = FontWeight.Bold
         )
     )

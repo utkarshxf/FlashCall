@@ -43,6 +43,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -94,7 +95,7 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.ThemeColorMaro
 import com.example.myapplication.myapplication.flashcall.ui.theme.ThemeColorOrange
 import com.example.myapplication.myapplication.flashcall.ui.theme.ThemeColorPurple
 import com.example.myapplication.myapplication.flashcall.ui.theme.ThemeColorYellow
-import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
+import com.example.myapplication.myapplication.flashcall.ui.theme.helveticaFontFamily
 import com.example.myapplication.myapplication.flashcall.utils.capitalizeAfterSpace
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -269,38 +270,44 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
         mutableStateOf(false)
     }
 
-    var greenTheme by remember {
-        mutableStateOf(false)
+
+    var blackTheme by remember { mutableStateOf(false) }
+    var greenTheme by remember { mutableStateOf(false) }
+    var grayTheme by remember { mutableStateOf(false) }
+    var darkBlueTheme by remember { mutableStateOf(false) }
+    var lightBlueTheme by remember { mutableStateOf(false) }
+    var maroonTheme by remember { mutableStateOf(false) }
+    var lightMaroonTheme by remember { mutableStateOf(false) }
+    var purpleTheme by remember { mutableStateOf(false) }
+    var yellowTheme by remember { mutableStateOf(false) }
+    var orangeTheme by remember { mutableStateOf(false) }
+
+    LaunchedEffect(key1 = Unit) {
+        if(themeSelected.equals("#000000")){
+            blackTheme = true
+        } else if(themeSelected.equals("#50a65c")){
+            greenTheme = true
+        }else if(themeSelected.equals("#a5a5a5")){
+            grayTheme = true
+        }else if(themeSelected.equals("#223367")){
+            darkBlueTheme = true
+        }else if(themeSelected.equals("#16bed8")){
+            lightBlueTheme = true
+        }else if(themeSelected.equals("#b3315d")){
+            maroonTheme = true
+        }else if(themeSelected.equals("#EB5657")){
+            lightMaroonTheme = true
+        }else if(themeSelected.equals("#d764c3")){
+            purpleTheme = true
+        }else if(themeSelected.equals("#ffee83")){
+            yellowTheme = true
+        }else if(themeSelected.equals("#f85900")){
+            orangeTheme = true
+        }else{
+            blackTheme = true
+        }
     }
 
-    var blackTheme by remember {
-        mutableStateOf(true)
-    }
-
-    var grayTheme by remember {
-        mutableStateOf(false)
-    }
-    var darkBlueTheme by remember {
-        mutableStateOf(false)
-    }
-    var lightBlueTheme by remember {
-        mutableStateOf(false)
-    }
-    var maroonTheme by remember {
-        mutableStateOf(false)
-    }
-    var lightMaroonTheme by remember {
-        mutableStateOf(false)
-    }
-    var purpleTheme by remember {
-        mutableStateOf(false)
-    }
-    var yellowTheme by remember {
-        mutableStateOf(false)
-    }
-    var orangeTheme by remember {
-        mutableStateOf(false)
-    }
 
     val scrollState = rememberScrollState()
     var loading by remember { mutableStateOf(false) }
@@ -334,6 +341,7 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                             color = colorResource(id = R.color.black),
                             fontSize = 26.sp,
                             fontWeight = FontWeight.Bold,
+                            fontFamily = helveticaFontFamily
 
                         ), color = Color.White
                     )
@@ -464,8 +472,8 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                     Text(text = "Name",
                         textAlign = TextAlign.Start,
                         style = TextStyle(
-                            fontFamily = arimoFontFamily,
-                            fontWeight = FontWeight.Black,
+                            fontFamily = helveticaFontFamily,
+                            fontWeight = FontWeight.Normal,
                             fontSize = 16.sp
                         ),
                         color = SecondaryText,
@@ -494,7 +502,7 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                                 },
                                 color = Color.Black,
                                 style = TextStyle(
-                                    fontFamily = arimoFontFamily,
+                                    fontFamily = helveticaFontFamily,
                                     fontWeight = FontWeight.Bold,
                                 )
                             )
@@ -505,6 +513,7 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                             unfocusedBorderColor = Color.Transparent,
                             cursorColor = MainColor
                         )
+
                     )
 
 
@@ -513,8 +522,8 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                     Text(text = "Your Bio",
                         textAlign = TextAlign.Start,
                         style = TextStyle(
-                            fontFamily = arimoFontFamily,
-                            fontWeight = FontWeight.Black,
+                            fontFamily = helveticaFontFamily,
+                            fontWeight = FontWeight.Normal,
                             fontSize = 16.sp
                         ),
                         color = SecondaryText,
@@ -541,8 +550,8 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                     Text(text = "Select your app theme color",
                         textAlign = TextAlign.Start,
                         style = TextStyle(
-                            fontFamily = arimoFontFamily,
-                            fontWeight = FontWeight.Black,
+                            fontFamily = helveticaFontFamily,
+                            fontWeight = FontWeight.Normal,
                             fontSize = 16.sp
                         ),
                         color = SecondaryText,
@@ -1059,7 +1068,7 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                             Text(text = "Cancel",
                                 textAlign = TextAlign.Center,
                                 style = TextStyle(
-                                    fontFamily = arimoFontFamily,
+                                    fontFamily = helveticaFontFamily,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 16.sp
                                 ),color = Color.White
@@ -1074,7 +1083,7 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                             loading = loading,
                             text = "UPDATE",
                             textStyle = TextStyle(
-                                fontFamily = arimoFontFamily,
+                                fontFamily = helveticaFontFamily,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp
                             ),

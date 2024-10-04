@@ -5,23 +5,22 @@ import android.content.SharedPreferences
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.datastore.dataStore
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
-import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.CreateUserResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.LinkData
-import com.example.myapplication.myapplication.flashcall.Data.model.SDKResponseState
 import com.example.myapplication.myapplication.flashcall.Data.model.UpdateUserResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.deleteAdditionalLink.DeleteAdditionalLinks
 import com.example.myapplication.myapplication.flashcall.Data.model.editAdditionalLink.EditAdditionalLinkRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.editAdditionalLink.EditUserLink
 import com.example.myapplication.myapplication.flashcall.Data.model.firestore.UserServicesResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.spacialization.Profession
+import com.example.myapplication.myapplication.flashcall.Data.model.spacialization.SpacializationResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.wallet.UserId
 import com.example.myapplication.myapplication.flashcall.repository.CreateRepository
 import com.example.myapplication.myapplication.flashcall.repository.UserPreferencesRepository
@@ -32,8 +31,6 @@ import com.google.firebase.firestore.toObject
 import com.google.firebase.messaging.messaging
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import io.getstream.video.android.core.Call
-import io.getstream.video.android.core.ConnectionState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -59,11 +56,14 @@ class RegistrationViewModel @Inject constructor(
 
     private val _createUserState =
         MutableStateFlow<APIResponse<CreateUserResponse>>(APIResponse.Empty)
-
     val createUserState: StateFlow<APIResponse<CreateUserResponse>> = _createUserState
-    private val _updateUserState = MutableStateFlow<APIResponse<UpdateUserResponse>>(APIResponse.Empty)
 
+    private val _updateUserState = MutableStateFlow<APIResponse<UpdateUserResponse>>(APIResponse.Empty)
     val updateUserState: StateFlow<APIResponse<UpdateUserResponse>> = _updateUserState
+
+
+    private val _addProfessionState = MutableStateFlow<APIResponse<UpdateUserResponse>>(APIResponse.Empty)
+    val addProfessionState: StateFlow<APIResponse<UpdateUserResponse>> = _addProfessionState
 
     private val _serviceState =
         MutableStateFlow<APIResponse<UserServicesResponse>>(APIResponse.Loading)
@@ -79,7 +79,7 @@ class RegistrationViewModel @Inject constructor(
     var editAdditionalLinkState by mutableStateOf(EditAdditionalLink())
         private set
 
-
+    val draggableList = listOf(LinkData("","",true)).toMutableStateList()
 
 
     fun createUser(
@@ -97,8 +97,7 @@ class RegistrationViewModel @Inject constructor(
         gender: String?,
         dob: String?,
         bio: String?,
-        kyc_status: String?,
-        navController: NavController
+        kyc_status: String?
     ) {
 
         viewModelScope.launch {
@@ -127,7 +126,6 @@ class RegistrationViewModel @Inject constructor(
                         bio ?: "This is the bio of my profile", // Default bio
                         kyc_status ?: "InComplete"                 // Default KYC status (if available)
                     ).collect { response ->
-                        _createUserState.value = APIResponse.Success(response)
                         Log.d("User", "User created successfully")
                         addDataIntoFirestore(response._id,videoRate , audioRate , chatRate)
                         // Get FCM token
@@ -136,7 +134,6 @@ class RegistrationViewModel @Inject constructor(
                         val fcmData = hashMapOf(
                             "token" to fcmToken
                         )
-
                         firestore.collection("FCMtoken").document(response.phone).set(fcmData)
                             .addOnSuccessListener {
                                 Log.d("Firestore", "FCMtoken document created successfully")
@@ -145,12 +142,9 @@ class RegistrationViewModel @Inject constructor(
                                     "FirestoreError", "Failed to create FCM document: ${e.message}"
                                 )
                             }
-
 //                        storeResponseInPreferences(response)
                         userPreferencesRepository.storeResponseInPreferences(response)
-                        navController.navigate(ScreenRoutes.LoginDoneScreen.route){
-                            popUpTo(ScreenRoutes.RegistrationScreen.route){inclusive = true}
-                        }
+                        _createUserState.value = APIResponse.Success(response)
                     }
                 } else {
                     // Username is taken, show error message
@@ -305,8 +299,6 @@ class RegistrationViewModel @Inject constructor(
         navController: NavController,
         loading: (Boolean) -> Unit
     ) {
-
-        Log.d("SelectedTheme","theme: $themeSelected")
         viewModelScope.launch {
             loading(true)
             _updateUserState.value = APIResponse.Loading
@@ -326,8 +318,6 @@ class RegistrationViewModel @Inject constructor(
                     phone = phone,
                     username = username
                 ).collect { response ->
-
-
 
                     _updateUserState.value = APIResponse.Success(response)
                     loading(false)
@@ -420,6 +410,7 @@ class RegistrationViewModel @Inject constructor(
                         userPreferencesRepository.storeAdditionalLinks(userId, null)
                     }
                     addAditionalLinkState = addAditionalLinkState.copy(showAddLinkLayout = false,linksList = userPreferencesRepository.retrieveAdditionalLinks(userId), isLoading = false)
+                    makeList(userPreferencesRepository.retrieveAdditionalLinks(userId))
                 }
             } catch (e: Exception) {
 
@@ -450,6 +441,7 @@ class RegistrationViewModel @Inject constructor(
                     }
                     editAdditionalLinkState = editAdditionalLinkState.copy(isLoading = false ,editingLayout = ShowEditingLayout(showEditingLayout = false, -1))
                     addAditionalLinkState = addAditionalLinkState.copy(showAddLinkLayout = false,linksList = userPreferencesRepository.retrieveAdditionalLinks(userId), isLoading = false)
+                    makeList(userPreferencesRepository.retrieveAdditionalLinks(userId))
                 }
             } catch (e: Exception) {
 
@@ -464,8 +456,8 @@ class RegistrationViewModel @Inject constructor(
         addAditionalLinkState.linksList?.get(editAdditionalLinkState.editingLayout.index)?.url = link?.url
         addAditionalLinkState.linksList?.get(editAdditionalLinkState.editingLayout.index)?.title = link?.title
         addAditionalLinkState.linksList?.get(editAdditionalLinkState.editingLayout.index)?.isActive = link?.isActive
-
         val body = EditAdditionalLinkRequest(userId = userId, user = EditUserLink(links = addAditionalLinkState.linksList))
+
         viewModelScope.launch {
             editAdditionalLinkState = editAdditionalLinkState.copy(isLoading = true)
             try {
@@ -480,6 +472,7 @@ class RegistrationViewModel @Inject constructor(
                     }
                     editAdditionalLinkState = editAdditionalLinkState.copy(isLoading = false ,editingLayout = ShowEditingLayout(showEditingLayout = false, -1))
                     addAditionalLinkState = addAditionalLinkState.copy(showAddLinkLayout = false,linksList = userPreferencesRepository.retrieveAdditionalLinks(userId), isLoading = false)
+                    makeList(userPreferencesRepository.retrieveAdditionalLinks(userId))
                 }
             } catch (e: Exception) {
 
@@ -496,10 +489,48 @@ class RegistrationViewModel @Inject constructor(
         }
     }
 
+    private fun makeList(linksList: SnapshotStateList<LinkData>?) {
+        draggableList.clear()
+        if (linksList != null) {
+            for (item in linksList){
+                draggableList.add(item)
+            }
+        }
+    }
+
+    fun linksPositionReordered(){
+        var userId = userPreferencesRepository.getUser()?._id+""
+        userPreferencesRepository.storeAdditionalLinks(userId, draggableList)
+        addAditionalLinkState = addAditionalLinkState.copy(linksList = userPreferencesRepository.retrieveAdditionalLinks(userId))
+
+        val body = EditAdditionalLinkRequest(userId = userId, user = EditUserLink(links = addAditionalLinkState.linksList))
+
+        viewModelScope.launch {
+            try {
+                repository.editAdditionalLink(
+                    "api/v1/creator/updateUser",
+                    body
+                ).collect { response ->
+                    if(response.updatedUser.links != null){
+                        userPreferencesRepository.storeAdditionalLinks(userId, response.updatedUser.links)
+                    }else{
+                        userPreferencesRepository.storeAdditionalLinks(userId, null)
+                    }
+                    addAditionalLinkState = addAditionalLinkState.copy(showAddLinkLayout = false,linksList = userPreferencesRepository.retrieveAdditionalLinks(userId), isLoading = false)
+                    makeList(userPreferencesRepository.retrieveAdditionalLinks(userId))
+                }
+            } catch (e: Exception) {
+
+            }
+        }
+    }
+
+
     fun getAddedAdditionalLinks(){
         viewModelScope.launch {
             val userId = userPreferencesRepository.getUser()?._id?:""
             addAditionalLinkState = addAditionalLinkState.copy(linksList = userPreferencesRepository.retrieveAdditionalLinks(userId))
+            makeList(addAditionalLinkState.linksList)
             viewModelScope.launch {
                 try {
                     repository.getUserAdditionalLinks(
@@ -507,6 +538,7 @@ class RegistrationViewModel @Inject constructor(
                         userId = UserId(userId)
                     ).collect { response ->
                         userPreferencesRepository.storeAdditionalLinks(userId, response.links)
+                        makeList(userPreferencesRepository.retrieveAdditionalLinks(userId))
                         addAditionalLinkState = addAditionalLinkState.copy(linksList = userPreferencesRepository.retrieveAdditionalLinks(userId))
                     }
                 } catch (e: Exception) {
@@ -572,7 +604,6 @@ class RegistrationViewModel @Inject constructor(
     fun deleteAdditionalLinks(item: LinkData){
         viewModelScope.launch {
             val userId = userPreferencesRepository.getUser()?._id?:""
-//            addAditionalLinkState = addAditionalLinkState.copy(linksList = userPreferencesRepository.retrieveAdditionalLinks(userId))
             Log.d("DeletingAdditionalLink","requestBody: $userId")
             viewModelScope.launch {
                 try {
@@ -580,6 +611,7 @@ class RegistrationViewModel @Inject constructor(
                     .collect { response ->
                         Log.d("DeletingAdditionalLink","responseBody: $response")
                         userPreferencesRepository.storeAdditionalLinks(userId, response.links)
+                        makeList(userPreferencesRepository.retrieveAdditionalLinks(userId))
                         addAditionalLinkState = addAditionalLinkState.copy(linksList = userPreferencesRepository.retrieveAdditionalLinks(userId))
                     }
                 } catch (e: Exception) {
@@ -621,6 +653,7 @@ class RegistrationViewModel @Inject constructor(
             true
         }
     }
+
     fun getIsPaymentDetails(): Boolean{
         return if(userPreferencesRepository.getPaymentSettings().isPayment){
             false
@@ -648,30 +681,50 @@ class RegistrationViewModel @Inject constructor(
         return userPreferencesRepository.getStoredUserData(PreferencesKey.Bio.key)+""
     }
 
-    var spacializationState by mutableStateOf(SpacializationState())
+    private val _spacializationState = MutableStateFlow<APIResponse<SpacializationResponse>>(APIResponse.Empty)
+    val spacializationState: StateFlow<APIResponse<SpacializationResponse>> = _spacializationState
     fun getSpacialization(){
-        spacializationState = spacializationState.copy(isLoading = true)
+        _spacializationState.value = APIResponse.Loading
         try {
             viewModelScope.launch {
                 repository.getSpacializations(url = "https://backend.flashcall.me/api/v1/profession/selectProfession").collect{response ->
                     if (response != null){
-                        spacializationState = spacializationState.copy(isLoading = false, list = response.professions)
+                        _spacializationState.value = APIResponse.Success(response)
                     }else{
-                        spacializationState = spacializationState.copy(isLoading = false, error = "Data Not Found")
+                        _spacializationState.value = APIResponse.Error("data not found")
                     }
                 }
             }
         }catch (e: Exception){
-            spacializationState = spacializationState.copy(isLoading = false, error = "exception: ${e.message}")
+            _spacializationState.value = APIResponse.Error("error: ${e.message}")
         }
-
     }
 
+    fun addSpacialization(profession: String) {
+        val userId = userPreferencesRepository.getUser()?._id+""
+        viewModelScope.launch {
+            _addProfessionState.value = APIResponse.Loading
+            try {
+                repository.updateUser(
+                    url = "api/v1/creator/updateUser",
+                    userId = userId,
+                    profession = profession
+                ).collect { response ->
+                    _addProfessionState.value = APIResponse.Success(response)
+                    userPreferencesRepository.storeUpdateUserResponseInPreferences(response)
+                }
+            } catch (e: Exception) {
+                Log.e("error", "User update failed: ${e.message}")
+                _addProfessionState.value = APIResponse.Error(e.message ?: "User update error")
+            }
+        }
+    }
 }
 
 data class SpacializationState(
     var isLoading: Boolean = false,
     var error: String? = null,
+    var success: Boolean = false,
     var list: List<Profession?>? = null
 )
 
@@ -697,7 +750,7 @@ data class ShowEditingLayout(
 )
 data class AddAditionalLinkState(
     val showAddLinkLayout: Boolean = false,
-    val linksList: MutableList<LinkData>? = null,
+    val linksList: SnapshotStateList<LinkData>? = null,
     val isLoading: Boolean = false
 )
 data class TodaysWalletBalanceState(

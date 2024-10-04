@@ -18,7 +18,9 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -62,40 +64,24 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.OTPBackground
 import com.example.myapplication.myapplication.flashcall.ui.theme.OTPBorder
 import com.example.myapplication.myapplication.flashcall.ui.theme.PrimaryText
 import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryText
-import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
+import com.example.myapplication.myapplication.flashcall.ui.theme.helveticaFontFamily
 
     var resendToken : String? = null
 var verificationToken : String? = null
 @Composable
 fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) {
-//    var isKeyboardOpen by remember { mutableStateOf(false) }
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Background
     ) {
-
         Box(
             modifier = Modifier
                 .fillMaxSize(),
            contentAlignment = BottomCenter
 
         ){
-//            if (!isKeyboardOpen) {
-                // Only show image slider and texts when the keyboard is closed
                 ImageSlider()
-//                Spacer(modifier = Modifier.height(20.dp))
-//                TitleText()
-//                Spacer(modifier = Modifier.height(15.dp))
-//                SubTitleText()
-//                Spacer(modifier = Modifier.height(30.dp))
-//            }
-//            if(isKeyboardOpen){
-//                Spacer(modifier = Modifier.height(50.dp))
-//                TitleText()
-//                Spacer(modifier = Modifier.height(15.dp))
-//                SubTitleText()
-//                Spacer(modifier = Modifier.height(30.dp))
-//            }
             BottomOTPBar(navController,viewModel)
         }
     }
@@ -121,35 +107,27 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
         val focusManager = LocalFocusManager.current
         Surface(
             modifier = Modifier
+                .fillMaxWidth()
                 .navigationBarsPadding()
                 .imePadding()
-                .fillMaxWidth()
-                .height(400.dp)
-                .pointerInput(Unit) {
-                    // Detect taps anywhere on the screen
-                    detectTapGestures {
-                        // Clear focus when tapping outside the input field
-                        focusManager.clearFocus()
-                    }
-                },
-            shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
-            color = Color.White
+                .wrapContentHeight(),
+            shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .wrapContentHeight()
                     .background(
                         Color.White,
                         shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
                     ),
-                contentAlignment = Alignment.BottomCenter
+                contentAlignment = Alignment.BottomCenter,
             ) {
                 Column(
+
                     modifier = Modifier
                         .fillMaxWidth()
-                        .wrapContentHeight()
                         .padding(16.dp)
+                        .verticalScroll(rememberScrollState()),
                 ) {
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(
@@ -157,7 +135,7 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
                         modifier = Modifier.align(Alignment.CenterHorizontally),
                         color = Color.Black,
                         style = TextStyle(
-                            fontFamily = arimoFontFamily,
+                            fontFamily = helveticaFontFamily,
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp
                         )
@@ -168,12 +146,12 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
                     Row(modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center) {
                         Text(
-                            text = "We sent a 6-digit code to $phone.",
+                            text = "We sent a 6-digit code to $phone ",
                             color = PrimaryText,
                             style = TextStyle(
-                                fontFamily = arimoFontFamily,
-                                fontWeight = FontWeight.Black,
-                                fontSize = 12.sp
+                                fontFamily = helveticaFontFamily,
+                                fontWeight = FontWeight.Normal,
+                                fontSize = 14.sp
                             )
                         )
                         Text(
@@ -183,9 +161,9 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
                             },
                             color = MainColor,
                             style = TextStyle(
-                                fontFamily = arimoFontFamily,
+                                fontFamily = helveticaFontFamily,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 12.sp,
+                                fontSize = 14.sp,
                                 textDecoration = TextDecoration.Underline
                             )
                         )
@@ -272,7 +250,7 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
                                     textStyle = TextStyle(
                                         color = Color.Black,
                                         fontSize = 16.sp,
-                                        fontFamily = arimoFontFamily,
+                                        fontFamily = helveticaFontFamily,
                                         fontWeight = FontWeight.Bold
                                     )
                                 )
@@ -332,7 +310,7 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
                                 textStyle = TextStyle(
                                     color = Color.Black,
                                     fontSize = 16.sp,
-                                    fontFamily = arimoFontFamily,
+                                    fontFamily = helveticaFontFamily,
                                     fontWeight = FontWeight.Bold
                                 )
                             )
@@ -384,9 +362,9 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
                             },
                         color = PrimaryText,
                         style = TextStyle(
-                            fontFamily = arimoFontFamily,
-                            fontWeight = FontWeight.Black,
-                            fontSize = 12.sp
+                            fontFamily = helveticaFontFamily,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 14.sp
                         )
                     )
 
@@ -400,18 +378,23 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
                         },
                         modifier = Modifier
                             .align(CenterHorizontally)
-                            .padding(top = 5.dp, end = 1.dp),
+                            .padding(top = 15.dp),
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MainColor,
                             contentColor = Color.White
                         ),
                         text = "Verify",
+                        textStyle = TextStyle(
+                            fontFamily = helveticaFontFamily,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 14.sp
+                        ),
                         loading = loading,
                         enabled = !loadingResend
                     )
 
-                    Spacer(modifier = Modifier.height(110.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -425,9 +408,9 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
                             Text(
                                 text = "By signing up, you agree to our",
                                 style = TextStyle(
-                                    fontFamily = arimoFontFamily,
-                                    fontWeight = FontWeight.Black,
-                                    fontSize = 16.sp,
+                                    fontFamily = helveticaFontFamily,
+                                    fontWeight = FontWeight.Normal,
+                                    fontSize = 14.sp,
                                     color = SecondaryText
                                 )
                             )
@@ -441,9 +424,9 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
                                     text = "Terms of Service",
                                     modifier = Modifier.clickable { },
                                     style = TextStyle(
-                                        fontFamily = arimoFontFamily,
+                                        fontFamily = helveticaFontFamily,
                                         fontWeight = FontWeight.Bold,
-                                        fontSize = 16.sp,
+                                        fontSize = 14.sp,
                                         color = Color.Black
                                     )
                                 )
@@ -452,9 +435,9 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
                                     text = " and ",
                                     modifier = Modifier.clickable { },
                                     style = TextStyle(
-                                        fontFamily = arimoFontFamily,
-                                        fontWeight = FontWeight.Black,
-                                        fontSize = 16.sp,
+                                        fontFamily = helveticaFontFamily,
+                                        fontWeight = FontWeight.Normal,
+                                        fontSize = 14.sp,
                                         color = SecondaryText
                                     )
                                 )
@@ -463,16 +446,16 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
                                     text = "Privacy Policy",
                                     modifier = Modifier.clickable { },
                                     style = TextStyle(
-                                        fontFamily = arimoFontFamily,
+                                        fontFamily = helveticaFontFamily,
                                         fontWeight = FontWeight.Bold,
-                                        fontSize = 16.sp,
+                                        fontSize = 14.sp,
                                         color = Color.Black
                                     )
                                 )
                             }
                         }
                     }
-                    Spacer(modifier = Modifier.height(40.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
                 }
             }
         }

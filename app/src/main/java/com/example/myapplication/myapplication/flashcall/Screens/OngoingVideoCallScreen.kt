@@ -58,9 +58,11 @@ import com.example.myapplication.myapplication.flashcall.utils.LoadingIndicator
 import com.example.myapplication.myapplication.flashcall.utils.formatTime
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import io.getstream.result.flatMap
 import io.getstream.video.android.compose.theme.VideoTheme
 import io.getstream.video.android.compose.ui.components.call.activecall.CallContent
 import io.getstream.video.android.compose.ui.components.call.controls.ControlActions
+import io.getstream.video.android.compose.ui.components.call.controls.actions.FlipCameraAction
 import io.getstream.video.android.compose.ui.components.call.controls.actions.LeaveCallAction
 import io.getstream.video.android.compose.ui.components.call.controls.actions.ToggleCameraAction
 import io.getstream.video.android.compose.ui.components.call.controls.actions.ToggleMicrophoneAction
@@ -73,23 +75,30 @@ import io.getstream.video.android.compose.ui.components.video.VideoRenderer
 import io.getstream.video.android.core.Call
 import io.getstream.video.android.core.ParticipantState
 import io.getstream.video.android.core.call.state.ToggleSpeakerphone
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Delay
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun OngoingVideoCallScreen(
+    call: Call,
     viewModel: VideoCallViewModel,
     navController:NavController
 ){
     val uiState = viewModel.state.sdkResponseState
+    val scope = CoroutineScope(Dispatchers.Main)
     EnsureVideoCallPermissions {
-        viewModel.joinCall()
+        scope.launch {
+            val result = call.accept().flatMap { call.join() }
+        }
     }
     when(uiState){
         is SDKResponseState.Success -> {
             Log.d("VideoCall", "VideoCall:${(uiState as SDKResponseState.Success).data} ")
             VideoCallContent(
-                call =  (uiState as SDKResponseState.Success).data,
+                call =  call,
                 viewModel = viewModel,
                 navController = navController
             )
@@ -191,10 +200,13 @@ fun VideoCallContent(
                                                 isCameraEnabled = isCameraEnabled,
                                                 onCallAction = { viewModel.toggleCamera(it.isEnabled) }
                                             )
+                                            FlipCameraAction(
+                                                modifier = Modifier.size(52.dp),
+                                                onCallAction = { viewModel.flipCamera() }
+                                            )
                                             ToggleMicrophoneAction(
                                                 modifier = Modifier
-                                                    .size(52.dp)
-                                                    .padding(horizontal = 20.dp),
+                                                    .size(52.dp),
                                                 isMicrophoneEnabled = isMicrophoneEnabled,
                                                 onCallAction = {viewModel.toggleMicrophone(it.isEnabled)}
                                             )

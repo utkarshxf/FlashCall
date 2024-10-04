@@ -14,9 +14,9 @@ import com.example.myapplication.myapplication.flashcall.Data.VideoCallRoute
 import com.example.myapplication.myapplication.flashcall.Screens.EditProfileScreen
 import com.example.myapplication.myapplication.flashcall.Screens.HomeScreen
 import com.example.myapplication.myapplication.flashcall.Screens.InCallScreen
-import com.example.myapplication.myapplication.flashcall.Screens.IncomingCallScreen
-import com.example.myapplication.myapplication.flashcall.Screens.OngoingVideoCallScreen
 import com.example.myapplication.myapplication.flashcall.Screens.ProfileScreen
+import com.example.myapplication.myapplication.flashcall.Screens.SelectSpecialityScreen
+import com.example.myapplication.myapplication.flashcall.Screens.SplashScreen
 import com.example.myapplication.myapplication.flashcall.Screens.Support
 import com.example.myapplication.myapplication.flashcall.Screens.TermAndCondition
 import com.example.myapplication.myapplication.flashcall.Screens.wallet.WalletScreen
@@ -38,16 +38,8 @@ fun BottomNavGraph(
 ) {
     val uiState = videoCallViewModel.state
     val incomingCall = uiState.incomingCall
-    NavHost(navController = homeNavController, startDestination = ScreenRoutes.HomeScreen.route) {
-        composable(route = ScreenRoutes.IncomingCallScreen.route) {
-            IncomingVideoCall(call = incomingCall,
-                navController = homeNavController,
-                videoCallViewModel = videoCallViewModel,
-                onEmptyCall = { homeNavController.navigateToHome() })
-        }
-        composable(route = VideoCallRoute.OngoingVideoCall.videoCallRoute) {
-            OngoingVideoCallScreen(viewModel = videoCallViewModel, navController = navController)
-        }
+    NavHost(navController = homeNavController, startDestination = ScreenRoutes.HomeScreen.route)
+    {
         composable(route = ScreenRoutes.InCallScreen.route) {
             InCallScreen(call = incomingCall,
                 navController = homeNavController,
@@ -85,24 +77,24 @@ fun BottomNavGraph(
     }
 }
 
-@Composable
-private fun IncomingVideoCall(
-    call: Call?,
-    navController: NavHostController,
-    videoCallViewModel: VideoCallViewModel,
-    onEmptyCall: () -> Unit
-) {
-    val callAccepted = videoCallViewModel.state.callAccepted
-    if (call != null) {
-        IncomingCallScreen(
-            call = call,
-            navController = navController,
-            videoCallViewModel,
-        )
-    } else {
-        if (!callAccepted) LaunchedEffect(Unit) { onEmptyCall() }
-    }
-}
+//@Composable
+//fun IncomingVideoCall(
+//    call: Call?,
+//    navController: NavHostController,
+//    videoCallViewModel: VideoCallViewModel,
+//    onEmptyCall: () -> Unit
+//) {
+//    val callAccepted = videoCallViewModel.state.callAccepted
+//    if (call != null) {
+//        IncomingCallScreen(
+//            call = call,
+//            navController = navController,
+//            videoCallViewModel,
+//        )
+//    } else {
+//        if (!callAccepted) LaunchedEffect(Unit) { onEmptyCall() }
+//    }
+//}
 
 private fun NavHostController.navigateToHome() {
     navigate(ScreenRoutes.HomeScreen.route) {
@@ -117,7 +109,7 @@ fun InCallScreen(
     call: Call?, navController: NavHostController, onEmptyCall: () -> Unit
 ) {
     InCallScreen(
-        callerName = call!!.user.name, timeLeft = "10:01", // Replace with actual time calculation
+        callerName = call?.user?.name?:"Null", timeLeft = "10:01", // Replace with actual time calculation
         callDuration = "11:11", // Replace with actual duration calculation
         navController = navController
     )

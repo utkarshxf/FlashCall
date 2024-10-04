@@ -50,6 +50,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -67,7 +68,7 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.BorderColor2
 import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.ProfileBackground
 import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryText
-import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
+import com.example.myapplication.myapplication.flashcall.ui.theme.helveticaFontFamily
 import com.example.myapplication.myapplication.flashcall.utils.PreferencesKey
 import com.example.myapplication.myapplication.flashcall.utils.getAppVersionName
 
@@ -134,7 +135,7 @@ fun ProfileScreen(
                         ) {
                             Text(
                                 text = name.toString(), color = Color.Black, style = TextStyle(
-                                    fontFamily = arimoFontFamily,
+                                    fontFamily = helveticaFontFamily,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 24.sp,
                                 )
@@ -142,8 +143,8 @@ fun ProfileScreen(
 
                             Text(
                                 text = profession+"", style = TextStyle(
-                                    fontFamily = arimoFontFamily,
-                                    fontWeight = FontWeight.Black,
+                                    fontFamily = helveticaFontFamily,
+                                    fontWeight = FontWeight.Normal,
                                     fontSize = 16.sp,
                                 ), color = SecondaryText
                             )
@@ -197,8 +198,8 @@ fun ProfileScreen(
                             modifier = Modifier.padding(start = 10.dp),
                             color = Color.Black,
                             style = TextStyle(
-                                fontFamily = arimoFontFamily,
-                                fontWeight = FontWeight.Black,
+                                fontFamily = helveticaFontFamily,
+                                fontWeight = FontWeight.Normal,
                                 fontSize = 18.sp
                             )
                         )
@@ -238,6 +239,7 @@ fun ProfileScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "Please complete your KYC",
+                        fontFamily = helveticaFontFamily,
                         color = Color.Red,
                         fontSize = 12.sp,
                         modifier = Modifier
@@ -275,8 +277,8 @@ fun ProfileScreen(
                         color = Color.Black,
                         modifier = Modifier.padding(start = 10.dp),
                         style = TextStyle(
-                            fontFamily = arimoFontFamily,
-                            fontWeight = FontWeight.Black,
+                            fontFamily = helveticaFontFamily,
+                            fontWeight = FontWeight.Normal,
                             fontSize = 18.sp
                         )
                     )
@@ -325,8 +327,8 @@ fun ProfileScreen(
                             color = Color.Black,
                             modifier = Modifier.padding(start = 10.dp),
                             style = TextStyle(
-                                fontFamily = arimoFontFamily,
-                                fontWeight = FontWeight.Black,
+                                fontFamily = helveticaFontFamily,
+                                fontWeight = FontWeight.Normal,
                                 fontSize = 18.sp
                             )
                         )
@@ -366,6 +368,7 @@ fun ProfileScreen(
                     Text(
                         text = "Please complete your payment details",
                         color = Color.Red,
+                        fontFamily = helveticaFontFamily,
                         fontSize = 12.sp,
                         modifier = Modifier
                             .padding(start = 45.dp, top = 50.dp)
@@ -411,8 +414,8 @@ fun ProfileScreen(
                             modifier = Modifier.padding(start = 10.dp),
                             color = Color.Black,
                             style = TextStyle(
-                                fontFamily = arimoFontFamily,
-                                fontWeight = FontWeight.Black,
+                                fontFamily = helveticaFontFamily,
+                                fontWeight = FontWeight.Normal,
                                 fontSize = 18.sp
                             )
                         )
@@ -448,8 +451,8 @@ fun ProfileScreen(
                             color = Color.Black,
                             modifier = Modifier.padding(start = 10.dp),
                             style = TextStyle(
-                                fontFamily = arimoFontFamily,
-                                fontWeight = FontWeight.Black,
+                                fontFamily = helveticaFontFamily,
+                                fontWeight = FontWeight.Normal,
                                 fontSize = 18.sp
                             )
                         )
@@ -488,8 +491,8 @@ fun ProfileScreen(
 fun LogoutConfirmationDialog(confirm: () -> Unit, cancel: () -> Unit) {
     AlertDialog(
         onDismissRequest = { cancel() },
-        title = { Text("Logout Confirmation") },
-        text = { Text("Are you sure you want to log out?") },
+        title = { Text("Logout Confirmation", fontFamily = helveticaFontFamily, fontWeight = FontWeight.Bold) },
+        text = { Text("Are you sure you want to log out?", fontWeight = FontWeight.Normal, fontFamily = helveticaFontFamily) },
         confirmButton = {
             Button(
                 onClick = {
@@ -497,7 +500,7 @@ fun LogoutConfirmationDialog(confirm: () -> Unit, cancel: () -> Unit) {
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
             ) {
-                Text("Yes")
+                Text(text = "Yes", fontFamily = helveticaFontFamily, fontWeight = FontWeight.Normal)
             }
         },
         dismissButton = {
@@ -505,7 +508,7 @@ fun LogoutConfirmationDialog(confirm: () -> Unit, cancel: () -> Unit) {
                 onClick = { cancel() },
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
             ) {
-                Text("No")
+                Text(text = "No", fontFamily = helveticaFontFamily, fontWeight = FontWeight.Normal)
             }
         }
     )
@@ -535,6 +538,8 @@ fun AppVersionAndPrivacyPolicy(navController: NavController) {
                     text = "version $versionCode",
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                     style = TextStyle(
+                        fontWeight = FontWeight.Normal,
+                        fontFamily = helveticaFontFamily,
                         color = Color.Black,
                         fontSize = 14.sp
                     )
@@ -549,6 +554,7 @@ fun AppVersionAndPrivacyPolicy(navController: NavController) {
                         textDecoration = TextDecoration.Underline,
                         color = MainColor,
                         fontWeight = FontWeight.Bold,
+                        fontFamily = helveticaFontFamily,
                         fontSize = 14.sp
                     )
                 )

@@ -34,6 +34,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -45,6 +46,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -52,6 +54,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -78,6 +81,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -100,12 +104,16 @@ import com.example.myapplication.myapplication.flashcall.Screens.common.Circular
 import com.example.myapplication.myapplication.flashcall.Screens.common.WideSwitch
 import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.RegistrationViewModel
+import com.example.myapplication.myapplication.flashcall.ui.theme.BorderColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.BorderColor2
 import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.PrimaryBackGround
+import com.example.myapplication.myapplication.flashcall.ui.theme.PrimaryText
 import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryBackGround
+import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryText
 import com.example.myapplication.myapplication.flashcall.ui.theme.SwitchColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.helveticaFontFamily
+import com.example.myapplication.myapplication.flashcall.utils.capitalizeAfterSpace
 import com.jetpack.draganddroplist.DragDropList
 import com.jetpack.draganddroplist.move
 
@@ -137,7 +145,6 @@ fun HomeScreen(
         if (it.size == 2) it else listOf(it[0], "")
     }
     val context = LocalContext.current
-
 
 
 //    if (uriImg != null) {
@@ -329,7 +336,7 @@ fun HomeScreen(
             Text(
                 text = "@$userId", color = Color.White, style = TextStyle(
                     fontFamily = helveticaFontFamily,
-                    fontWeight = FontWeight.Black,
+                    fontWeight = FontWeight.Normal,
                     fontSize = 16.sp,
                 ), modifier = Modifier.align(Alignment.CenterHorizontally)
             )
@@ -346,7 +353,9 @@ fun HomeScreen(
 
 @Composable
 fun HomeScreenBottom(
-    homeNavController: NavController, username: String, viewModel: RegistrationViewModel = hiltViewModel()
+    homeNavController: NavController,
+    username: String,
+    viewModel: RegistrationViewModel = hiltViewModel()
 ) {
     var showShareDialog by remember { mutableStateOf(true) }
 
@@ -399,39 +408,23 @@ fun HomeScreenBottom(
                 var additionalLinksList = addAditionalLinkState.linksList
 
                 if (!additionalLinksList.isNullOrEmpty()) {
-
                     DragDropList(
-                        items = additionalLinksList,
-                        onMove = { fromIndex, toIndex -> additionalLinksList.move(fromIndex, toIndex)},
+                        items = viewModel.draggableList,
+                        onMove = { fromIndex, toIndex ->
+                            viewModel.draggableList.move(
+                                fromIndex,
+                                toIndex
+                            )
+                        },
                         viewModel = viewModel
                     )
-
-//                    DragDropList(
-//                        items = ReorderItem,
-//                        onMove = { fromIndex, toIndex -> ReorderItem.move(fromIndex, toIndex)},
-//                        viewModel = viewModel
-//                    )
-
-
-
-
-//                    for (i in additionalLinksList.indices) {
-//                        AddedLinkLayout(item = additionalLinksList[i], isActive = {
-//                            additionalLinksList[i].isActive = !additionalLinksList[i].isActive!!
-//                            viewModel.updateUserLinks(LinkData(additionalLinksList[i].title,
-//                                additionalLinksList[i].url, additionalLinksList[i].isActive))
-//                        }, edit = {
-//                            viewModel.showEditingAdditionalLayout(true, i)
-//                        }) {
-//                            viewModel.deleteAdditionalLinks(body = additionalLinksList[i])
-//                        }
-//                    }
                 }
 
-
-
-                if(editAdditionalLinkState.editingLayout.showEditingLayout && editAdditionalLinkState.editingLayout.index > -1){
-                    EditLinkLayout(viewModel, model = additionalLinksList?.get(editAdditionalLinkState.editingLayout.index))
+                if (editAdditionalLinkState.editingLayout.showEditingLayout && editAdditionalLinkState.editingLayout.index > -1) {
+                    EditLinkLayout(
+                        viewModel,
+                        model = additionalLinksList?.get(editAdditionalLinkState.editingLayout.index)
+                    )
                 }
 
 
@@ -439,14 +432,13 @@ fun HomeScreenBottom(
                     AddLinkLayout {
                         viewModel.showLayoutForAddLinks(false)
                     }
-                }
-                else {
+                } else {
                     addExtraLink(
                         modifier = Modifier
                             .height(84.dp)
                             .fillMaxWidth()
                             .padding(vertical = 10.dp, horizontal = 5.dp)
-                            .background(Color.White)
+                            .background(Color.White, shape = RoundedCornerShape(8.dp))
                             .clickable {
                                 viewModel.showLayoutForAddLinks(true)
                             },
@@ -472,7 +464,7 @@ fun HomeScreenBottom(
                                 color = Color.Black,
                                 modifier = Modifier.padding(start = 10.dp),
                                 style = TextStyle(
-                                    fontSize = 17.sp,
+                                    fontSize = 18.sp,
                                     fontFamily = helveticaFontFamily,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -492,8 +484,6 @@ fun HomeScreenBottom(
         }
     }
 }
-
-
 
 
 @Composable
@@ -584,7 +574,7 @@ fun CopyBar(viewModel: RegistrationViewModel) {
                         .padding(end = 8.dp),
                     style = TextStyle(
                         fontFamily = helveticaFontFamily,
-                        fontWeight = FontWeight.Black,
+                        fontWeight = FontWeight.Normal,
                         fontSize = 14.sp,
                         color = Color.Black
                     )
@@ -596,6 +586,7 @@ fun CopyBar(viewModel: RegistrationViewModel) {
                         .padding(end = 16.dp)
                         .clickable {
                             copyToClipboard(context = context, copyText)
+                            Toast.makeText(context,"Copied",Toast.LENGTH_SHORT).show()
                         },
                     contentDescription = "Copy Icon"
                 )
@@ -645,11 +636,11 @@ fun WalletBar(navController: NavController, viewModel: RegistrationViewModel) {
 
                 Text(
                     text = "Today's Earning",
-                    modifier = Modifier.padding(bottom = 2.dp),
+                    modifier = Modifier.padding(bottom = 8.dp),
                     style = TextStyle(
                         fontFamily = helveticaFontFamily,
-                        fontWeight = FontWeight.Black,
-                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 14.sp,
                         color = Color.Black
                     )
                 )
@@ -658,7 +649,7 @@ fun WalletBar(navController: NavController, viewModel: RegistrationViewModel) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Rs.",
+                        text = "Rs. $walletBalance",
                         style = TextStyle(
                             fontFamily = helveticaFontFamily,
                             fontWeight = FontWeight.Bold,
@@ -666,16 +657,6 @@ fun WalletBar(navController: NavController, viewModel: RegistrationViewModel) {
                             color = Color.Black
                         ),
                         modifier = Modifier.padding(end = 2.dp)
-                    )
-                    Text(
-                        text = "$walletBalance",
-                        modifier = Modifier.padding(top = 5.dp),
-                        style = TextStyle(
-                            fontFamily = helveticaFontFamily,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp,
-                            color = Color.Black
-                        )
                     )
                 }
             }
@@ -766,8 +747,8 @@ fun ServicesSection(
                     text = "My Services",
                     style = TextStyle(
                         fontFamily = helveticaFontFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 18.sp,
                         color = Color.Black
                     )
                 )
@@ -989,7 +970,7 @@ fun ServiceRow(
                 style = TextStyle(
                     fontFamily = helveticaFontFamily,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
+                    fontSize = 18.sp,
                     color = rowTextColor // Apply dynamic color
                 )
             )
@@ -998,7 +979,7 @@ fun ServiceRow(
                 Text(
                     text = "Rs. $servicePrice/min", style = TextStyle(
                         fontFamily = helveticaFontFamily,
-                        fontWeight = FontWeight.Black,
+                        fontWeight = FontWeight.Normal,
                         fontSize = 14.sp,
                         color = rowTextColor
                     )
@@ -1049,11 +1030,28 @@ fun EditPriceDialog(
             Column(
                 modifier = Modifier.padding(16.dp)
             ) {
-                Text(
-                    text = "Price", style = TextStyle(
-                        fontWeight = FontWeight.Bold, fontSize = 20.sp
-                    ), color = Color.Black, modifier = Modifier.padding(bottom = 12.dp)
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "Price", style = TextStyle(
+                            fontFamily = helveticaFontFamily,
+                            fontWeight = FontWeight.Bold, fontSize = 18.sp
+                        ), color = Color.Black, modifier = Modifier.padding(12.dp)
+                    )
+                }
+
+                Spacer(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(color = BorderColor)
+                        .padding(vertical = 10.dp)
                 )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
                 PriceInputRow(
                     serviceName = "Video Call",
                     price = newVideoPrice,
@@ -1139,25 +1137,51 @@ fun PriceInputRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = "$serviceName\nper minute", style = TextStyle(
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color.Black,
+        Column {
+            Text(
+                text = "$serviceName", style = TextStyle(
+                    fontSize = 16.sp,
+                    fontFamily = helveticaFontFamily,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                )
             )
-        )
+            Text(
+                text = "per minute", style = TextStyle(
+                    fontSize = 14.sp,
+                    fontFamily = helveticaFontFamily,
+                    fontWeight = FontWeight.Normal,
+                    color = SecondaryText,
+                )
+            )
+        }
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(text = "Rs.")
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 7.dp)) {
+            Text(text = "Rs.", fontFamily = helveticaFontFamily, fontWeight = FontWeight.Normal)
             Spacer(modifier = Modifier.width(4.dp))
-            OutlinedTextField(
-                value = price,
-                onValueChange = onPriceChange,
-                modifier = Modifier.width(80.dp),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            )
+
+
+            Box(
+                modifier = Modifier
+                    .height(40.dp)
+                    .width(65.dp)
+                    .background(color = Color.White, shape = RoundedCornerShape(6.dp))
+                    .border(width = 1.dp, color = BorderColor, shape = RoundedCornerShape(6.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                BasicTextField(
+                    value = price,
+                    onValueChange = onPriceChange,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = 10.dp),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center, fontSize = 20.sp),
+
+                )
+            }
+
         }
     }
 }
@@ -1213,9 +1237,10 @@ fun copyToClipboard(
 @Composable
 fun ImageFromUrl(imageUrl: String) {
     // Use the AsyncImage directly for simplicity
-    if(imageUrl.isNotEmpty()){
+    if (imageUrl.isNotEmpty()) {
         AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current).data(imageUrl).crossfade(true).build(),
+            model = ImageRequest.Builder(LocalContext.current).data(imageUrl).crossfade(true)
+                .build(),
             contentDescription = null,
             placeholder = painterResource(id = R.drawable.profile_picture_holder),
             modifier = Modifier
@@ -1224,13 +1249,16 @@ fun ImageFromUrl(imageUrl: String) {
                 .border(1.dp, color = MainColor, shape = CircleShape),  // Clip to a circle
             contentScale = ContentScale.Crop  // Crop the image to fit within the circle
         )
-    }else{
-        Image(painter = painterResource(id = R.drawable.profile_picture_holder), contentDescription = "profile",
+    } else {
+        Image(
+            painter = painterResource(id = R.drawable.profile_picture_holder),
+            contentDescription = "profile",
             modifier = Modifier
                 .size(120.dp)  // Ensure a consistent size
                 .clip(CircleShape)
                 .border(1.dp, color = MainColor, shape = CircleShape),  // Clip to a circle
-            contentScale = ContentScale.Crop)
+            contentScale = ContentScale.Crop
+        )
     }
 }
 
@@ -1251,9 +1279,10 @@ fun shareLink(url: String) {
 
 @Composable
 fun ShareTextButton(shareLink: String, bio: String) {
-    var sharingContent = "Hi 👋\n\nYou can use the below link to consult with me through Video Call, Audio Call or Chat. \n\nLink: $shareLink\n\n"
+    var sharingContent =
+        "Hi 👋\n\nYou can use the below link to consult with me through Video Call, Audio Call or Chat. \n\nLink: $shareLink\n\n"
 
-    if(bio.isNotEmpty()){
+    if (bio.isNotEmpty()) {
         sharingContent += "About me: $bio"
     }
 
@@ -1287,7 +1316,6 @@ fun ShareTextButton(shareLink: String, bio: String) {
 
 @Composable
 fun DemoText(viewModel: RegistrationViewModel) {
-
     LaunchedEffect(key1 = Unit) {
         viewModel.getUserAssistanceLink()
     }
@@ -1298,8 +1326,8 @@ fun DemoText(viewModel: RegistrationViewModel) {
     var userAssistanceLinkDesc by remember {
         mutableStateOf("")
     }
-    userAssistanceLink = linksState.linkUrl+""
-    userAssistanceLinkDesc = linksState.linkDesc+""
+    userAssistanceLink = linksState.linkUrl + ""
+    userAssistanceLinkDesc = linksState.linkDesc + ""
 
     val context = LocalContext.current
 
@@ -1384,8 +1412,11 @@ fun AddedLinkLayout(item: LinkData, isActive: () -> Unit, edit: () -> Unit, dele
             Text(
                 text = item.title ?: "default",
                 color = Color.Black,
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp,
+                fontSize = 16.sp,
+                style = TextStyle(
+                    fontFamily = helveticaFontFamily,
+                    fontWeight = FontWeight.Normal,
+                ),
                 modifier = Modifier
                     .padding(start = 10.dp)
                     .weight(1f)
@@ -1488,8 +1519,10 @@ fun AddLinkLayout(
             value = linkTitle,
             onValueChange = { linkTitle = it },
             keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Next
+                imeAction = ImeAction.Next,
+                capitalization = KeyboardCapitalization.Sentences
             ),
+
             modifier = Modifier
                 .fillMaxWidth()
                 .background(color = Color.White, shape = RoundedCornerShape(10.dp))
@@ -1581,7 +1614,7 @@ fun AddLinkLayout(
                 ),
                 onClick = {
                     if (linkTitle.isNotEmpty() && link.isNotEmpty()) {
-                        if(registrationViewModel.isValidUrl(link)){
+                        if (registrationViewModel.isValidUrl(link)) {
                             registrationViewModel.updateUserLinks(
                                 link = LinkData(
                                     linkTitle,
@@ -1589,7 +1622,7 @@ fun AddLinkLayout(
                                     true
                                 )
                             )
-                        }else{
+                        } else {
                             Toast.makeText(context, "Invalid URL", Toast.LENGTH_SHORT).show()
                         }
                     } else {
@@ -1607,10 +1640,10 @@ fun EditLinkLayout(
     viewModel: RegistrationViewModel = hiltViewModel(), model: LinkData?
 ) {
     var linkTitle by remember {
-        mutableStateOf(model?.title+"")
+        mutableStateOf(model?.title + "")
     }
     var link by remember {
-        mutableStateOf(model?.url+"")
+        mutableStateOf(model?.url + "")
     }
     var isActive by remember {
         mutableStateOf(model?.isActive)
@@ -1647,6 +1680,7 @@ fun EditLinkLayout(
                     style = TextStyle(
                         fontFamily = helveticaFontFamily,
                         fontWeight = FontWeight.Normal,
+                        fontSize = 16.sp
                     )
                 )
             },
@@ -1728,7 +1762,7 @@ fun EditLinkLayout(
                 onClick = {
 
                     if (linkTitle.isNotEmpty() && link.isNotEmpty()) {
-                        if(viewModel.isValidUrl(link)){
+                        if (viewModel.isValidUrl(link)) {
                             viewModel.editUserLinks(
                                 link = LinkData(
                                     linkTitle,
@@ -1736,8 +1770,8 @@ fun EditLinkLayout(
                                     isActive
                                 )
                             )
-                        }else{
-                            Toast.makeText(context, "Invalid URL",Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(context, "Invalid URL", Toast.LENGTH_SHORT).show()
                         }
                     } else {
                         Toast.makeText(context, "Enter Details Please", Toast.LENGTH_SHORT).show()
@@ -1751,29 +1785,53 @@ fun EditLinkLayout(
 
 
 //Static value
-val ReorderItem = listOf(
-    "Item 1",
-    "Item 2",
-    "Item 3",
-    "Item 4",
-    "Item 5",
-    "Item 6",
-    "Item 7",
-    "Item 8",
-    "Item 9",
-    "Item 10",
-    "Item 11",
-    "Item 12",
-    "Item 13",
-    "Item 14",
-    "Item 15",
-    "Item 16",
-    "Item 17",
-    "Item 18",
-    "Item 19",
-    "Item 20"
-).toMutableStateList()
 
+
+//data class links(
+//    val name: String = "",
+//    val title: String = ""
+//)
+
+//val ReorderItem = listOf(
+//    links("hello1","titel1"),
+//    links("hello2","titel2"),
+//    links("hello3","titel3"),
+//    links("hello4","titel4"),
+//    links("hello5","titel5"),
+//    links("hello6","titel6"),
+//    links("hello7","titel7"),
+//    links("hello8","titel8"),
+//    links("hello9","titel9"),
+//    links("hello10","titel10"),
+//    links("hello11","titel11"),
+//    links("hello12","titel12"),
+//    links("hello13","titel13"),
+//    links("hello14","titel14"),
+//    links("hello15","titel15")
+//).toMutableStateList()
+
+//val ReorderItem = listOf(
+//    "Item 1",
+//    "Item 2",
+//    "Item 3",
+//    "Item 4",
+//    "Item 5",
+//    "Item 6",
+//    "Item 7",
+//    "Item 8",
+//    "Item 9",
+//    "Item 10",
+//    "Item 11",
+//    "Item 12",
+//    "Item 13",
+//    "Item 14",
+//    "Item 15",
+//    "Item 16",
+//    "Item 17",
+//    "Item 18",
+//    "Item 19",
+//    "Item 20"
+//).toMutableStateList()
 
 
 @Preview(showBackground = false)

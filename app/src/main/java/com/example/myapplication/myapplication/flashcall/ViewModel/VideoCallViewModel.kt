@@ -14,10 +14,13 @@ import io.getstream.result.flatMap
 import io.getstream.video.android.core.Call
 import io.getstream.video.android.core.ConnectionState
 import io.getstream.video.android.core.StreamVideo
+import io.getstream.video.android.model.StreamCallId
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -28,8 +31,6 @@ class VideoCallViewModel @Inject constructor(private val firestore: FirebaseFire
         private set
     var state by mutableStateOf(VideoCallScreenState())
         private set
-
-
 
     init {
         viewModelScope.launch {

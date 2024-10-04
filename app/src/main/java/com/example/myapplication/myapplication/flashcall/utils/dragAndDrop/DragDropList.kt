@@ -1,6 +1,5 @@
 package com.jetpack.draganddroplist
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.scrollBy
@@ -8,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -52,22 +52,18 @@ fun DragDropList(
                             .takeIf { it != 0f }
                             ?.let {
                                 overScrollJob = scope.launch {
-                                    Log.d("dragDropListState","scrollBy")
                                     dragDropListState.lazyListState.scrollBy(it)
                                 }
-                            } ?: kotlin.run {
-                                Log.d("dragDropListState","Cancel")
-                                overScrollJob?.cancel() }
+                            } ?: kotlin.run { overScrollJob?.cancel() }
                     },
                     onDragStart = { offset -> dragDropListState.onDragStart(offset) },
-                    onDragEnd = { dragDropListState.onDragInterrupted() },
+                    onDragEnd = { dragDropListState.onDragInterrupted()
+                                viewModel.linksPositionReordered()},
                     onDragCancel = { dragDropListState.onDragInterrupted() }
                 )
             }
             .fillMaxWidth()
-            .height(height.dp)
-//            .padding(top = 10.dp, start = 10.dp, end = 10.dp)
-        ,
+            .height(height.dp),
         state = dragDropListState.lazyListState
     ) {
         itemsIndexed(items) { index, item ->
@@ -83,25 +79,15 @@ fun DragDropList(
                     }
                     .background(Color.White, shape = RoundedCornerShape(8.dp))
                     .fillMaxWidth()
-//                    .padding(20.dp)
             ) {
-//                Text(
-//                    text = item,
-//                    fontSize = 16.sp,
-//                    fontFamily = FontFamily.Serif
-//                )
                 AddedLinkLayout(item = item, isActive = {
                     viewModel.isActiveAdditionalLink(index)
                 }, edit = {
-                    viewModel.showEditingAdditionalLayout(true, index)
-                }) {
+                    viewModel.showEditingAdditionalLayout(isShow = true, index = index)
+                }, delete = {
                     viewModel.deleteAdditionalLinks(item = item)
-                }
-//                Spacer(modifier = Modifier.height(10.dp))
-
-
+                } )
             }
-
             Spacer(modifier = Modifier.height(10.dp))
         }
     }

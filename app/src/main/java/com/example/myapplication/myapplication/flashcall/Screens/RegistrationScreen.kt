@@ -51,6 +51,7 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -84,7 +85,9 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.BorderColor2
 import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.PrimaryBackGround
 import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryText
-import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
+import com.example.myapplication.myapplication.flashcall.ui.theme.helveticaFontFamily
+import com.example.myapplication.myapplication.flashcall.utils.LoadingIndicator
+import com.example.myapplication.myapplication.flashcall.utils.capitalizeAfterSpace
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.UploadTask
 import com.maxkeppeker.sheets.core.models.base.UseCaseState
@@ -258,8 +261,8 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                     text = "Name*",
                     textAlign = TextAlign.Start,
                     style = TextStyle(
-                        fontFamily = arimoFontFamily,
-                        fontWeight = FontWeight.Black,
+                        fontFamily = helveticaFontFamily,
+                        fontWeight = FontWeight.Normal,
                         fontSize = 16.sp
                     ),
                     color = SecondaryText,
@@ -290,7 +293,7 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                             text = "Your Name",
                             color = SecondaryText,
                             style = TextStyle(
-                                fontFamily = arimoFontFamily,
+                                fontFamily = helveticaFontFamily,
                                 fontWeight = FontWeight.Bold,
                             )
                         )
@@ -309,8 +312,8 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                     text = "Create your ID*",
                     textAlign = TextAlign.Start,
                     style = TextStyle(
-                        fontFamily = arimoFontFamily,
-                        fontWeight = FontWeight.Black,
+                        fontFamily = helveticaFontFamily,
+                        fontWeight = FontWeight.Normal,
                         fontSize = 16.sp
                     ),
                     color = SecondaryText,
@@ -341,7 +344,7 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                             text = "Your UserId",
                             color = SecondaryText,
                             style = TextStyle(
-                                fontFamily = arimoFontFamily,
+                                fontFamily = helveticaFontFamily,
                                 fontWeight = FontWeight.Bold,
                             )
                         )
@@ -358,8 +361,8 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                     text = "Ex : Nitra123@Consultant",
                     textAlign = TextAlign.Start,
                     style = TextStyle(
-                        fontFamily = arimoFontFamily,
-                        fontWeight = FontWeight.Black,
+                        fontFamily = helveticaFontFamily,
+                        fontWeight = FontWeight.Normal,
                         fontSize = 16.sp
                     ),
                     color = SecondaryText,
@@ -373,8 +376,8 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                     text = "Select your Gender*",
                     textAlign = TextAlign.Start,
                     style = TextStyle(
-                        fontFamily = arimoFontFamily,
-                        fontWeight = FontWeight.Black,
+                        fontFamily = helveticaFontFamily,
+                        fontWeight = FontWeight.Normal,
                         fontSize = 16.sp
                     ),
                     color = SecondaryText,
@@ -409,8 +412,8 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                                     genderOthers = false
                                 },
                             style = TextStyle(
-                                fontFamily = arimoFontFamily,
-                                fontWeight = if (genderMale) FontWeight.Bold else FontWeight.Black,
+                                fontFamily = helveticaFontFamily,
+                                fontWeight = if (genderMale) FontWeight.Bold else FontWeight.Normal,
                                 fontSize = if (genderMale) 16.sp else 14.sp
                             )
                         )
@@ -439,8 +442,8 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                                 genderMale = false
                             },
                             style = TextStyle(
-                                fontFamily = arimoFontFamily,
-                                fontWeight = if (genderFemale) FontWeight.Bold else FontWeight.Black,
+                                fontFamily = helveticaFontFamily,
+                                fontWeight = if (genderFemale) FontWeight.Bold else FontWeight.Normal,
                                 fontSize = if (genderFemale) 16.sp else 14.sp
                             )
                         )
@@ -469,8 +472,8 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                                 genderFemale = false
                             },
                             style = TextStyle(
-                                fontFamily = arimoFontFamily,
-                                fontWeight = if (genderOthers) FontWeight.Bold else FontWeight.Black,
+                                fontFamily = helveticaFontFamily,
+                                fontWeight = if (genderOthers) FontWeight.Bold else FontWeight.Normal,
                                 fontSize = if (genderOthers) 16.sp else 14.sp
                             )
                         )
@@ -484,8 +487,8 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                     text = "Select your DOB*",
                     textAlign = TextAlign.Start,
                     style = TextStyle(
-                        fontFamily = arimoFontFamily,
-                        fontWeight = FontWeight.Black,
+                        fontFamily = helveticaFontFamily,
+                        fontWeight = FontWeight.Normal,
                         fontSize = 16.sp
                     ),
                     color = SecondaryText,
@@ -524,7 +527,7 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                             text = formattedDate,
                             color = SecondaryText,
                             style = TextStyle(
-                                fontFamily = arimoFontFamily,
+                                fontFamily = helveticaFontFamily,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp
                             )
@@ -555,6 +558,7 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                     datepicker(
                         initialDate = LocalDate.now(),
                         title = "Select your DOB",
+//                        yearRange = IntRange(1900, 2010),
                         allowedDateValidator = {
                             it.isBefore(LocalDate.now().plusYears(18))
                         }
@@ -577,6 +581,29 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
 
 
 
+                when(createUserState.value){
+                    APIResponse.Empty -> {
+
+                    }
+                    is APIResponse.Error -> {
+                        Text(text = "Error", color = Color.Red, fontFamily = helveticaFontFamily, fontWeight = FontWeight.Normal)
+                    }
+                    APIResponse.Loading -> {
+                        Row (horizontalArrangement = Arrangement.Center, modifier = Modifier.padding(bottom = 15.dp)){
+                            LoadingIndicator()
+                        }
+
+                    }
+                    is APIResponse.Success -> {
+                        LaunchedEffect(key1 = Unit) {
+                            navController.navigate(ScreenRoutes.SelectSpeciality.route){
+                                popUpTo(ScreenRoutes.RegistrationScreen.route) {
+                                    inclusive = true
+                                }
+                            }
+                        }
+                    }
+                }
 
 
                 Button(
@@ -590,7 +617,7 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                         registrationViewModel.createUser(
                            username = userId,
                         phone = phoneNumber,
-                         fullName = name,
+                         fullName = capitalizeAfterSpace(name),
                          firstName = firstName,
                          lastName= lastName,
                          photo= imageUrl,
@@ -601,9 +628,8 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                          chatRate= "25", // constant value
                          gender= selectedGender,
                          dob = formattedDate,
-                         bio = "mdlapd", // constant value
-                         kyc_status = "Incomplete", // constant value
-                         navController= navController
+                         bio = "This is the bio of my profile", // constant value
+                         kyc_status = "Incomplete" // constant value
                         )
                         authenticationViewModel.saveToken(userToken)
                     }
@@ -612,7 +638,7 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
                         text = "NEXT",
                         textAlign = TextAlign.Center,
                         style = TextStyle(
-                            fontFamily = arimoFontFamily,
+                            fontFamily = helveticaFontFamily,
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
                         ), color = Color.White
@@ -670,8 +696,8 @@ fun gender()
     {
         Text(text = "Male",
             style = TextStyle(
-                fontFamily = arimoFontFamily,
-                fontWeight = FontWeight.Black,
+                fontFamily = helveticaFontFamily,
+                fontWeight = FontWeight.Normal,
                 fontSize = 14.sp
             )
         )

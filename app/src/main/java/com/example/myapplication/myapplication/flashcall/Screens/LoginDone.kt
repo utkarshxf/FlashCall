@@ -24,12 +24,13 @@ import androidx.navigation.NavController
 import com.example.myapplication.myapplication.flashcall.BaseClass
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.R
+import com.example.myapplication.myapplication.flashcall.ui.theme.helveticaFontFamily
+import io.getstream.video.android.core.StreamVideo
 import kotlinx.coroutines.delay
 
 @Composable
 fun LoginDoneScreen(navController: NavController) {
     val context = LocalContext.current
-    (context.applicationContext as? BaseClass)?.streamRemoveClient()
     (context.applicationContext as? BaseClass)?.streamBuilder(context)
     LaunchedEffect(Unit) {
         delay(2000)
@@ -47,7 +48,7 @@ fun LoginDoneScreen(navController: NavController) {
                 .size(200.dp) // You can adjust the size as needed
                 .padding(bottom = 36.dp) )
 
-        Text(text = "Verified Successfully!", fontWeight = FontWeight.Bold,fontSize = 20.sp,color = Color.White)
+        Text(text = "Verified Successfully!", fontFamily = helveticaFontFamily,fontWeight = FontWeight.Bold,fontSize = 20.sp,color = Color.White)
     }
 
 }

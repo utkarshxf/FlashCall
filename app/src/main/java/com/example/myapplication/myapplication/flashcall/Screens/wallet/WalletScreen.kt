@@ -1,10 +1,15 @@
 package com.example.myapplication.myapplication.flashcall.Screens.wallet
 
+import android.app.Activity
+import android.content.Intent
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,14 +22,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,32 +47,47 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Data.model.wallet.Transaction
 import com.example.myapplication.myapplication.flashcall.Data.model.wallet.TransactionGroup
 import com.example.myapplication.myapplication.flashcall.Data.model.wallet.groupByDate
 import com.example.myapplication.myapplication.flashcall.R
+import com.example.myapplication.myapplication.flashcall.Screens.ShareTextButton
+import com.example.myapplication.myapplication.flashcall.Screens.common.CircularLoaderButton
+import com.example.myapplication.myapplication.flashcall.Screens.copyToClipboard
+import com.example.myapplication.myapplication.flashcall.Screens.imageUrl
+import com.example.myapplication.myapplication.flashcall.Screens.shareLink
 import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.RegistrationViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.chats.ChatRequestViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.wallet.WalletViewModel
+import com.example.myapplication.myapplication.flashcall.ui.theme.BorderColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.ProfileBackground
-import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
+import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryBackGround
+import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryText
+import com.example.myapplication.myapplication.flashcall.ui.theme.helveticaFontFamily
 import com.example.myapplication.myapplication.flashcall.utils.LoadingIndicator
+import com.example.myapplication.myapplication.flashcall.utils.capitalizeAfterSpace
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.contracts.contract
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
 @Composable
-fun WalletScreen(navController: NavController, walletViewModel: WalletViewModel = hiltViewModel(), authenticationViewModel: AuthenticationViewModel = hiltViewModel())
-{
+fun WalletScreen(
+    navController: NavController,
+    walletViewModel: WalletViewModel = hiltViewModel(),
+    authenticationViewModel: AuthenticationViewModel = hiltViewModel()
+) {
     val scrollState = rememberScrollState()
     val context = LocalContext.current
     val userData = authenticationViewModel.getUserFromPreferences(context)
@@ -72,6 +96,7 @@ fun WalletScreen(navController: NavController, walletViewModel: WalletViewModel 
     LaunchedEffect(Unit) {
         userData?._id?.let {
             walletViewModel.fetchTransactions(it)
+            walletViewModel.fetchBalance(it)
         }
     }
     Surface(
@@ -103,18 +128,18 @@ fun WalletScreen(navController: NavController, walletViewModel: WalletViewModel 
                             .wrapContentSize()
                             .align(Alignment.CenterHorizontally),
                         style = TextStyle(
-                            fontFamily = arimoFontFamily,
+                            fontFamily = helveticaFontFamily,
                             fontSize = 16.sp,
-                            fontWeight = FontWeight.Black,
+                            fontWeight = FontWeight.Normal,
                             color = Color.Black
                         )
                     )
 
                     Text(
-                        text = userData?.fullName?:"User",
+                        text = userData?.fullName ?: "User",
                         modifier = Modifier.padding(top = 10.dp),
                         style = TextStyle(
-                            fontFamily = arimoFontFamily,
+                            fontFamily = helveticaFontFamily,
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.Black
@@ -130,9 +155,9 @@ fun WalletScreen(navController: NavController, walletViewModel: WalletViewModel 
                     .height(100.dp)
                     .clip(RoundedCornerShape(16.dp))
                     .background(Color.White)
-                    .border(1.dp, Color.Black, shape = RoundedCornerShape(16.dp)),
+                    .border(1.dp, BorderColor, shape = RoundedCornerShape(16.dp)),
 
-            ) {
+                ) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -144,9 +169,9 @@ fun WalletScreen(navController: NavController, walletViewModel: WalletViewModel 
                         text = "Wallet Balance",
                         modifier = Modifier.padding(top = 10.dp),
                         style = TextStyle(
-                            fontFamily = arimoFontFamily,
+                            fontFamily = helveticaFontFamily,
                             fontSize = 16.sp,
-                            fontWeight = FontWeight.Black,
+                            fontWeight = FontWeight.Normal,
                             color = Color.Black
                         )
                     )
@@ -156,7 +181,7 @@ fun WalletScreen(navController: NavController, walletViewModel: WalletViewModel 
                     Text(
                         text = "₹${userData?.walletBalance?.roundToInt()}",
                         style = TextStyle(
-                            fontFamily = arimoFontFamily,
+                            fontFamily = helveticaFontFamily,
                             fontSize = 32.sp,
                             fontWeight = FontWeight.Bold,
                             color = MainColor
@@ -171,26 +196,42 @@ fun WalletScreen(navController: NavController, walletViewModel: WalletViewModel 
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            if(withdrawState.isLoading){
+            if (withdrawState.isLoading) {
                 LoadingIndicator()
                 Spacer(modifier = Modifier.height(10.dp))
             }
-            if(withdrawState.error != null){
+            if (withdrawState.error != null) {
                 Text(text = "error: ${withdrawState.error}", color = Color.Red, fontSize = 12.sp)
                 Spacer(modifier = Modifier.height(10.dp))
             }
-            if(withdrawState.success){
-                Text(text = "success: ${withdrawState.message}", color = MainColor, fontSize = 12.sp)
+            if (withdrawState.success) {
+                Text(
+                    text = "success: ${withdrawState.message}",
+                    color = MainColor,
+                    fontSize = 12.sp
+                )
                 Spacer(modifier = Modifier.height(10.dp))
             }
 
 
             Button(
                 onClick = {
-                    if(walletViewModel.isWithdrawable()){
-                        walletViewModel.withdrawRequest()
+                    if(userData?.walletBalance?.roundToInt()!! > 500){
+                        if (walletViewModel.isWithdrawable()) {
+                            walletViewModel.withdrawRequest()
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "Your payment setting or kyc is pending",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     }else{
-                        Toast.makeText(context, "Your payment setting or kyc not done",Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            "Minimum withdraw balance is RS 500",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 },
                 modifier = Modifier
@@ -200,14 +241,13 @@ fun WalletScreen(navController: NavController, walletViewModel: WalletViewModel 
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MainColor,
                     contentColor = Color.White
-                ),
-                enabled = (userData?.walletBalance?.roundToInt() != null && userData?.walletBalance?.roundToInt()!! > 500)
+                )
             ) {
 
                 Text(
                     text = "Withdraw",
                     style = TextStyle(
-                        fontFamily = arimoFontFamily,
+                        fontFamily = helveticaFontFamily,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
                     )
@@ -216,20 +256,164 @@ fun WalletScreen(navController: NavController, walletViewModel: WalletViewModel 
 
 
             Spacer(modifier = Modifier.height(10.dp))
-            Row {
-                Text(text = "Transaction History")
-                Spacer(modifier = Modifier.weight(1f))
+            if (!listOfTransactions.isNullOrEmpty()) {
+                Row {
+                    Text(text = "Transaction History")
+                    Spacer(modifier = Modifier.weight(1f))
+                }
             }
-            
+
             Spacer(modifier = Modifier.height(8.dp))
 
-            TransactionGroup(listOfTransactions)
+
+            if (listOfTransactions.isNullOrEmpty()) {
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "Add you link to your social media profile and start earning.",
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(horizontal = 30.dp)
+                        )
+
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 10.dp),
+                            horizontalArrangement = Arrangement.Center
+                        )
+                        {
+                            Row(verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .height(48.dp)
+                                    .clip(shape = RoundedCornerShape(12.dp))
+                                    .clickable {
+                                        copyToClipboard(
+                                            context = context,
+                                            walletViewModel.getShareLink()
+                                        )
+                                        Toast
+                                            .makeText(context, "Link Copied", Toast.LENGTH_SHORT)
+                                            .show()
+                                    }
+                                    .background(
+                                        color = Color.White,
+                                        shape = RoundedCornerShape(12.dp)
+                                    )
+                                    .border(
+                                        width = 1.dp,
+                                        color = BorderColor,
+                                        shape = RoundedCornerShape(12.dp)
+                                    )
+                                    .padding(horizontal = 20.dp)
+
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.copy_icon),
+                                    contentDescription = null
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = "Copy Link",
+                                    textAlign = TextAlign.Center,
+                                    style = TextStyle(
+                                        fontFamily = helveticaFontFamily,
+                                        fontWeight = FontWeight.Normal,
+                                    ), color = Color.Black
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(20.dp))
+
+                            WalletShareButton(
+                                shareLink = walletViewModel.getShareLink(),
+                                bio = walletViewModel.getMyBio()
+                            )
+
+                        }
+
+
+                    }
+
+                }
+            } else {
+                TransactionGroup(listOfTransactions)
+            }
+
         }
     }
 }
 
 @Composable
-fun TransactionGroup(transactions: List<Transaction>?){
+fun WalletShareButton(shareLink: String, bio: String) {
+    var sharingContent =
+        "Hi 👋\n\nYou can use the below link to consult with me through Video Call, Audio Call or Chat. \n\nLink: $shareLink\n\n"
+
+    if (bio.isNotEmpty()) {
+        sharingContent += "About me: $bio"
+    }
+
+    val launcher =
+        rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+
+            }
+
+        }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .height(48.dp)
+            .clip(shape = RoundedCornerShape(12.dp))
+            .clickable {
+                val sendIntent: Intent = Intent().apply {
+                    action = Intent.ACTION_SEND
+                    putExtra(
+                        Intent.EXTRA_TEXT, sharingContent
+                    )
+                    type = "text/plain"
+                }
+                val shareIntent = Intent.createChooser(sendIntent, null)
+                launcher.launch(shareIntent)
+            }
+            .background(
+                color = Color.White,
+                shape = RoundedCornerShape(12.dp)
+            )
+            .border(
+                width = 1.dp,
+                color = BorderColor,
+                shape = RoundedCornerShape(12.dp)
+            )
+            .padding(horizontal = 20.dp)
+
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.baseline_share_24),
+            contentDescription = null,
+            tint = Color.Black,
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(modifier = Modifier.width(10.dp))
+        Text(
+            text = "Share Link",
+            textAlign = TextAlign.Center,
+            style = TextStyle(
+                fontFamily = helveticaFontFamily,
+                fontWeight = FontWeight.Normal,
+            ), color = Color.Black
+        )
+    }
+}
+
+
+@Composable
+fun TransactionGroup(transactions: List<Transaction>?) {
 
     val groupedTransaction = transactions?.groupByDate()?.sortedByDescending {
         it.date
@@ -237,9 +421,9 @@ fun TransactionGroup(transactions: List<Transaction>?){
 
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(12.dp)
-    ){
+    ) {
         groupedTransaction?.size?.let {
-            items(it){
+            items(it) {
                 TransactionGroupItem(groupedTransaction[it])
             }
         }
@@ -248,7 +432,7 @@ fun TransactionGroup(transactions: List<Transaction>?){
 }
 
 @Composable
-fun TransactionGroupItem(transactionGroup: TransactionGroup){
+fun TransactionGroupItem(transactionGroup: TransactionGroup) {
 
 //  val date = transactionGroup.date?.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))
 
@@ -307,11 +491,14 @@ fun TransactionGroupItem(transactionGroup: TransactionGroup){
         ) {
             transactionGroup.date?.let {
                 Text(
-                    text = it.format(DateTimeFormatter.ofPattern("dd MMMM yyyy")),
+                    text = it.format(DateTimeFormatter.ofPattern("dd MMM yyyy")),
                     style = TextStyle(
-                        fontWeight = FontWeight.Light,
-                        fontSize = 16.sp,
-                    )
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 14.sp,
+                        fontFamily = helveticaFontFamily
+                    ),
+                    color = SecondaryText,
+                    modifier = Modifier.padding(start = 8.dp, top = 8.dp)
                 )
             }
 
@@ -346,56 +533,97 @@ fun TransactionItem(transaction: Transaction, isLastInGroup: Boolean) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Transaction Icon
-        Image(
-            painter = painterResource(id = imageRes),
-            contentDescription = "Transaction Icon",
-            modifier = Modifier
-                .size(45.dp)
-                .padding(end = 8.dp)
-        )
+        Column {
+            Row {
+                Image(
+                    painter = painterResource(id = imageRes),
+                    contentDescription = "Transaction Icon",
+                    modifier = Modifier
+                        .size(45.dp)
+                        .padding(end = 10.dp)
+                )
 
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column(modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)) {
-                    Text("Transaction ID:\n ${transaction._id}", fontWeight = FontWeight.SemiBold)
-                    Text(text = createdAtTime, fontSize = 14.sp)
-                }
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.TopEnd
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+//                        .weight(1f)
+                        ) {
+                            Row {
+                                Text(
+                                    "Transaction ID ",
+                                    fontWeight = FontWeight.Normal,
+                                    fontFamily = helveticaFontFamily,
+                                    fontSize = 14.sp
+                                )
+                                Text(
+                                    "${transaction._id.take(10)}..",
+                                    fontWeight = FontWeight.Normal,
+                                    fontFamily = helveticaFontFamily,
+                                    fontSize = 14.sp
+                                )
 
-                // Amount with Negative Sign if applicable
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (transaction.type.equals("debit")) {
-                        Text(
-                            text = "-",
-                            color = Color.Red,
-                            fontWeight = FontWeight.Bold,
-                            style = TextStyle(fontSize = 18.sp),
-                            modifier = Modifier.padding(end = 4.dp)
-                        )
+                            }
+                            val context = LocalContext.current
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(text = createdAtTime, fontSize = 12.sp, color = SecondaryText)
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Icon(
+                                    painter = painterResource(id = R.drawable.copy_icon),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(14.dp)
+                                        .clickable {
+                                            copyToClipboard(context, "${transaction}")
+                                            Toast
+                                                .makeText(context, "Copied", Toast.LENGTH_SHORT)
+                                                .show()
+                                        })
+                            }
+
+                        }
+
+                        // Amount with Negative Sign if applicable
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(end = 5.dp)
+                        ) {
+                            if (transaction.type.equals("debit")) {
+                                Text(
+                                    text = "-",
+                                    color = Color.Red,
+                                    fontWeight = FontWeight.Bold,
+                                    style = TextStyle(fontSize = 18.sp),
+                                    modifier = Modifier.padding(end = 4.dp)
+                                )
+                            }
+
+                            Text(
+                                text = "+₹${"%.2f".format(displayAmount)}",
+                                color = amountColor,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+
                     }
 
-                    Text(
-                        text = "+₹${"%.2f".format(displayAmount)}",
-                        color = amountColor,
-                        fontWeight = FontWeight.Bold
-                    )
+
                 }
             }
-
             if (!isLastInGroup) {
                 Divider(
                     color = Color.LightGray,
                     thickness = 1.dp,
-                    modifier = Modifier.padding(vertical = 12.dp)
+                    modifier = Modifier.padding(vertical = 10.dp, horizontal = 5.dp)
                 )
             }
         }
+
     }
 }
 

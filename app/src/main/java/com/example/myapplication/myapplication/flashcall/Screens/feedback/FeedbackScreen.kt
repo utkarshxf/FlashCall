@@ -43,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -51,6 +52,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.myapplication.myapplication.flashcall.Data.model.feedback.UpdateFeedback
 import com.example.myapplication.myapplication.flashcall.Data.model.userFeedbacks.Feedback
@@ -61,8 +63,11 @@ import com.example.myapplication.myapplication.flashcall.ViewModel.feedback.Feed
 import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.ProfileBackground
 import com.example.myapplication.myapplication.flashcall.ui.theme.RatingColor
-import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
+import com.example.myapplication.myapplication.flashcall.ui.theme.helveticaFontFamily
+import com.example.myapplication.myapplication.flashcall.utils.LoadingIndicator
+import com.example.myapplication.myapplication.flashcall.utils.dragAndDrop.FeedbackDragDropList
 import com.jetpack.draganddroplist.move
+//import com.jetpack.draganddroplist.move
 import java.time.ZonedDateTime
 import java.util.Date
 
@@ -96,7 +101,9 @@ fun FeedbackScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 30.dp)
                 ) {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
@@ -117,12 +124,25 @@ fun FeedbackScreen(
             ) {
                 Text(
                     text = "User's Feedbacks", style = TextStyle(
-                        fontFamily = arimoFontFamily, fontSize = 24.sp, fontWeight = FontWeight.Bold
+                        fontFamily = helveticaFontFamily, fontSize = 24.sp, fontWeight = FontWeight.Bold
                     )
                 )
             }
 
             Spacer(modifier = Modifier.height(30.dp))
+
+//            val configuration = LocalConfiguration.current
+//            val screenHeight = configuration.screenHeightDp.dp
+//            val screenWidth = configuration.screenWidthDp.dp
+//            Log.d("maxHeightAndWidth","height: $screenHeight, width: $screenWidth")
+
+
+            if(feedbackViewModel.userFeedbackState.isLoading){
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    LoadingIndicator()
+                }
+            }
+
 
             // Check if feedbacks are available
             if (feedbacks?.feedbacks?.isEmpty() != null && feedbacks.feedbacks?.isEmpty()!!) {
@@ -135,29 +155,41 @@ fun FeedbackScreen(
 //                        onMove = { fromIndex, toIndex -> feedbacks.feedbacks?.move(fromIndex, toIndex)})
 //                }
 
+                FeedbackDragDropList(
+                    items = feedbackViewModel.originalFeedbackList,
+                    onMove = { fromIndex, toIndex -> feedbackViewModel.originalFeedbackList.move(fromIndex, toIndex)},
+                    viewModel = feedbackViewModel)
+                
                 if(feedbacks?.feedbacks != null){
-                    LazyColumn(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(feedbacks.feedbacks!!) { feedbackResponse ->
-                            feedbackResponse.feedbacks?.forEach { feedback ->
-                                FeedbackListUtil(feedback) {
-                                    feedbackViewModel.updateFeedback(
-                                        UpdateFeedback(
-                                            clientId = feedback.clientId?.id,
-                                            createdAt = feedback.createdAt,
-                                            creatorId = feedbackResponse.creatorId,
-                                            feedbackText = feedback.feedback,
-                                            rating = feedback.rating,
-                                            showFeedback = it
-                                        )
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(12.dp))
-                            }
-                        }
-                    }
+
+
+                    FeedbackDragDropList(
+                        items = feedbackViewModel.originalFeedbackList,
+                        onMove = { fromIndex, toIndex -> feedbackViewModel.originalFeedbackList.move(fromIndex, toIndex)},
+                        viewModel = feedbackViewModel)
+
+//                    LazyColumn(
+//                        modifier = Modifier.fillMaxWidth(),
+//                        verticalArrangement = Arrangement.spacedBy(12.dp)
+//                    ) {
+//                        items(feedbacks.feedbacks!!) { feedbackResponse ->
+//                            feedbackResponse.feedbacks?.forEach { feedback ->
+//                                FeedbackListUtil(feedback) {
+//                                    feedbackViewModel.updateFeedback(
+//                                        UpdateFeedback(
+//                                            clientId = feedback.clientId?.id,
+//                                            createdAt = feedback.createdAt,
+//                                            creatorId = feedbackResponse.creatorId,
+//                                            feedbackText = feedback.feedback,
+//                                            rating = feedback.rating,
+//                                            showFeedback = it
+//                                        )
+//                                    )
+//                                }
+//                                Spacer(modifier = Modifier.height(12.dp))
+//                            }
+//                        }
+//                    }
                 }
 
             }
@@ -175,7 +207,7 @@ fun FeedbackListUtil(feedback: FeedbackX, toggle: (Boolean) -> Unit = {}) {
             .fillMaxWidth()
             .wrapContentHeight()
             .border(1.dp, Color.Black, shape = RoundedCornerShape(12.dp))
-            .background(Color.White)
+            .background(Color.White, shape = RoundedCornerShape(12.dp))
             .clip(RoundedCornerShape(12.dp)),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
@@ -198,7 +230,7 @@ fun FeedbackListUtil(feedback: FeedbackX, toggle: (Boolean) -> Unit = {}) {
                     Text(
                         text = feedback.clientId?.phone ?: feedback.clientId?.username
                         ?: "Unknown User", style = TextStyle(
-                            fontFamily = arimoFontFamily,
+                            fontFamily = helveticaFontFamily,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
                         )

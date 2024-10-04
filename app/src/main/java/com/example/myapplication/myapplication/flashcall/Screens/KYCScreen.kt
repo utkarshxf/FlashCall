@@ -78,18 +78,11 @@ import com.composeuisuite.ohteepee.configuration.OhTeePeeCellConfiguration
 import com.composeuisuite.ohteepee.configuration.OhTeePeeConfigurations
 import com.example.myapplication.myapplication.flashcall.R
 import com.example.myapplication.myapplication.flashcall.ViewModel.KycViewModel
-import com.example.myapplication.myapplication.flashcall.ui.theme.BorderColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.OTPBackground
 import com.example.myapplication.myapplication.flashcall.ui.theme.OTPBorder
 import com.example.myapplication.myapplication.flashcall.ui.theme.ProfileBackground
-import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
 import com.example.myapplication.myapplication.flashcall.utils.LoadingIndicator
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberPermissionState
-import java.io.File
-import java.time.LocalDateTime
-import androidx.camera.core.Preview
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -97,6 +90,7 @@ import androidx.compose.ui.layout.ContentScale
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
+import com.example.myapplication.myapplication.flashcall.ui.theme.helveticaFontFamily
 import com.example.myapplication.myapplication.flashcall.utils.getVerificationId
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.shouldShowRationale
@@ -123,7 +117,7 @@ fun KYCScreen(
                 .padding(start = 16.dp, end = 16.dp)
                 .verticalScroll(rememberScrollState()),
 
-        ) {
+            ) {
             IconButton(onClick = { navController.popBackStack() }) {
                 Icon(
                     Icons.Default.KeyboardArrowLeft,
@@ -136,7 +130,7 @@ fun KYCScreen(
             Text(
                 text = "KYC Documents",
                 style = TextStyle(
-                    fontFamily = arimoFontFamily,
+                    fontFamily = helveticaFontFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
                     color = Color.Black
@@ -153,12 +147,21 @@ fun KYCScreen(
             val panState = viewModel.panState
             val aadharState = viewModel.aadharState
             val livelinessState = viewModel.livelinessState
-            if(panState.isPanVerified && aadharState.isAadharVerified && livelinessState.isLivelinessVerified){
+            if (panState.isPanVerified && aadharState.isAadharVerified && livelinessState.isLivelinessVerified) {
                 viewModel.makeKycDone(isDone = true)
-                Row (modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 15.dp), horizontalArrangement = Arrangement.Center){
-                    Text("KYC Completed", color = MainColor, textAlign = TextAlign.Center, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 15.dp), horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "KYC Completed",
+                        color = MainColor,
+                        textAlign = TextAlign.Center,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = helveticaFontFamily
+                    )
                 }
 
             }
@@ -186,9 +189,14 @@ fun PanKYC(vm: KycViewModel) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = "PAN", fontWeight = FontWeight.Medium, fontSize = 16.sp)
+                Text(
+                    text = "PAN",
+                    fontFamily = helveticaFontFamily,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 16.sp
+                )
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    if(panState.isPanVerified){
+                    if (panState.isPanVerified) {
                         Image(
                             painter = painterResource(id = R.drawable.baseline_verified_24),
                             contentDescription = null,
@@ -197,7 +205,7 @@ fun PanKYC(vm: KycViewModel) {
                                 .height(24.dp)
                                 .width(24.dp)
                         )
-                    }else{
+                    } else {
                         Image(
                             painter = painterResource(id = R.drawable.exclamation1),
                             contentDescription = null,
@@ -221,15 +229,15 @@ fun PanKYC(vm: KycViewModel) {
                 }
             }
 
-            if(!panState.isPanVerified){
-                if (isExpand ) {
+            if (!panState.isPanVerified) {
+                if (isExpand) {
                     Spacer(modifier = Modifier.height(16.dp))
                     var panNumber by remember { mutableStateOf("") }
                     OutlinedTextField(
                         value = panNumber,
                         onValueChange = { panNumber = it.uppercase() },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Enter PAN") },
+                        placeholder = { Text("Enter PAN", fontFamily = helveticaFontFamily) },
                         singleLine = true
                     )
                     Spacer(modifier = Modifier.height(16.dp))
@@ -237,8 +245,8 @@ fun PanKYC(vm: KycViewModel) {
                         LoadingIndicator()
                         Spacer(modifier = Modifier.height(16.dp))
                     }
-                    if(panState.error != null){
-                        ShowError(error = panState.error+"")
+                    if (panState.error != null) {
+                        ShowError(error = panState.error + "")
                     }
 
                     Button(
@@ -247,7 +255,7 @@ fun PanKYC(vm: KycViewModel) {
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text("Verify", color = Color.White)
+                        Text("Verify", color = Color.White, fontFamily = helveticaFontFamily)
                     }
                 }
             }
@@ -257,7 +265,7 @@ fun PanKYC(vm: KycViewModel) {
 }
 
 @Composable
-fun AadharKYC(vm: KycViewModel){
+fun AadharKYC(vm: KycViewModel) {
     var expanded by remember { mutableStateOf(false) }
     val aadharState = vm.aadharState
 
@@ -275,9 +283,14 @@ fun AadharKYC(vm: KycViewModel){
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = "Aadhaar", fontWeight = FontWeight.Medium, fontSize = 16.sp)
+                Text(
+                    text = "Aadhaar",
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 16.sp,
+                    fontFamily = helveticaFontFamily
+                )
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    if(aadharState.isAadharVerified){
+                    if (aadharState.isAadharVerified) {
                         Image(
                             painter = painterResource(id = R.drawable.baseline_verified_24),
                             contentDescription = null,
@@ -286,7 +299,7 @@ fun AadharKYC(vm: KycViewModel){
                                 .height(24.dp)
                                 .width(24.dp)
                         )
-                    }else{
+                    } else {
                         Image(
                             painter = painterResource(id = R.drawable.exclamation1),
                             contentDescription = null,
@@ -296,19 +309,19 @@ fun AadharKYC(vm: KycViewModel){
                         )
                     }
                     Spacer(modifier = Modifier.width(8.dp))
-                    if(!aadharState.isAadharVerified){
+                    if (!aadharState.isAadharVerified) {
                         Icon(
                             if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                             contentDescription = if (expanded) "Collapse" else "Expand",
                             tint = Color.Gray,
                             modifier = Modifier
-                                .clickable(onClick = {expanded = !expanded})
+                                .clickable(onClick = { expanded = !expanded })
                         )
                     }
                 }
             }
 
-            if(!aadharState.isAadharVerified){
+            if (!aadharState.isAadharVerified) {
                 if (expanded) {
                     Spacer(modifier = Modifier.height(16.dp))
                     var aadhaarNumber by remember { mutableStateOf("") }
@@ -320,17 +333,22 @@ fun AadharKYC(vm: KycViewModel){
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number
                         ),
-                        placeholder = { Text("Enter your Aadhaar Number") },
+                        placeholder = {
+                            Text(
+                                "Enter your Aadhaar Number",
+                                fontFamily = helveticaFontFamily
+                            )
+                        },
                         singleLine = true
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    if(aadharState.isLoading){
+                    if (aadharState.isLoading) {
                         LoadingIndicator()
                         Spacer(modifier = Modifier.height(16.dp))
                     }
 
-                    if(aadharState.error != null){
-                        ShowError(error = aadharState.error+"")
+                    if (aadharState.error != null) {
+                        ShowError(error = aadharState.error + "")
                     }
 
                     Button(
@@ -339,7 +357,7 @@ fun AadharKYC(vm: KycViewModel){
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text("Get OTP", color = Color.White)
+                        Text("Get OTP", color = Color.White, fontFamily = helveticaFontFamily)
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -378,7 +396,7 @@ fun AadharKYC(vm: KycViewModel){
                                         textStyle = TextStyle(
                                             color = Color.Black,
                                             fontSize = 16.sp,
-                                            fontFamily = arimoFontFamily,
+                                            fontFamily = helveticaFontFamily,
                                             fontWeight = FontWeight.Bold
                                         )
                                     )
@@ -391,7 +409,10 @@ fun AadharKYC(vm: KycViewModel){
                                                 if (otpValue.length == 6) {
                                                     // Automatically call verifyOTP when otpValue is exactly 6 digits
                                                     keyboardController?.hide()
-                                                    vm.aadharOTPVerification(otpValue, ref_id ?: "ref_id")
+                                                    vm.aadharOTPVerification(
+                                                        otpValue,
+                                                        ref_id ?: "ref_id"
+                                                    )
                                                 }
                                             }
                                         },
@@ -432,7 +453,7 @@ fun AadharKYC(vm: KycViewModel){
                                     textStyle = TextStyle(
                                         color = Color.Black,
                                         fontSize = 16.sp,
-                                        fontFamily = arimoFontFamily,
+                                        fontFamily = helveticaFontFamily,
                                         fontWeight = FontWeight.Bold
                                     )
                                 )
@@ -445,7 +466,10 @@ fun AadharKYC(vm: KycViewModel){
                                             keyboardController?.hide()
                                             if (otpValue.length == 6) {
                                                 // Automatically call verifyOTP when otpValue is exactly 6 digits
-                                                vm.aadharOTPVerification(otpValue, ref_id ?: "ref_id")
+                                                vm.aadharOTPVerification(
+                                                    otpValue,
+                                                    ref_id ?: "ref_id"
+                                                )
                                             }
                                         }
                                     },
@@ -480,11 +504,12 @@ fun AadharKYC(vm: KycViewModel){
 
                     if (otpVerificationState.verified) {
 
-                        Row {
+                        Row(horizontalArrangement = Arrangement.Center) {
 
                             Text(
-                                text = "Aadhar verified Successfully, Thanks",
-                                color = Color.Green
+                                text = "Aadhar verified Successfully",
+                                color = Color.Green,
+                                fontFamily = helveticaFontFamily
                             )
                         }
                     }
@@ -495,7 +520,7 @@ fun AadharKYC(vm: KycViewModel){
 }
 
 @Composable
-fun LivelinessKYC(vm: KycViewModel, navController: NavController){
+fun LivelinessKYC(vm: KycViewModel, navController: NavController) {
     var expanded by remember { mutableStateOf(false) }
     var livelinessState = vm.livelinessState
 
@@ -518,9 +543,14 @@ fun LivelinessKYC(vm: KycViewModel, navController: NavController){
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = "Liveliness Check", fontWeight = FontWeight.Medium, fontSize = 16.sp)
+                Text(
+                    text = "Liveliness Check",
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 16.sp,
+                    fontFamily = helveticaFontFamily
+                )
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    if(livelinessState.isLivelinessVerified){
+                    if (livelinessState.isLivelinessVerified) {
                         Image(
                             painter = painterResource(id = R.drawable.baseline_verified_24),
                             contentDescription = null,
@@ -529,7 +559,7 @@ fun LivelinessKYC(vm: KycViewModel, navController: NavController){
                                 .height(24.dp)
                                 .width(24.dp)
                         )
-                    }else{
+                    } else {
                         Image(
                             painter = painterResource(id = R.drawable.exclamation1),
                             contentDescription = null,
@@ -539,7 +569,7 @@ fun LivelinessKYC(vm: KycViewModel, navController: NavController){
                         )
                     }
                     Spacer(modifier = Modifier.width(8.dp))
-                    if(!livelinessState.isLivelinessVerified){
+                    if (!livelinessState.isLivelinessVerified) {
                         Icon(
                             if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                             contentDescription = if (expanded) "Collapse" else "Expand",
@@ -647,22 +677,23 @@ fun LivelinessKYC(vm: KycViewModel, navController: NavController){
 }
 
 @Composable
-fun ShowError(error: String){
+fun ShowError(error: String) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(text = error, color = Color.Red, fontSize = 12.sp, textAlign = TextAlign.Center)
-        Text(text = "our team will verify the details you have submitted. This usually takes 24 hours", color = Color.Gray, textAlign = TextAlign.Center, fontSize = 12.sp)
+        Text(
+            text = "our team will verify the details you have submitted. This usually takes 24 hours",
+            color = Color.Gray,
+            textAlign = TextAlign.Center,
+            fontSize = 12.sp
+        )
     }
     Spacer(modifier = Modifier.height(16.dp))
 }
 
 
-
-
-
-
 //@Preview
 //@Composable
 //fun KycScreenPreview() {
-    //panVerification(vm)
-    //KYCScreen(navController = rememberNavController())
+//panVerification(vm)
+//KYCScreen(navController = rememberNavController())
 //}
