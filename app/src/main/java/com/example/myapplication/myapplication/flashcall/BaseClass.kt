@@ -6,7 +6,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
 import android.util.Log
-import com.example.myapplication.myapplication.flashcall.utils.CustomNotificationHandler
+import com.example.myapplication.myapplication.flashcall.Screens.callServices.CustomNotificationHandler
 import com.example.myapplication.myapplication.flashcall.utils.PreferencesKey
 import com.example.myapplication.myapplication.flashcall.utils.TimestampConverter
 import com.google.firebase.FirebaseApp
@@ -68,7 +68,6 @@ class BaseClass : Application() {
             Log.e("BaseClass", "Error reading SharedPreferences: ${e.message}")
         }
         // Log retrieved values for debugging
-        Log.d("BaseClass", "userId: $userId, userName: $userName, profileImage: $profileImage")
         try {
             StreamVideoBuilder(
                 context = context,
