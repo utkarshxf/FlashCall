@@ -35,6 +35,7 @@ import com.example.myapplication.myapplication.flashcall.Data.model.livelinessRe
 import com.example.myapplication.myapplication.flashcall.Data.model.paymentSetting.AddBankDetailsRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.paymentSetting.AddUpiRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.paymentSetting.PaymentSettingResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.spacialization.SpacializationResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.todaysWallet.TodaysWalletBalanceResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.userFeedbacks.UserFeedbaks
 import com.example.myapplication.myapplication.flashcall.Data.model.wallet.TransactionsResponse
@@ -219,5 +220,10 @@ interface APIService {
         @Body body: RequestWithdraw
     ): Response<RequestWithdrawResponse>
 
+
+    @GET
+    suspend fun getSpacializations(
+        @Url url: String
+    ): Response<SpacializationResponse>
 
 }

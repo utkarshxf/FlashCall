@@ -17,12 +17,3 @@ fun <T> MutableList<T>.move(from: Int, to: Int) {
     val element = this.removeAt(from) ?: return
     this.add(to, element)
 }
-
-//fun <E> List<E>.move(fromIndex: Int, toIndex: Int) {
-//    if (fromIndex == toIndex)
-//        return
-//
-//    val element = this.removeAt(from) ?: return
-//    val element = this.re
-//    this.add(to, element)
-//}

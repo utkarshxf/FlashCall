@@ -62,7 +62,7 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.BorderColor2
 import com.example.myapplication.myapplication.flashcall.ui.theme.BottomBackground
 import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryText
-import com.example.myapplication.myapplication.flashcall.ui.theme.arimoFontFamily
+import com.example.myapplication.myapplication.flashcall.ui.theme.helveticaFontFamily
 import com.example.myapplication.myapplication.flashcall.utils.LoadingIndicator
 
 @Composable
@@ -124,7 +124,7 @@ fun PaymentSettings(
                     modifier = Modifier.padding(start = 12.dp),
                     text = "Payment Settings",
                     style = TextStyle(
-                        fontFamily = arimoFontFamily,
+                        fontFamily = helveticaFontFamily,
                         fontWeight = FontWeight.Bold,
                         fontSize = 24.sp,
                         color = Color.Black
@@ -231,7 +231,7 @@ fun UpiPaymentBlock(viewModel: PaymentSettingViewModel, upiId: String) {
             Text(
                 text = "UPI ID",
                 style = TextStyle(
-                    fontFamily = arimoFontFamily,
+                    fontFamily = helveticaFontFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
                     color = Color.Black
@@ -257,7 +257,7 @@ fun UpiPaymentBlock(viewModel: PaymentSettingViewModel, upiId: String) {
                         text = "Enter Your UPI ID",
                         color = SecondaryText,
                         style = TextStyle(
-                            fontFamily = arimoFontFamily,
+                            fontFamily = helveticaFontFamily,
                             fontWeight = FontWeight.Bold,
                         )
                     )
@@ -366,7 +366,7 @@ fun BankPaymentBlock(viewModel: PaymentSettingViewModel, acc_num: String, ifsc: 
                 modifier = Modifier.padding(start = 8.dp),
                 text = "Account Number",
                 style = TextStyle(
-                    fontFamily = arimoFontFamily,
+                    fontFamily = helveticaFontFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
                     color = Color.Black
@@ -392,7 +392,7 @@ fun BankPaymentBlock(viewModel: PaymentSettingViewModel, acc_num: String, ifsc: 
                         text = "Enter Your Account Number",
                         color = SecondaryText,
                         style = TextStyle(
-                            fontFamily = arimoFontFamily,
+                            fontFamily = helveticaFontFamily,
                             fontWeight = FontWeight.Bold,
                         )
                     )
@@ -422,7 +422,7 @@ fun BankPaymentBlock(viewModel: PaymentSettingViewModel, acc_num: String, ifsc: 
                 modifier = Modifier.padding(start = 8.dp),
                 text = "IFSC Code",
                 style = TextStyle(
-                    fontFamily = arimoFontFamily,
+                    fontFamily = helveticaFontFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
                     color = Color.Black
@@ -448,7 +448,7 @@ fun BankPaymentBlock(viewModel: PaymentSettingViewModel, acc_num: String, ifsc: 
                         text = "Enter Your IFSC Code",
                         color = SecondaryText,
                         style = TextStyle(
-                            fontFamily = arimoFontFamily,
+                            fontFamily = helveticaFontFamily,
                             fontWeight = FontWeight.Bold,
                         )
                     )

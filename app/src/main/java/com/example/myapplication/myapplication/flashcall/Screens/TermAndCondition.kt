@@ -7,8 +7,13 @@ import android.webkit.ConsoleMessage
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
@@ -17,27 +22,51 @@ import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 @Composable
 fun TermAndCondition(){
     val url = "https://flashcall.me/terms-and-conditions"
+    Column {
+        Spacer(modifier = Modifier.height(40.dp))
 
-    WebView.setWebContentsDebuggingEnabled(true)
+        AndroidView(factory = { context ->
+            WebView(context).apply {
+                webViewClient = WebViewClient()
+                settings.javaScriptEnabled = true
+                settings.domStorageEnabled = true
+                settings.databaseEnabled = true
 
-    AndroidView(factory = { context ->
-        WebView(context).apply {
-            webViewClient = WebViewClient()
-            settings.javaScriptEnabled = true
-            settings.domStorageEnabled = true
-            settings.databaseEnabled = true
-
-            // Enable WebChromeClient to log JavaScript console messages
-            webChromeClient = object : WebChromeClient() {
-                override fun onConsoleMessage(message: ConsoleMessage?): Boolean {
-                    message?.let {
-                        Log.d("WebViewConsole", "${it.message()} -- From line ${it.lineNumber()} of ${it.sourceId()}")
+                // Enable WebChromeClient to log JavaScript console messages
+                webChromeClient = object : WebChromeClient() {
+                    override fun onConsoleMessage(message: ConsoleMessage?): Boolean {
+                        message?.let {
+                            Log.d("WebViewConsole", "${it.message()} -- From line ${it.lineNumber()} of ${it.sourceId()}")
+                        }
+                        return true
                     }
-                    return true
                 }
+                loadUrl(url)
             }
+        })
+    }
 
-            loadUrl(url)
-        }
-    })
+
+//    WebView.setWebContentsDebuggingEnabled(true)
+//
+//    AndroidView(factory = { context ->
+//        WebView(context).apply {
+//            webViewClient = WebViewClient()
+//            settings.javaScriptEnabled = true
+//            settings.domStorageEnabled = true
+//            settings.databaseEnabled = true
+//
+//            // Enable WebChromeClient to log JavaScript console messages
+//            webChromeClient = object : WebChromeClient() {
+//                override fun onConsoleMessage(message: ConsoleMessage?): Boolean {
+//                    message?.let {
+//                        Log.d("WebViewConsole", "${it.message()} -- From line ${it.lineNumber()} of ${it.sourceId()}")
+//                    }
+//                    return true
+//                }
+//            }
+//
+//            loadUrl(url)
+//        }
+//    })
 }

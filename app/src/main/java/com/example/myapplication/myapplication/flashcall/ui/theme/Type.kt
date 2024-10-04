@@ -46,9 +46,8 @@ val arimoFontFamily = FontFamily(
 )
 
 val helveticaFontFamily = FontFamily(
+    Font(R.font.helvetica_light, FontWeight.Light),
+    Font(R.font.helvetica, FontWeight.Normal),
     Font(R.font.helvetica_bold, FontWeight.Bold),
-    Font(R.font.helvetica, FontWeight.Black),
-    Font(R.font.helvetica_bold_oblique, FontWeight.SemiBold),
-    Font(R.font.helvetica_compressed_5871d14b6903a, FontWeight.Light),
-    Font(R.font.helvetica_oblique, FontWeight.Medium),
+    Font(R.font.helvetica_oblique, FontWeight.SemiBold),
 )

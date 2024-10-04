@@ -3,6 +3,7 @@ package com.example.myapplication.myapplication.flashcall.repository
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.example.myapplication.myapplication.flashcall.Data.model.CreateUserResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.IsUserCreatedResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.LinkData
@@ -45,7 +46,7 @@ class UserPreferencesRepository @Inject constructor(@ApplicationContext private 
     }
 
 
-    fun storeAdditionalLinks(userId: String, additionalLinksList: List<LinkData>?) {
+    fun storeAdditionalLinks(userId: String, additionalLinksList: MutableList<LinkData>?) {
         if(additionalLinksList != null){
             val jsonString = gson.toJson(additionalLinksList)
             sharedPreferences.edit().apply {
@@ -60,7 +61,7 @@ class UserPreferencesRepository @Inject constructor(@ApplicationContext private 
         }
     }
 
-    fun retrieveAdditionalLinks(userId: String): List<LinkData>? {
+    fun retrieveAdditionalLinks(userId: String): SnapshotStateList<LinkData>? {
         val additionalLinksStr = sharedPreferences.getString("additional_links_$userId", "") ?:""
         if(additionalLinksStr.isNotEmpty()){
             return convertingStringIntoList(additionalLinksStr)
@@ -68,10 +69,10 @@ class UserPreferencesRepository @Inject constructor(@ApplicationContext private 
             return null
         }
     }
-    private fun convertingStringIntoList(stringList: String): List<LinkData>? {
+    private fun convertingStringIntoList(stringList: String): SnapshotStateList<LinkData> {
         val gson = Gson()
-        val listType = object : TypeToken<List<LinkData>>() {}.type
-        val list: List<LinkData> = gson.fromJson(stringList, listType)
+        val listType = object : TypeToken<SnapshotStateList<LinkData>>() {}.type
+        val list: SnapshotStateList<LinkData> = gson.fromJson(stringList, listType)
         return list
     }
 

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -20,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.myapplication.flashcall.Data.model.LinkData
 import com.example.myapplication.myapplication.flashcall.Screens.AddedLinkLayout
+import com.example.myapplication.myapplication.flashcall.ViewModel.RegistrationViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -27,14 +29,15 @@ import kotlinx.coroutines.launch
 fun DragDropList(
     items: List<LinkData>,
     onMove: (Int, Int) -> Unit,
-    modifier: Modifier = Modifier
+    viewModel: RegistrationViewModel
 ) {
     val scope = rememberCoroutineScope()
     var overScrollJob by remember { mutableStateOf<Job?>(null) }
     val dragDropListState = rememberDragDropListState(onMove = onMove)
+    val height = items.size * 66
 
     LazyColumn(
-        modifier = modifier
+        modifier = Modifier
             .pointerInput(Unit) {
                 detectDragGesturesAfterLongPress(
                     onDrag = { change, offset ->
@@ -54,12 +57,13 @@ fun DragDropList(
                             } ?: kotlin.run { overScrollJob?.cancel() }
                     },
                     onDragStart = { offset -> dragDropListState.onDragStart(offset) },
-                    onDragEnd = { dragDropListState.onDragInterrupted() },
+                    onDragEnd = { dragDropListState.onDragInterrupted()
+                                viewModel.linksPositionReordered()},
                     onDragCancel = { dragDropListState.onDragInterrupted() }
                 )
             }
-            .fillMaxSize()
-            .padding(top = 10.dp, start = 10.dp, end = 10.dp),
+            .fillMaxWidth()
+            .height(height.dp),
         state = dragDropListState.lazyListState
     ) {
         itemsIndexed(items) { index, item ->
@@ -75,26 +79,15 @@ fun DragDropList(
                     }
                     .background(Color.White, shape = RoundedCornerShape(8.dp))
                     .fillMaxWidth()
-                    .padding(20.dp)
             ) {
-
                 AddedLinkLayout(item = item, isActive = {
-//                    additionalLinksList[i].isActive = !additionalLinksList[i].isActive!!
-//                    viewModel.updateUserLinks(LinkData(additionalLinksList[i].title,
-//                        additionalLinksList[i].url, additionalLinksList[i].isActive))
+                    viewModel.isActiveAdditionalLink(index)
                 }, edit = {
-//                    viewModel.showEditingAdditionalLayout(true, i)
-                }) {
-//                    viewModel.deleteAdditionalLinks(body = additionalLinksList[i])
-                }
-
-//                Text(
-//                    text = item,
-//                    fontSize = 16.sp,
-//                    fontFamily = FontFamily.Serif
-//                )
+                    viewModel.showEditingAdditionalLayout(isShow = true, index = index)
+                }, delete = {
+                    viewModel.deleteAdditionalLinks(item = item)
+                } )
             }
-
             Spacer(modifier = Modifier.height(10.dp))
         }
     }
