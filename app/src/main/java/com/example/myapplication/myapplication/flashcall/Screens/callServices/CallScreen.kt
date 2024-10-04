@@ -272,9 +272,9 @@ fun VideoCallContent(
 
 
 
-@Composable
-private fun SpeakingWhileMuted() {
-    Snackbar {
-        Text(text = "You're talking while muting the microphone!")
-    }
-}
+//@Composable
+//private fun SpeakingWhileMuted() {
+//    Snackbar {
+//        Text(text = "You're talking while muting the microphone!")
+//    }
+//}

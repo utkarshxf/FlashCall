@@ -5,11 +5,15 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -17,17 +21,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import dagger.hilt.android.AndroidEntryPoint
 import io.getstream.video.android.compose.theme.VideoTheme
 import io.getstream.video.android.core.BuildConfig
-import io.getstream.video.android.core.Call
 import io.getstream.video.android.core.StreamVideo
 import io.getstream.video.android.core.notifications.NotificationHandler
 import io.getstream.video.android.model.streamCallId
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -53,13 +57,6 @@ class IncomingCallActivity : ComponentActivity() {
             return
         }
         lifecycleScope.launch {
-//            val streamVideo: StreamVideo = StreamVideo.instance()
-//            streamVideo.state.ringingCall.collectLatest { incomingCall ->
-//                if (incomingCall == null) {
-//                    finish()
-//                    return@collectLatest
-//                }
-//            }
             registerReceiver(callStateReceiver, IntentFilter("ACTION_CALL_ENDED"))
             val call = StreamVideo.instance().call(callId.type, callId.id)
             setContent {
@@ -68,45 +65,53 @@ class IncomingCallActivity : ComponentActivity() {
                 ) {
                     VideoTheme {
                         var showOngoingCall by remember { mutableStateOf(false) }
+                        var permissionsGranted by remember { mutableStateOf(false) }
 
-                        LaunchedEffect(key1 = Unit) {
-                            when (intent.action) {
-                                NotificationHandler.ACTION_ACCEPT_CALL -> {
-                                    if (savedInstanceState == null) {
-                                        call.accept()
-                                        call.join()
-                                        showOngoingCall = true
+                        EnsureVideoCallPermissions {
+                            permissionsGranted = true
+                        }
+
+                        if (permissionsGranted) {
+                            LaunchedEffect(key1 = Unit) {
+                                when (intent.action) {
+                                    NotificationHandler.ACTION_ACCEPT_CALL -> {
+                                        if (savedInstanceState == null) {
+                                            call.accept()
+                                            call.join()
+                                            showOngoingCall = true
+                                        }
                                     }
-                                }
 
-                                NotificationHandler.ACTION_REJECT_CALL -> {
-                                    if (savedInstanceState == null) {
-                                        call.reject()
-                                        finish()
+                                    NotificationHandler.ACTION_REJECT_CALL -> {
+                                        if (savedInstanceState == null) {
+                                            call.reject()
+                                            finish()
+                                        }
                                     }
                                 }
                             }
-                        }
-
-                        if (!showOngoingCall) {
-                            IncomingCallScreen(call = call,
-                                endActivity = { finish() },
-                                onAcceptCall = {
-                                    lifecycleScope.launch {
-                                        call.accept()
-                                        call.join()
-                                        showOngoingCall = true
+                            if (!showOngoingCall) {
+                                IncomingCallScreen(call = call,
+                                    endActivity = { finish() },
+                                    onAcceptCall = {
+                                        lifecycleScope.launch {
+                                            call.accept()
+                                            call.join()
+                                            showOngoingCall = true
+                                        }
+                                    })
+                            } else {
+                                CallScreen(call = call,
+                                    showDebugOptions = BuildConfig.DEBUG,
+                                    onCallDisconnected = { finish() },
+                                    onUserLeaveCall = {
+                                        call.leave()
+                                        finish()
                                     }
-                                })
+                                )
+                            }
                         } else {
-                            CallScreen(call = call,
-                                showDebugOptions = BuildConfig.DEBUG,
-                                onCallDisconnected = { finish() },
-                                onUserLeaveCall = {
-                                    call.leave()
-                                    finish()
-                                }
-                            )
+                            Text("Permissions are required to start the video call.")
                         }
                     }
                 }
@@ -128,25 +133,24 @@ class IncomingCallActivity : ComponentActivity() {
             )
         }
     }
-
-    @OptIn(ExperimentalPermissionsApi::class)
-    @Composable
-    fun EnsureVideoCallPermissions(onPermissionsGranted: () -> Unit) {
-        val permissionsState = rememberMultiplePermissionsState(permissions = buildList {
-            // Access to microphone
-            add(Manifest.permission.CAMERA)
-            add(Manifest.permission.RECORD_AUDIO)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                add(Manifest.permission.FOREGROUND_SERVICE)
-            }
-        })
-        LaunchedEffect(key1 = Unit) {
-            permissionsState.launchMultiplePermissionRequest()
+}
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+fun EnsureVideoCallPermissions(onPermissionsGranted: () -> Unit) {
+    val permissionsState = rememberMultiplePermissionsState(permissions = buildList {
+        // Access to microphone
+        add(Manifest.permission.CAMERA)
+        add(Manifest.permission.RECORD_AUDIO)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            add(Manifest.permission.FOREGROUND_SERVICE)
         }
-        LaunchedEffect(key1 = permissionsState.allPermissionsGranted) {
-            if (permissionsState.allPermissionsGranted) {
-                onPermissionsGranted()
-            }
+    })
+    LaunchedEffect(key1 = Unit) {
+        permissionsState.launchMultiplePermissionRequest()
+    }
+    LaunchedEffect(key1 = permissionsState.allPermissionsGranted) {
+        if (permissionsState.allPermissionsGranted) {
+            onPermissionsGranted()
         }
     }
 }
