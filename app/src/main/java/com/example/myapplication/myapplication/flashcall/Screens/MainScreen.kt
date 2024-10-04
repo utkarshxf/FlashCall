@@ -51,9 +51,9 @@ fun MainScreen(
     val activeVideoCall = videoCallViewModel.state.activeCall
     val context = LocalContext.current
 
-    incomingCall?.let {
-        homeNavController.navigate(ScreenRoutes.IncomingCallScreen.route)
-    }
+//    incomingCall?.let {
+//        homeNavController.navigate(ScreenRoutes.IncomingCallScreen.route)
+//    }
     Scaffold(modifier = Modifier.fillMaxSize(), bottomBar = {
         val screens = listOf(
             ScreenRoutes.WalletScreen,

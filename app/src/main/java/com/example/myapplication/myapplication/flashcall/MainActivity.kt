@@ -39,7 +39,6 @@ import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Screens.CaptureImageScreen
 import com.example.myapplication.myapplication.flashcall.Screens.EditProfileScreen
 import com.example.myapplication.myapplication.flashcall.Screens.HomeScreen
-import com.example.myapplication.myapplication.flashcall.Screens.IncomingCallScreen
 import com.example.myapplication.myapplication.flashcall.Screens.IncomingChatScreen
 import com.example.myapplication.myapplication.flashcall.Screens.KYCScreen
 import com.example.myapplication.myapplication.flashcall.Screens.LoginDoneScreen
@@ -161,7 +160,6 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
     LaunchedEffect(key1 = Unit) {
         val token = authenticationViewModel.getTokenFromPreferences(context)
         if (!token.isNullOrEmpty()) {
-            (context.applicationContext as? BaseClass)?.streamBuilder(context)
             navController.navigate(ScreenRoutes.MainScreen.route) {
                 popUpTo(0) { inclusive = true }
             }
@@ -198,10 +196,6 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
         }
         composable(route = ScreenRoutes.WalletScreen.route) {
             WalletScreen(navController, walletViewModel, authenticationViewModel)
-        }
-
-        composable(route = ScreenRoutes.IncomingAudioCallScreen.route) {
-            IncomingCallScreen(callerName = "Audio Call Screen", navController = navController)
         }
 
         composable(route = ScreenRoutes.MainScreen.route) {

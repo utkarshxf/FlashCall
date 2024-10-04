@@ -513,6 +513,7 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                             unfocusedBorderColor = Color.Transparent,
                             cursorColor = MainColor
                         )
+
                     )
 
 

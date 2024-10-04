@@ -1,7 +1,6 @@
 package com.example.myapplication.myapplication.flashcall
 
 import android.app.Application
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
@@ -43,10 +42,16 @@ class BaseClass : Application() {
             isPersistenceEnabled = true
         }
         FirebaseFirestore.getInstance().firestoreSettings = firestoreSettings
-
+        val sharedPreferences = this.getSharedPreferences("user_prefs1", Context.MODE_PRIVATE)
+        val userId =  sharedPreferences.getString(PreferencesKey.UserId.key, null)
+        userId?.let {
+            streamBuilder(this)
+        }
     }
 
     fun streamBuilder(context: Context) {
+        Log.v("BaseClass", "streamBuilder called")
+        streamRemoveClient()
         val sharedPreferences = context.getSharedPreferences("user_prefs1", Context.MODE_PRIVATE)
         var userId = "user_Id"
         var userName = "Unknown User"
@@ -86,6 +91,7 @@ class BaseClass : Application() {
                     notificationHandler = CustomNotificationHandler(
                         context.applicationContext as Application,
                     ),
+                    requestPermissionOnAppLaunch = { true }
                 )
             ).build()
         } catch (e: Exception) {

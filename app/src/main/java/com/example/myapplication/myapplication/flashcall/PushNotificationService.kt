@@ -22,8 +22,6 @@ class PushNotificationService: FirebaseMessagingService() {
         message.notification?.let {
             // Handle the message
             Log.d("FCM", "Message Notification Body: ${it.body}")
-
-            // Display the notification
             sendNotification(it)
         }
     }
@@ -41,9 +39,16 @@ class PushNotificationService: FirebaseMessagingService() {
         // Create a notification channel (Required for Android 8.0 and above)
         val channelId = "default_channel"
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
-//            .setSmallIcon(R.drawable.ic_notification)  // Your app's notification icon
+            .setSmallIcon(R.drawable.voice1)  // Your app's notification icon
             .setContentTitle(notification.title)
             .setContentText(notification.body)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
+            .setSound(null)
+            .setVibrate(longArrayOf(0))
+            .setLights(0, 0, 0)
+            .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+            .setFullScreenIntent(pendingIntent, true)
             .setAutoCancel(true)  // Dismiss notification after it is clicked
             .setContentIntent(pendingIntent)  // Open app on click
 
