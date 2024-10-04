@@ -7,6 +7,7 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -76,17 +77,6 @@ class CustomNotificationHandler(
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val notificationManager = getSystemService(application , NotificationManager::class.java) as NotificationManager
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH)
-            channel.enableLights(true)
-            channel.lightColor = Color.RED
-            channel.enableVibration(true)
-            channel.vibrationPattern = longArrayOf(0, 500, 1000)
-            notificationManager.createNotificationChannel(channel)
-        }
-
         val builder = NotificationCompat.Builder(application, channelId)
             .setSmallIcon(R.drawable.voice1)
             .setContentTitle("Incoming call")
@@ -99,16 +89,6 @@ class CustomNotificationHandler(
             .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE))
             .setVibrate(longArrayOf(0, 500, 1000))
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .addAction(
-                R.drawable.group99,
-                "Answer",
-                createAnswerIntent(callId)
-            )
-            .addAction(
-                R.drawable.endcall,
-                "Decline",
-                createDeclineIntent(callId)
-            )
 
         val notification = builder.build()
 
@@ -154,6 +134,15 @@ class CustomNotificationHandler(
     }
     @SuppressLint("MissingPermission")
     override fun onMissedCall(callId: StreamCallId, callDisplayName: String) {
+        Log.d("CustomNotificationHandler", "onMissedCall triggered for $callId")
+
+        // Cancel the ringing notification
+        notificationManager.cancel(callId.hashCode())
+
+        // Send broadcast to finish IncomingCallActivity
+        val intent = Intent("ACTION_CALL_ENDED")
+        application.sendBroadcast(intent)
+
         val notification = NotificationCompat.Builder(application, getChannelId())
             .setSmallIcon(R.drawable.vector)
             .setContentIntent(buildContentIntent())
