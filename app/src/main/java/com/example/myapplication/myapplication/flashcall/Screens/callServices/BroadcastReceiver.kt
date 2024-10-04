@@ -1,4 +1,4 @@
-package com.example.myapplication.myapplication.flashcall.Screens.notification
+package com.example.myapplication.myapplication.flashcall.Screens.callServices
 
 import android.app.NotificationManager
 import android.content.BroadcastReceiver
@@ -22,7 +22,7 @@ class AnswerCallReceiver : BroadcastReceiver() {
         val ongoingCallIntent = Intent(context, IncomingCallActivity::class.java).apply {
             putExtra(NotificationHandler.INTENT_EXTRA_CALL_CID, callId)
             putExtra("NAVIGATE_TO_ONGOING_CALL", true)
-//            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
         context.startActivity(ongoingCallIntent)
         // Dismiss the notification

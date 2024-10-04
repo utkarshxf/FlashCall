@@ -1,4 +1,4 @@
-package com.example.myapplication.myapplication.flashcall.utils
+package com.example.myapplication.myapplication.flashcall.Screens.callServices
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -7,7 +7,6 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -20,9 +19,6 @@ import androidx.core.content.ContextCompat.getSystemService
 import com.example.myapplication.myapplication.flashcall.BaseClass
 import com.example.myapplication.myapplication.flashcall.MainActivity
 import com.example.myapplication.myapplication.flashcall.R
-import com.example.myapplication.myapplication.flashcall.Screens.notification.AnswerCallReceiver
-import com.example.myapplication.myapplication.flashcall.Screens.notification.DeclineCallReceiver
-import com.example.myapplication.myapplication.flashcall.Screens.notification.IncomingCallActivity
 import io.getstream.video.android.core.notifications.DefaultNotificationHandler
 import io.getstream.video.android.core.notifications.NotificationHandler
 import io.getstream.video.android.model.StreamCallId

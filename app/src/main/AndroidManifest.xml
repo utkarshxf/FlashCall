@@ -28,8 +28,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.App.Starting"
         tools:targetApi="31">
-        <receiver android:name=".Screens.notification.AnswerCallReceiver" />
-        <receiver android:name=".Screens.notification.DeclineCallReceiver" />
+        <receiver android:name=".Screens.callServices.AnswerCallReceiver" />
+        <receiver android:name=".Screens.callServices.DeclineCallReceiver" />
         <activity
             android:name=".kyc_package.KycActivity"
             android:exported="false"
@@ -49,7 +49,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".Screens.notification.IncomingCallActivity"
+            android:name=".Screens.callServices.IncomingCallActivity"
             android:exported="false"
             android:showOnLockScreen="true"
             android:showWhenLocked="true"
@@ -69,7 +69,7 @@
         </activity>
 
         <activity
-            android:name=".Screens.notification.OngoingCallActivity"
+            android:name=".Screens.callServices.OngoingCallActivity"
             android:exported="false"
             android:launchMode="singleTask">
             <intent-filter android:priority="1">
