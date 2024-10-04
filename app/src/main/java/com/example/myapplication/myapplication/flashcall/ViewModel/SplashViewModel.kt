@@ -33,7 +33,7 @@ class SplashViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            delay(3000)
+            delay(1000)
             _isReady.value = true
             try{
                     userToken.stateIn(
