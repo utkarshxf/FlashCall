@@ -55,8 +55,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.myapplication.myapplication.flashcall.Data.model.feedback.UpdateFeedback
-import com.example.myapplication.myapplication.flashcall.Data.model.userFeedbacks.Feedback
-import com.example.myapplication.myapplication.flashcall.Data.model.userFeedbacks.FeedbackX
+import com.example.myapplication.myapplication.flashcall.Data.model.userFeedbacks.FeedbackItem
+import com.example.myapplication.myapplication.flashcall.Data.model.userFeedbacks.FeedbackResponseItem
 import com.example.myapplication.myapplication.flashcall.R
 import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.feedback.FeedbackViewModel
@@ -93,7 +93,7 @@ fun FeedbackScreen(
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .padding(12.dp),
         ) {
 
@@ -145,23 +145,20 @@ fun FeedbackScreen(
 
 
             // Check if feedbacks are available
-            if (feedbacks?.feedbacks?.isEmpty() != null && feedbacks.feedbacks?.isEmpty()!!) {
+            if (feedbacks == null || feedbacks.isEmpty()) {
                 Text("No feedbacks available")
             } else {
-
-
 //                feedbacks?.feedbacks?.let {
 //                    DragDropFeedbackList(feedbacks = it,
 //                        onMove = { fromIndex, toIndex -> feedbacks.feedbacks?.move(fromIndex, toIndex)})
 //                }
 
-                FeedbackDragDropList(
-                    items = feedbackViewModel.originalFeedbackList,
-                    onMove = { fromIndex, toIndex -> feedbackViewModel.originalFeedbackList.move(fromIndex, toIndex)},
-                    viewModel = feedbackViewModel)
+//                FeedbackDragDropList(
+//                    items = feedbackViewModel.originalFeedbackList,
+//                    onMove = { fromIndex, toIndex -> feedbackViewModel.originalFeedbackList.move(fromIndex, toIndex)},
+//                    viewModel = feedbackViewModel)
                 
-                if(feedbacks?.feedbacks != null){
-
+//                if(feedbacks.isNotEmpty()){
 
                     FeedbackDragDropList(
                         items = feedbackViewModel.originalFeedbackList,
@@ -190,7 +187,7 @@ fun FeedbackScreen(
 //                            }
 //                        }
 //                    }
-                }
+//                }
 
             }
         }
@@ -199,7 +196,7 @@ fun FeedbackScreen(
 
 
 @Composable
-fun FeedbackListUtil(feedback: FeedbackX, toggle: (Boolean) -> Unit = {}) {
+fun FeedbackListUtil(feedback: FeedbackItem, toggle: (Boolean) -> Unit = {}) {
     var isChecked by remember { mutableStateOf(feedback.showFeedback ?: false) }
     var isExpanded by remember { mutableStateOf(false) }
     Card(

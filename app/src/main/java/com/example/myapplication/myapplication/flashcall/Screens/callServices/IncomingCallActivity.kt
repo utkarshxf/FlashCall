@@ -18,6 +18,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -93,6 +95,7 @@ class IncomingCallActivity : ComponentActivity() {
                                         call.leave()
                                         showOngoingCall = false
                                     }
+                                    NotificationManagerCompat.from(this@IncomingCallActivity).cancel(callId.hashCode())
                                     finishAndRemoveTask()
                                 }, onAcceptCall = {
                                     lifecycleScope.launch {

@@ -5,6 +5,7 @@ import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -26,7 +27,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.myapplication.flashcall.Data.model.LinkData
 import com.example.myapplication.myapplication.flashcall.Data.model.feedback.UpdateFeedback
-import com.example.myapplication.myapplication.flashcall.Data.model.userFeedbacks.Feedback
+import com.example.myapplication.myapplication.flashcall.Data.model.userFeedbacks.FeedbackResponseItem
 import com.example.myapplication.myapplication.flashcall.Screens.AddedLinkLayout
 import com.example.myapplication.myapplication.flashcall.Screens.feedback.FeedbackListUtil
 import com.example.myapplication.myapplication.flashcall.ViewModel.RegistrationViewModel
@@ -38,14 +39,13 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun FeedbackDragDropList(
-    items: List<Feedback>,
+    items: List<FeedbackResponseItem>,
     onMove: (Int, Int) -> Unit,
     viewModel: FeedbackViewModel
 ) {
     val scope = rememberCoroutineScope()
     var overScrollJob by remember { mutableStateOf<Job?>(null) }
     val dragDropListState = rememberDragDropListState(onMove = onMove)
-    val height = items.size * 66
 
     LazyColumn(
         modifier = Modifier
@@ -72,8 +72,7 @@ fun FeedbackDragDropList(
                     onDragCancel = { dragDropListState.onDragInterrupted() }
                 )
             }
-            .fillMaxWidth()
-            .height(height.dp),
+            .fillMaxSize(),
         state = dragDropListState.lazyListState
     ) {
         itemsIndexed(items) { index, feedbackResponse ->
@@ -90,21 +89,21 @@ fun FeedbackDragDropList(
                     .fillMaxWidth()
             ) {
 
-                feedbackResponse.feedbacks?.forEach { feedback ->
-                    FeedbackListUtil(feedback) {
+                feedbackResponse.feedback?.let {
+                    FeedbackListUtil(it) {
                         viewModel.updateFeedback(
                             UpdateFeedback(
-                                clientId = feedback.clientId?.id,
-                                createdAt = feedback.createdAt,
+                                clientId = feedbackResponse.feedback.clientId?._id,
+                                createdAt = feedbackResponse.feedback.createdAt,
                                 creatorId = feedbackResponse.creatorId,
-                                feedbackText = feedback.feedback,
-                                rating = feedback.rating,
+                                feedbackText = feedbackResponse.feedback.feedback,
+                                rating = feedbackResponse.feedback.rating,
                                 showFeedback = it
                             )
                         )
                     }
-                    Spacer(modifier = Modifier.height(10.dp))
                 }
+                Spacer(modifier = Modifier.height(10.dp))
             }
         }
     }
