@@ -35,7 +35,7 @@ class CustomNotificationHandler(
 
     init {
         Log.v("CustomNotificationHandler", "CustomNotificationHandler initialized")
-        setupNotificationChannel()
+        //setupNotificationChannel()
     }
 
     override fun getChannelId(): String {
@@ -90,6 +90,7 @@ class CustomNotificationHandler(
             .setVibrate(longArrayOf(0, 500, 1000))
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
 
+
         val notification = builder.build()
 
         if (ActivityCompat.checkSelfPermission(
@@ -132,6 +133,7 @@ class CustomNotificationHandler(
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
     }
+
     @SuppressLint("MissingPermission")
     override fun onMissedCall(callId: StreamCallId, callDisplayName: String) {
         Log.d("CustomNotificationHandler", "onMissedCall triggered for $callId")
