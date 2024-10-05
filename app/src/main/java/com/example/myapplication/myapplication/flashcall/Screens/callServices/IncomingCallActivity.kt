@@ -72,7 +72,6 @@ class IncomingCallActivity : ComponentActivity() {
                                 when (intent.action) {
                                     NotificationHandler.ACTION_ACCEPT_CALL -> {
                                         if (savedInstanceState == null) {
-                                            call.accept()
                                             call.join()
                                             showOngoingCall = true
                                         }
@@ -96,7 +95,6 @@ class IncomingCallActivity : ComponentActivity() {
                                     finishAndRemoveTask()
                                 }, onAcceptCall = {
                                     lifecycleScope.launch {
-                                        call.accept()
                                         call.join()
                                         showOngoingCall = true
                                     }
