@@ -340,7 +340,8 @@ fun WalletScreen(
                     }
 
                 }
-            } else {
+            }
+            else {
                 TransactionGroup(listOfTransactions)
             }
 

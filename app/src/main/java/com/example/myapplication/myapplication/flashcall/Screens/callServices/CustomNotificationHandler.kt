@@ -35,7 +35,7 @@ class CustomNotificationHandler(
 
     init {
         Log.v("CustomNotificationHandler", "CustomNotificationHandler initialized")
-        setupNotificationChannel()
+        //setupNotificationChannel()
     }
 
     override fun getChannelId(): String {
@@ -86,9 +86,10 @@ class CustomNotificationHandler(
             .setFullScreenIntent(fullScreenPendingIntent, true)
             .setOngoing(true)
             .setAutoCancel(true)
-            .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE))
+            .setSound(RingtoneManager.getDefaultUri(R.raw.call_incoming_sound))
             .setVibrate(longArrayOf(0, 500, 1000))
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+
 
         val notification = builder.build()
 
@@ -97,7 +98,8 @@ class CustomNotificationHandler(
                 Manifest.permission.POST_NOTIFICATIONS
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            notificationManager.notify(callId.hashCode(), notification)
+            Log.v("qwerty00" , callId.hashCode().toString())
+            notificationManager.notify( callId.hashCode(), notification)
         } else {
             Log.w("CustomNotificationHandler", "POST_NOTIFICATIONS permission not granted")
         }
@@ -132,6 +134,7 @@ class CustomNotificationHandler(
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
     }
+
     @SuppressLint("MissingPermission")
     override fun onMissedCall(callId: StreamCallId, callDisplayName: String) {
         Log.d("CustomNotificationHandler", "onMissedCall triggered for $callId")

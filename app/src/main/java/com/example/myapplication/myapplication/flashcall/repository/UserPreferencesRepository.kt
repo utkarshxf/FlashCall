@@ -9,6 +9,7 @@ import com.example.myapplication.myapplication.flashcall.Data.model.IsUserCreate
 import com.example.myapplication.myapplication.flashcall.Data.model.LinkData
 import com.example.myapplication.myapplication.flashcall.Data.model.UpdateUserResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.paymentSetting.LocalPaymentSetting
+import com.example.myapplication.myapplication.flashcall.Data.model.userFeedbacks.FeedbackResponseItem
 import com.example.myapplication.myapplication.flashcall.Data.model.wallet.Transaction
 import com.example.myapplication.myapplication.flashcall.Data.model.wallet.TransactionGroup
 import com.example.myapplication.myapplication.flashcall.Data.model.wallet.TransactionsResponse
@@ -45,6 +46,29 @@ class UserPreferencesRepository @Inject constructor(@ApplicationContext private 
         }
     }
 
+    fun saveUserFeedbacks(userId: String,list: List<FeedbackResponseItem>?){
+        if(list != null){
+            val jsonString = gson.toJson(list)
+            sharedPreferences.edit().apply {
+                putString("user_feedbacks_$userId", jsonString)
+                apply()
+            }
+        }else{
+            sharedPreferences.edit().apply {
+                putString("user_feedbacks_$userId", "")
+                apply()
+            }
+        }
+    }
+    fun getUserFeedbacks(userId: String): List<FeedbackResponseItem>?{
+        val feedbacksStr = sharedPreferences.getString("user_feedbacks_$userId", "") ?:""
+        if(feedbacksStr.isNotEmpty()){
+            return convertingStringIntoFeedbackList(feedbacksStr)
+        }else{
+            return null
+        }
+    }
+
 
     fun storeAdditionalLinks(userId: String, additionalLinksList: MutableList<LinkData>?) {
         if(additionalLinksList != null){
@@ -73,6 +97,14 @@ class UserPreferencesRepository @Inject constructor(@ApplicationContext private 
         val gson = Gson()
         val listType = object : TypeToken<SnapshotStateList<LinkData>>() {}.type
         val list: SnapshotStateList<LinkData> = gson.fromJson(stringList, listType)
+        return list
+    }
+
+
+    private fun convertingStringIntoFeedbackList(stringList: String): List<FeedbackResponseItem> {
+        val gson = Gson()
+        val listType = object : TypeToken<List<FeedbackResponseItem>>() {}.type
+        val list: List<FeedbackResponseItem> = gson.fromJson(stringList, listType)
         return list
     }
 

@@ -35,7 +35,6 @@ class WalletViewModel @Inject constructor(
         viewModelScope.launch {
             val localTransactions = getLocalTransactions(uid)
             _transactions.value = localTransactions
-
             try {
                 walletRepo.getTransactions("https://flashcall.vercel.app/api/v1/transaction/getUserTransactions?userId=$uid").collect {
                     _transactions.value = it

@@ -24,6 +24,7 @@ import io.getstream.video.android.core.logging.LoggingLevel
 import io.getstream.video.android.model.User
 import io.getstream.log.Priority
 import io.getstream.video.android.core.notifications.NotificationConfig
+import io.getstream.video.android.core.sounds.Sounds
 
 @HiltAndroidApp
 class BaseClass : Application() {
@@ -91,7 +92,8 @@ class BaseClass : Application() {
                         context.applicationContext as Application,
                     ),
                     requestPermissionOnAppLaunch = { true }
-                )
+                ),
+                sounds = Sounds()
             ).build()
         } catch (e: Exception) {
             Log.e("BaseClass", "Error initializing StreamVideo: ${e.message}")

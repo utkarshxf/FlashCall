@@ -4,7 +4,7 @@ import android.util.Log
 import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.ValidateResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.feedback.UpdateFeedback
 import com.example.myapplication.myapplication.flashcall.Data.model.feedback.UpdateFeedbackResponse
-import com.example.myapplication.myapplication.flashcall.Data.model.userFeedbacks.UserFeedbaks
+import com.example.myapplication.myapplication.flashcall.Data.model.userFeedbacks.FeedbackResponseItem
 import com.example.myapplication.myapplication.flashcall.Data.network.APIService
 import com.example.myapplication.myapplication.flashcall.utils.SafeApiRequest
 import kotlinx.coroutines.Dispatchers
@@ -15,7 +15,7 @@ import javax.inject.Inject
 
 class FeedbackRepo @Inject constructor(private val apiService: APIService) : IFeedbackRepo,SafeApiRequest() {
 
-    override suspend fun getFeedbacks(url: String): Flow<UserFeedbaks> {
+    override suspend fun getFeedbacks(url: String): Flow<List<FeedbackResponseItem>> {
 
         return flow {
 //            https://app.flashcall.me/api/v1/feedback/creator/selected?creatorId
@@ -26,7 +26,7 @@ class FeedbackRepo @Inject constructor(private val apiService: APIService) : IFe
 
     override suspend fun updateFeedback(url: String, updateFeedback: UpdateFeedback): Flow<UpdateFeedbackResponse> {
         return flow {
-            val response = apiService.updateFeedback("https://flashcall.me/api/v1/feedback/creator/setFeedback", updateFeedback)
+            val response = apiService.updateFeedback(url = url, updateFeedback)
             emit(safeApiRequest { response } )
         }.flowOn(Dispatchers.IO)
     }

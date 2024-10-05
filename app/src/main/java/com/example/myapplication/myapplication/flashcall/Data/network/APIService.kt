@@ -37,7 +37,7 @@ import com.example.myapplication.myapplication.flashcall.Data.model.paymentSetti
 import com.example.myapplication.myapplication.flashcall.Data.model.paymentSetting.PaymentSettingResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.spacialization.SpacializationResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.todaysWallet.TodaysWalletBalanceResponse
-import com.example.myapplication.myapplication.flashcall.Data.model.userFeedbacks.UserFeedbaks
+import com.example.myapplication.myapplication.flashcall.Data.model.userFeedbacks.FeedbackResponseItem
 import com.example.myapplication.myapplication.flashcall.Data.model.wallet.TransactionsResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.wallet.UserId
 import okhttp3.MultipartBody
@@ -92,7 +92,7 @@ interface APIService {
     @GET
     suspend fun getFeedbacks(
         @Url url:String
-    ) :Response <UserFeedbaks>
+    ) :Response <ArrayList<FeedbackResponseItem>>
 
     @POST
     suspend fun updateFeedback(
