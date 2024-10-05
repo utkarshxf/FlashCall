@@ -98,7 +98,8 @@ class CustomNotificationHandler(
                 Manifest.permission.POST_NOTIFICATIONS
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            notificationManager.notify(callId.hashCode(), notification)
+            Log.v("qwerty00" , callId.hashCode().toString())
+            notificationManager.notify(1, notification)
         } else {
             Log.w("CustomNotificationHandler", "POST_NOTIFICATIONS permission not granted")
         }
