@@ -19,9 +19,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -64,6 +66,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -165,410 +168,407 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
     }
 
 
-    Surface(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = PrimaryBackGround)
-    ) {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    colors = TopAppBarDefaults.topAppBarColors(
 
-                    ),
-                    title = { },
-                    navigationIcon = {
-                        IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(Icons.Default.KeyboardArrowLeft, contentDescription = "Back")
-                        }
-                    })}
+
+    Surface (modifier = Modifier
+        .fillMaxSize()
+        .background(color = PrimaryBackGround)
+    ){
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp),
+            verticalArrangement = Arrangement.Top
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(it)
-                    .verticalScroll(scrollState)
-                    .padding(8.dp)
-            ) {
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(8.dp)
+                ) {
 
-                Text(
-                    text = "Enter your details",
-                    style = TextStyle(
-                        color = colorResource(id = R.color.black),
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold
+                    IconButton(onClick = { navController.popBackStack() }, modifier = Modifier.padding(top = 15.dp)) {
+                        Icon(Icons.Default.KeyboardArrowLeft, contentDescription = "Back")
+                    }
+
+                    Text(
+                        text = "Enter your details",
+                        style = TextStyle(
+                            color = colorResource(id = R.color.black),
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     )
-                )
-                Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                val imageUri = rememberSaveable {
-                    mutableStateOf("")
-                }
+                    val imageUri = rememberSaveable {
+                        mutableStateOf("")
+                    }
 
-                val painter = rememberAsyncImagePainter(
-                    imageUri.value.ifEmpty { R.drawable.profile_picture_holder }
-                )
+                    val painter = rememberAsyncImagePainter(
+                        imageUri.value.ifEmpty { R.drawable.profile_picture_holder }
+                    )
 
-                val launcher = rememberLauncherForActivityResult(
-                    contract = ActivityResultContracts.GetContent()
-                ) { uri: Uri? ->
+                    val launcher = rememberLauncherForActivityResult(
+                        contract = ActivityResultContracts.GetContent()
+                    ) { uri: Uri? ->
 
-                    uri?.let {
+                        uri?.let {
 //                        uriImg = it
-                        imageUri.value = it.toString()
-                    }
-                }
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(90.dp)
-                )
-                {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Image(
-                            painter = painter,
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .size(96.dp)
-                        )
-                    }
-
-                    Box(modifier = Modifier.padding(start = 200.dp, top = 70.dp))
-                    {
-                        Image(
-                            painter = painterResource(id = R.drawable.edit_icon),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .clickable {
-                                    launcher.launch("image/*")
-                                }
-                        )
-                    }
-
-                }
-
-                Spacer(modifier = Modifier.height(25.dp))
-
-                Text(
-                    text = "Name*",
-                    textAlign = TextAlign.Start,
-                    style = TextStyle(
-                        fontFamily = helveticaFontFamily,
-                        fontWeight = FontWeight.Normal,
-                        fontSize = 16.sp
-                    ),
-                    color = SecondaryText,
-                    modifier = Modifier.padding(start = 10.dp)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    shape = RoundedCornerShape(10.dp),
-                    value = name,
-                    onValueChange = { name = it },
-                    keyboardOptions = KeyboardOptions(
-                        imeAction = ImeAction.Next
-                    ),
-                    maxLines = 1,
-                    trailingIcon = {
-                        Icon(
-                            painter = painterResource(id = R.drawable.profile_icon_register),
-                            contentDescription = null
-                        )
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(color = Color.White, shape = RoundedCornerShape(10.dp))
-                        .border(1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp)),
-                    placeholder = {
-                        Text(
-                            text = "Your Name",
-                            color = SecondaryText,
-                            style = TextStyle(
-                                fontFamily = helveticaFontFamily,
-                                fontWeight = FontWeight.Bold,
-                            )
-                        )
-                    },
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = Color.Transparent,
-                        unfocusedBorderColor = Color.Transparent,
-                        cursorColor = MainColor
-                    )
-                )
-
-
-                Spacer(modifier = Modifier.height(15.dp))
-
-                Text(
-                    text = "Create your ID*",
-                    textAlign = TextAlign.Start,
-                    style = TextStyle(
-                        fontFamily = helveticaFontFamily,
-                        fontWeight = FontWeight.Normal,
-                        fontSize = 16.sp
-                    ),
-                    color = SecondaryText,
-                    modifier = Modifier.padding(start = 10.dp)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    shape = RoundedCornerShape(10.dp),
-                    value = userId,
-                    onValueChange = { userId = it },
-                    keyboardOptions = KeyboardOptions(
-                        imeAction = ImeAction.Done
-                    ),
-                    maxLines = 1,
-                    trailingIcon = {
-                        Icon(
-                            painter = painterResource(id = R.drawable.id_icon_register),
-                            contentDescription = null
-                        )
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(color = Color.White, shape = RoundedCornerShape(10.dp))
-                        .border(1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp)),
-                    placeholder = {
-                        Text(
-                            text = "Your UserId",
-                            color = SecondaryText,
-                            style = TextStyle(
-                                fontFamily = helveticaFontFamily,
-                                fontWeight = FontWeight.Bold,
-                            )
-                        )
-                    },
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = Color.Transparent,
-                        unfocusedBorderColor = Color.Transparent,
-                        cursorColor = MainColor
-                    )
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = "Ex : Nitra123@Consultant",
-                    textAlign = TextAlign.Start,
-                    style = TextStyle(
-                        fontFamily = helveticaFontFamily,
-                        fontWeight = FontWeight.Normal,
-                        fontSize = 16.sp
-                    ),
-                    color = SecondaryText,
-                    modifier = Modifier.padding(start = 10.dp)
-                )
-
-                Spacer(modifier = Modifier.height(15.dp))
-
-
-                Text(
-                    text = "Select your Gender*",
-                    textAlign = TextAlign.Start,
-                    style = TextStyle(
-                        fontFamily = helveticaFontFamily,
-                        fontWeight = FontWeight.Normal,
-                        fontSize = 16.sp
-                    ),
-                    color = SecondaryText,
-                    modifier = Modifier.padding(start = 10.dp)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceAround
-                ) {
-
-                    Box(
-                        modifier = Modifier
-                            .width(100.dp)
-                            .height(50.dp)
-                            .background(Color.White, shape = RoundedCornerShape(10.dp))
-                            .border(
-                                if (genderMale) 4.dp else 2.dp,
-                                color = BorderColor2,
-                                shape = RoundedCornerShape(10.dp)
-                            ),
-                        contentAlignment = Alignment.Center
-                    )
-                    {
-                        Text(text = "Male",
-                            modifier = Modifier
-                                .clickable {
-                                    genderMale = !genderMale
-                                    selectedGender = "Male"
-                                    genderFemale = false
-                                    genderOthers = false
-                                },
-                            style = TextStyle(
-                                fontFamily = helveticaFontFamily,
-                                fontWeight = if (genderMale) FontWeight.Bold else FontWeight.Normal,
-                                fontSize = if (genderMale) 16.sp else 14.sp
-                            )
-                        )
-
+                            imageUri.value = it.toString()
+                        }
                     }
 
                     Box(
                         modifier = Modifier
-                            .width(100.dp)
-                            .height(50.dp)
-                            .background(Color.White, shape = RoundedCornerShape(10.dp))
-                            .border(
-                                if (genderFemale) 4.dp else 2.dp,
-                                color = BorderColor2,
-                                shape = RoundedCornerShape(10.dp)
-                            ),
-                        contentAlignment = Alignment.Center
+                            .fillMaxWidth()
+                            .height(90.dp)
                     )
                     {
-                        Text(
-                            text = "Female",
-                            modifier = Modifier.clickable {
-                                genderFemale = !genderFemale
-                                selectedGender = "Female"
-                                genderOthers = false
-                                genderMale = false
-                            },
-                            style = TextStyle(
-                                fontFamily = helveticaFontFamily,
-                                fontWeight = if (genderFemale) FontWeight.Bold else FontWeight.Normal,
-                                fontSize = if (genderFemale) 16.sp else 14.sp
-                            )
-                        )
-
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .width(100.dp)
-                            .height(50.dp)
-                            .background(Color.White, shape = RoundedCornerShape(10.dp))
-                            .border(
-                                if (genderOthers) 4.dp else 2.dp,
-                                color = BorderColor2,
-                                shape = RoundedCornerShape(10.dp)
-                            ),
-                        contentAlignment = Alignment.Center
-                    )
-                    {
-                        Text(
-                            text = "Others",
-                            modifier = Modifier.clickable {
-                                genderOthers = !genderOthers
-                                selectedGender = "Others"
-                                genderMale = false
-                                genderFemale = false
-                            },
-                            style = TextStyle(
-                                fontFamily = helveticaFontFamily,
-                                fontWeight = if (genderOthers) FontWeight.Bold else FontWeight.Normal,
-                                fontSize = if (genderOthers) 16.sp else 14.sp
-                            )
-                        )
-
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(15.dp))
-
-                Text(
-                    text = "Select your DOB*",
-                    textAlign = TextAlign.Start,
-                    style = TextStyle(
-                        fontFamily = helveticaFontFamily,
-                        fontWeight = FontWeight.Normal,
-                        fontSize = 16.sp
-                    ),
-                    color = SecondaryText,
-                    modifier = Modifier.padding(start = 10.dp)
-                )
-
-                val formattedDate by remember {
-                    derivedStateOf {
-                        DateTimeFormatter
-                            .ofPattern("dd-MM-yyyy")
-                            .format(currentDate)
-                    }
-                }
-
-                val dateDialogState = rememberMaterialDialogState()
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Box(modifier = Modifier
-                    .fillMaxWidth()
-                    .height(55.dp)
-                    .border(2.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp))
-                    .clickable {
-                        dateDialogState.show()
-                    }
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.White, shape = RoundedCornerShape(10.dp)),
-                        verticalAlignment = Alignment.CenterVertically,
-
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                        Text(
-                            modifier = Modifier.padding(16.dp),
-                            text = formattedDate,
-                            color = SecondaryText,
-                            style = TextStyle(
-                                fontFamily = helveticaFontFamily,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp
+                            Image(
+                                painter = painter,
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .size(96.dp)
                             )
+                        }
+
+                        Box(modifier = Modifier.padding(start = 200.dp, top = 70.dp))
+                        {
+                            Image(
+                                painter = painterResource(id = R.drawable.edit_icon),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .clickable {
+                                        launcher.launch("image/*")
+                                    }
+                            )
+                        }
+
+                    }
+
+                    Spacer(modifier = Modifier.height(25.dp))
+
+                    Text(
+                        text = "Name*",
+                        textAlign = TextAlign.Start,
+                        style = TextStyle(
+                            fontFamily = helveticaFontFamily,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 16.sp
+                        ),
+                        color = SecondaryText,
+                        modifier = Modifier.padding(start = 10.dp)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    OutlinedTextField(
+                        shape = RoundedCornerShape(10.dp),
+                        value = name,
+                        onValueChange = { name = it },
+                        keyboardOptions = KeyboardOptions(
+                            imeAction = ImeAction.Next
+                        ),
+                        maxLines = 1,
+                        trailingIcon = {
+                            Icon(
+                                painter = painterResource(id = R.drawable.profile_icon_register),
+                                contentDescription = null
+                            )
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(color = Color.White, shape = RoundedCornerShape(10.dp))
+                            .border(1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp)),
+                        placeholder = {
+                            Text(
+                                text = "Your Name",
+                                color = SecondaryText,
+                                style = TextStyle(
+                                    fontFamily = helveticaFontFamily,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            )
+                        },
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            focusedBorderColor = Color.Transparent,
+                            unfocusedBorderColor = Color.Transparent,
+                            cursorColor = MainColor
                         )
+                    )
 
-                        Spacer(modifier = Modifier)
 
-                        Image(
-                            painter = painterResource(id = R.drawable.calendar_icon_register),
+                    Spacer(modifier = Modifier.height(15.dp))
+
+                    Text(
+                        text = "Create your ID*",
+                        textAlign = TextAlign.Start,
+                        style = TextStyle(
+                            fontFamily = helveticaFontFamily,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 16.sp
+                        ),
+                        color = SecondaryText,
+                        modifier = Modifier.padding(start = 10.dp)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    OutlinedTextField(
+                        shape = RoundedCornerShape(10.dp),
+                        value = userId,
+                        onValueChange = { userId = it },
+                        keyboardOptions = KeyboardOptions(
+                            imeAction = ImeAction.Done
+                        ),
+                        maxLines = 1,
+                        trailingIcon = {
+                            Icon(
+                                painter = painterResource(id = R.drawable.id_icon_register),
+                                contentDescription = null
+                            )
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(color = Color.White, shape = RoundedCornerShape(10.dp))
+                            .border(1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp)),
+                        placeholder = {
+                            Text(
+                                text = "Your UserId",
+                                color = SecondaryText,
+                                style = TextStyle(
+                                    fontFamily = helveticaFontFamily,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            )
+                        },
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            focusedBorderColor = Color.Transparent,
+                            unfocusedBorderColor = Color.Transparent,
+                            cursorColor = MainColor
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "Ex : Nitra123@Consultant",
+                        textAlign = TextAlign.Start,
+                        style = TextStyle(
+                            fontFamily = helveticaFontFamily,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 16.sp
+                        ),
+                        color = SecondaryText,
+                        modifier = Modifier.padding(start = 10.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(15.dp))
+
+
+                    Text(
+                        text = "Select your Gender*",
+                        textAlign = TextAlign.Start,
+                        style = TextStyle(
+                            fontFamily = helveticaFontFamily,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 16.sp
+                        ),
+                        color = SecondaryText,
+                        modifier = Modifier.padding(start = 10.dp)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceAround
+                    ) {
+
+                        Box(
                             modifier = Modifier
-                                .padding(start = 190.dp)
-                                .size(24.dp),
-                            contentDescription = null
+                                .width(100.dp)
+                                .height(50.dp)
+                                .background(Color.White, shape = RoundedCornerShape(10.dp))
+                                .border(
+                                    if (genderMale) 4.dp else 2.dp,
+                                    color = BorderColor2,
+                                    shape = RoundedCornerShape(10.dp)
+                                ),
+                            contentAlignment = Alignment.Center
                         )
+                        {
+                            Text(text = "Male",
+                                modifier = Modifier
+                                    .clickable {
+                                        genderMale = !genderMale
+                                        selectedGender = "Male"
+                                        genderFemale = false
+                                        genderOthers = false
+                                    },
+                                style = TextStyle(
+                                    fontFamily = helveticaFontFamily,
+                                    fontWeight = if (genderMale) FontWeight.Bold else FontWeight.Normal,
+                                    fontSize = if (genderMale) 16.sp else 14.sp
+                                )
+                            )
 
-                        Spacer(modifier = Modifier.weight(2f))
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .width(100.dp)
+                                .height(50.dp)
+                                .background(Color.White, shape = RoundedCornerShape(10.dp))
+                                .border(
+                                    if (genderFemale) 4.dp else 2.dp,
+                                    color = BorderColor2,
+                                    shape = RoundedCornerShape(10.dp)
+                                ),
+                            contentAlignment = Alignment.Center
+                        )
+                        {
+                            Text(
+                                text = "Female",
+                                modifier = Modifier.clickable {
+                                    genderFemale = !genderFemale
+                                    selectedGender = "Female"
+                                    genderOthers = false
+                                    genderMale = false
+                                },
+                                style = TextStyle(
+                                    fontFamily = helveticaFontFamily,
+                                    fontWeight = if (genderFemale) FontWeight.Bold else FontWeight.Normal,
+                                    fontSize = if (genderFemale) 16.sp else 14.sp
+                                )
+                            )
+
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .width(100.dp)
+                                .height(50.dp)
+                                .background(Color.White, shape = RoundedCornerShape(10.dp))
+                                .border(
+                                    if (genderOthers) 4.dp else 2.dp,
+                                    color = BorderColor2,
+                                    shape = RoundedCornerShape(10.dp)
+                                ),
+                            contentAlignment = Alignment.Center
+                        )
+                        {
+                            Text(
+                                text = "Others",
+                                modifier = Modifier.clickable {
+                                    genderOthers = !genderOthers
+                                    selectedGender = "Others"
+                                    genderMale = false
+                                    genderFemale = false
+                                },
+                                style = TextStyle(
+                                    fontFamily = helveticaFontFamily,
+                                    fontWeight = if (genderOthers) FontWeight.Bold else FontWeight.Normal,
+                                    fontSize = if (genderOthers) 16.sp else 14.sp
+                                )
+                            )
+
+                        }
                     }
 
-                }
+                    Spacer(modifier = Modifier.height(15.dp))
 
-                MaterialDialog(
-                    dialogState = dateDialogState,
-                    buttons = {
-                        positiveButton(text = "Ok")
-                        negativeButton(text = "Cancel")
+                    Text(
+                        text = "Select your DOB*",
+                        textAlign = TextAlign.Start,
+                        style = TextStyle(
+                            fontFamily = helveticaFontFamily,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 16.sp
+                        ),
+                        color = SecondaryText,
+                        modifier = Modifier.padding(start = 10.dp)
+                    )
+
+                    val formattedDate by remember {
+                        derivedStateOf {
+                            DateTimeFormatter
+                                .ofPattern("dd-MM-yyyy")
+                                .format(currentDate)
+                        }
                     }
-                ) {
-                    datepicker(
-                        initialDate = LocalDate.now(),
-                        title = "Select your DOB",
-//                        yearRange = IntRange(1900, 2010),
-                        allowedDateValidator = {
-                            it.isBefore(LocalDate.now().plusYears(18))
+
+                    val dateDialogState = rememberMaterialDialogState()
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Box(modifier = Modifier
+                        .fillMaxWidth()
+                        .height(55.dp)
+                        .border(2.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp))
+                        .clickable {
+                            dateDialogState.show()
                         }
                     ) {
-                        currentDate = it
-                    }
-                }
-                val context = LocalContext.current
+                        Row(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.White, shape = RoundedCornerShape(10.dp)),
+                            verticalAlignment = Alignment.CenterVertically,
 
-                Spacer(modifier = Modifier.height(60.dp))
+                            ) {
+                            Text(
+                                modifier = Modifier.padding(16.dp),
+                                text = formattedDate,
+                                color = SecondaryText,
+                                style = TextStyle(
+                                    fontFamily = helveticaFontFamily,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp
+                                )
+                            )
+
+                            Spacer(modifier = Modifier)
+
+                            Image(
+                                painter = painterResource(id = R.drawable.calendar_icon_register),
+                                modifier = Modifier
+                                    .padding(start = 190.dp)
+                                    .size(24.dp),
+                                contentDescription = null
+                            )
+
+                            Spacer(modifier = Modifier.weight(2f))
+                        }
+
+                    }
+
+                    MaterialDialog(
+                        dialogState = dateDialogState,
+                        buttons = {
+                            positiveButton(text = "Ok")
+                            negativeButton(text = "Cancel")
+                        }
+                    ) {
+                        datepicker(
+                            initialDate = LocalDate.now(),
+                            title = "Select your DOB",
+//                        yearRange = IntRange(1900, 2010),
+                            allowedDateValidator = {
+                                it.isBefore(LocalDate.now().plusYears(18))
+                            }
+                        ) {
+                            currentDate = it
+                        }
+                    }
+                    val context = LocalContext.current
+
+                    Spacer(modifier = Modifier.height(60.dp))
 
 //                Text(text = R.color.splash.toString())
 //                if (uriImg != null) {
@@ -576,77 +576,811 @@ fun RegistrationScreen(navController: NavController, registrationViewModel: Regi
 //                        uploadImageToFirebase(uri, context)
 //                    }
 //                }
-                var createUserState = registrationViewModel.createUserState.collectAsState()
+                    var createUserState = registrationViewModel.createUserState.collectAsState()
 
 
 
 
-                when(createUserState.value){
-                    APIResponse.Empty -> {
+                    when(createUserState.value){
+                        APIResponse.Empty -> {
 
-                    }
-                    is APIResponse.Error -> {
-                        Text(text = "Error", color = Color.Red, fontFamily = helveticaFontFamily, fontWeight = FontWeight.Normal)
-                    }
-                    APIResponse.Loading -> {
-                        Row (horizontalArrangement = Arrangement.Center, modifier = Modifier.padding(bottom = 15.dp)){
-                            LoadingIndicator()
                         }
+                        is APIResponse.Error -> {
+                            Text(text = "Error", color = Color.Red, fontFamily = helveticaFontFamily, fontWeight = FontWeight.Normal)
+                        }
+                        APIResponse.Loading -> {
+                            Row (horizontalArrangement = Arrangement.Center, modifier = Modifier.padding(bottom = 15.dp)){
+                                LoadingIndicator()
+                            }
 
-                    }
-                    is APIResponse.Success -> {
-                        LaunchedEffect(key1 = Unit) {
-                            navController.navigate(ScreenRoutes.SelectSpeciality.route){
-                                popUpTo(ScreenRoutes.RegistrationScreen.route) {
-                                    inclusive = true
+                        }
+                        is APIResponse.Success -> {
+                            LaunchedEffect(key1 = Unit) {
+                                navController.navigate(ScreenRoutes.SelectSpeciality.route){
+                                    popUpTo(ScreenRoutes.RegistrationScreen.route) {
+                                        inclusive = true
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
 
-                Button(
-                    shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(60.dp),
-                    colors = ButtonDefaults.buttonColors(MainColor),
+                    Button(
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(60.dp),
+                        colors = ButtonDefaults.buttonColors(MainColor),
 //                    enabled = imageUploadCounter,
-                    onClick = {
-                        registrationViewModel.createUser(
-                           username = userId,
-                        phone = phoneNumber,
-                         fullName = capitalizeAfterSpace(name),
-                         firstName = firstName,
-                         lastName= lastName,
-                         photo= imageUrl,
-                         profession= "Astrologer" ,// constant value
-                         themeSelected = "#50A65C", // constant value
-                         videoRate= "25", // constant value
-                         audioRate= "25", // constant value
-                         chatRate= "25", // constant value
-                         gender= selectedGender,
-                         dob = formattedDate,
-                         bio = "This is the bio of my profile", // constant value
-                         kyc_status = "Incomplete" // constant value
+                        onClick = {
+                            registrationViewModel.createUser(
+                                username = userId,
+                                phone = phoneNumber,
+                                fullName = capitalizeAfterSpace(name),
+                                firstName = firstName,
+                                lastName= lastName,
+                                photo= imageUrl,
+                                profession= "Astrologer" ,// constant value
+                                themeSelected = "#50A65C", // constant value
+                                videoRate= "25", // constant value
+                                audioRate= "25", // constant value
+                                chatRate= "25", // constant value
+                                gender= selectedGender,
+                                dob = formattedDate,
+                                bio = "This is the bio of my profile", // constant value
+                                kyc_status = "Incomplete" // constant value
+                            )
+                            authenticationViewModel.saveToken(userToken)
+                        }
+                    ) {
+                        Text(
+                            text = "NEXT",
+                            textAlign = TextAlign.Center,
+                            style = TextStyle(
+                                fontFamily = helveticaFontFamily,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            ), color = Color.White
                         )
-                        authenticationViewModel.saveToken(userToken)
                     }
-                ) {
-                    Text(
-                        text = "NEXT",
-                        textAlign = TextAlign.Center,
-                        style = TextStyle(
-                            fontFamily = helveticaFontFamily,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
-                        ), color = Color.White
-                    )
                 }
             }
         }
     }
+
+
+
+//    Surface(
+//        modifier = Modifier
+//            .fillMaxSize()
+//            .background(color = PrimaryBackGround)
+//    ) {
+//        Scaffold(
+//            modifier = Modifier,
+//            topBar = {
+//                TopAppBar(
+//                    colors = TopAppBarDefaults.topAppBarColors(
+//
+//                    ),
+//                    title = { },
+//                    navigationIcon = {
+//
+//                    })}
+//        ) {
+
+
+
+
+//            Column(
+//                modifier = Modifier
+//                    .fillMaxSize()
+//                    .padding(it)
+//                    .padding(8.dp)
+//            ) {
+//
+//                Text(
+//                    text = "Enter your details",
+//                    style = TextStyle(
+//                        color = colorResource(id = R.color.black),
+//                        fontSize = 24.sp,
+//                        fontWeight = FontWeight.Bold
+//                    )
+//                )
+//                Spacer(modifier = Modifier.height(8.dp))
+//
+//                val imageUri = rememberSaveable {
+//                    mutableStateOf("")
+//                }
+//
+//                val painter = rememberAsyncImagePainter(
+//                    imageUri.value.ifEmpty { R.drawable.profile_picture_holder }
+//                )
+//
+//                val launcher = rememberLauncherForActivityResult(
+//                    contract = ActivityResultContracts.GetContent()
+//                ) { uri: Uri? ->
+//
+//                    uri?.let {
+////                        uriImg = it
+//                        imageUri.value = it.toString()
+//                    }
+//                }
+//
+//                Box(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .height(90.dp)
+//                )
+//                {
+//                    Column(
+//                        modifier = Modifier.fillMaxSize(),
+//                        verticalArrangement = Arrangement.Center,
+//                        horizontalAlignment = Alignment.CenterHorizontally
+//                    ) {
+//                        Image(
+//                            painter = painter,
+//                            contentDescription = null,
+//                            contentScale = ContentScale.Crop,
+//                            modifier = Modifier
+//                                .clip(CircleShape)
+//                                .size(96.dp)
+//                        )
+//                    }
+//
+//                    Box(modifier = Modifier.padding(start = 200.dp, top = 70.dp))
+//                    {
+//                        Image(
+//                            painter = painterResource(id = R.drawable.edit_icon),
+//                            contentDescription = null,
+//                            modifier = Modifier
+//                                .clip(CircleShape)
+//                                .clickable {
+//                                    launcher.launch("image/*")
+//                                }
+//                        )
+//                    }
+//
+//                }
+//
+//                Spacer(modifier = Modifier.height(25.dp))
+//
+//                Text(
+//                    text = "Name*",
+//                    textAlign = TextAlign.Start,
+//                    style = TextStyle(
+//                        fontFamily = helveticaFontFamily,
+//                        fontWeight = FontWeight.Normal,
+//                        fontSize = 16.sp
+//                    ),
+//                    color = SecondaryText,
+//                    modifier = Modifier.padding(start = 10.dp)
+//                )
+//                Spacer(modifier = Modifier.height(8.dp))
+//
+//                OutlinedTextField(
+//                    shape = RoundedCornerShape(10.dp),
+//                    value = name,
+//                    onValueChange = { name = it },
+//                    keyboardOptions = KeyboardOptions(
+//                        imeAction = ImeAction.Next
+//                    ),
+//                    maxLines = 1,
+//                    trailingIcon = {
+//                        Icon(
+//                            painter = painterResource(id = R.drawable.profile_icon_register),
+//                            contentDescription = null
+//                        )
+//                    },
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .background(color = Color.White, shape = RoundedCornerShape(10.dp))
+//                        .border(1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp)),
+//                    placeholder = {
+//                        Text(
+//                            text = "Your Name",
+//                            color = SecondaryText,
+//                            style = TextStyle(
+//                                fontFamily = helveticaFontFamily,
+//                                fontWeight = FontWeight.Bold,
+//                            )
+//                        )
+//                    },
+//                    colors = TextFieldDefaults.outlinedTextFieldColors(
+//                        focusedBorderColor = Color.Transparent,
+//                        unfocusedBorderColor = Color.Transparent,
+//                        cursorColor = MainColor
+//                    )
+//                )
+//
+//
+//                Spacer(modifier = Modifier.height(15.dp))
+//
+//                Text(
+//                    text = "Create your ID*",
+//                    textAlign = TextAlign.Start,
+//                    style = TextStyle(
+//                        fontFamily = helveticaFontFamily,
+//                        fontWeight = FontWeight.Normal,
+//                        fontSize = 16.sp
+//                    ),
+//                    color = SecondaryText,
+//                    modifier = Modifier.padding(start = 10.dp)
+//                )
+//                Spacer(modifier = Modifier.height(8.dp))
+//
+//                OutlinedTextField(
+//                    shape = RoundedCornerShape(10.dp),
+//                    value = userId,
+//                    onValueChange = { userId = it },
+//                    keyboardOptions = KeyboardOptions(
+//                        imeAction = ImeAction.Done
+//                    ),
+//                    maxLines = 1,
+//                    trailingIcon = {
+//                        Icon(
+//                            painter = painterResource(id = R.drawable.id_icon_register),
+//                            contentDescription = null
+//                        )
+//                    },
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .background(color = Color.White, shape = RoundedCornerShape(10.dp))
+//                        .border(1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp)),
+//                    placeholder = {
+//                        Text(
+//                            text = "Your UserId",
+//                            color = SecondaryText,
+//                            style = TextStyle(
+//                                fontFamily = helveticaFontFamily,
+//                                fontWeight = FontWeight.Bold,
+//                            )
+//                        )
+//                    },
+//                    colors = TextFieldDefaults.outlinedTextFieldColors(
+//                        focusedBorderColor = Color.Transparent,
+//                        unfocusedBorderColor = Color.Transparent,
+//                        cursorColor = MainColor
+//                    )
+//                )
+//                Spacer(modifier = Modifier.height(8.dp))
+//
+//                Text(
+//                    text = "Ex : Nitra123@Consultant",
+//                    textAlign = TextAlign.Start,
+//                    style = TextStyle(
+//                        fontFamily = helveticaFontFamily,
+//                        fontWeight = FontWeight.Normal,
+//                        fontSize = 16.sp
+//                    ),
+//                    color = SecondaryText,
+//                    modifier = Modifier.padding(start = 10.dp)
+//                )
+//
+//                Spacer(modifier = Modifier.height(15.dp))
+//
+//
+//                Text(
+//                    text = "Select your Gender*",
+//                    textAlign = TextAlign.Start,
+//                    style = TextStyle(
+//                        fontFamily = helveticaFontFamily,
+//                        fontWeight = FontWeight.Normal,
+//                        fontSize = 16.sp
+//                    ),
+//                    color = SecondaryText,
+//                    modifier = Modifier.padding(start = 10.dp)
+//                )
+//                Spacer(modifier = Modifier.height(8.dp))
+//
+//                Row(
+//                    modifier = Modifier.fillMaxWidth(),
+//                    horizontalArrangement = Arrangement.SpaceAround
+//                ) {
+//
+//                    Box(
+//                        modifier = Modifier
+//                            .width(100.dp)
+//                            .height(50.dp)
+//                            .background(Color.White, shape = RoundedCornerShape(10.dp))
+//                            .border(
+//                                if (genderMale) 4.dp else 2.dp,
+//                                color = BorderColor2,
+//                                shape = RoundedCornerShape(10.dp)
+//                            ),
+//                        contentAlignment = Alignment.Center
+//                    )
+//                    {
+//                        Text(text = "Male",
+//                            modifier = Modifier
+//                                .clickable {
+//                                    genderMale = !genderMale
+//                                    selectedGender = "Male"
+//                                    genderFemale = false
+//                                    genderOthers = false
+//                                },
+//                            style = TextStyle(
+//                                fontFamily = helveticaFontFamily,
+//                                fontWeight = if (genderMale) FontWeight.Bold else FontWeight.Normal,
+//                                fontSize = if (genderMale) 16.sp else 14.sp
+//                            )
+//                        )
+//
+//                    }
+//
+//                    Box(
+//                        modifier = Modifier
+//                            .width(100.dp)
+//                            .height(50.dp)
+//                            .background(Color.White, shape = RoundedCornerShape(10.dp))
+//                            .border(
+//                                if (genderFemale) 4.dp else 2.dp,
+//                                color = BorderColor2,
+//                                shape = RoundedCornerShape(10.dp)
+//                            ),
+//                        contentAlignment = Alignment.Center
+//                    )
+//                    {
+//                        Text(
+//                            text = "Female",
+//                            modifier = Modifier.clickable {
+//                                genderFemale = !genderFemale
+//                                selectedGender = "Female"
+//                                genderOthers = false
+//                                genderMale = false
+//                            },
+//                            style = TextStyle(
+//                                fontFamily = helveticaFontFamily,
+//                                fontWeight = if (genderFemale) FontWeight.Bold else FontWeight.Normal,
+//                                fontSize = if (genderFemale) 16.sp else 14.sp
+//                            )
+//                        )
+//
+//                    }
+//
+//                    Box(
+//                        modifier = Modifier
+//                            .width(100.dp)
+//                            .height(50.dp)
+//                            .background(Color.White, shape = RoundedCornerShape(10.dp))
+//                            .border(
+//                                if (genderOthers) 4.dp else 2.dp,
+//                                color = BorderColor2,
+//                                shape = RoundedCornerShape(10.dp)
+//                            ),
+//                        contentAlignment = Alignment.Center
+//                    )
+//                    {
+//                        Text(
+//                            text = "Others",
+//                            modifier = Modifier.clickable {
+//                                genderOthers = !genderOthers
+//                                selectedGender = "Others"
+//                                genderMale = false
+//                                genderFemale = false
+//                            },
+//                            style = TextStyle(
+//                                fontFamily = helveticaFontFamily,
+//                                fontWeight = if (genderOthers) FontWeight.Bold else FontWeight.Normal,
+//                                fontSize = if (genderOthers) 16.sp else 14.sp
+//                            )
+//                        )
+//
+//                    }
+//                }
+//
+//                Spacer(modifier = Modifier.height(15.dp))
+//
+//                Text(
+//                    text = "Select your DOB*",
+//                    textAlign = TextAlign.Start,
+//                    style = TextStyle(
+//                        fontFamily = helveticaFontFamily,
+//                        fontWeight = FontWeight.Normal,
+//                        fontSize = 16.sp
+//                    ),
+//                    color = SecondaryText,
+//                    modifier = Modifier.padding(start = 10.dp)
+//                )
+//
+//                val formattedDate by remember {
+//                    derivedStateOf {
+//                        DateTimeFormatter
+//                            .ofPattern("dd-MM-yyyy")
+//                            .format(currentDate)
+//                    }
+//                }
+//
+//                val dateDialogState = rememberMaterialDialogState()
+//
+//                Spacer(modifier = Modifier.height(8.dp))
+//
+//                Box(modifier = Modifier
+//                    .fillMaxWidth()
+//                    .height(55.dp)
+//                    .border(2.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp))
+//                    .clickable {
+//                        dateDialogState.show()
+//                    }
+//                ) {
+//                    Row(
+//                        modifier = Modifier
+//                            .fillMaxSize()
+//                            .background(Color.White, shape = RoundedCornerShape(10.dp)),
+//                        verticalAlignment = Alignment.CenterVertically,
+//
+//                        ) {
+//                        Text(
+//                            modifier = Modifier.padding(16.dp),
+//                            text = formattedDate,
+//                            color = SecondaryText,
+//                            style = TextStyle(
+//                                fontFamily = helveticaFontFamily,
+//                                fontWeight = FontWeight.Bold,
+//                                fontSize = 16.sp
+//                            )
+//                        )
+//
+//                        Spacer(modifier = Modifier)
+//
+//                        Image(
+//                            painter = painterResource(id = R.drawable.calendar_icon_register),
+//                            modifier = Modifier
+//                                .padding(start = 190.dp)
+//                                .size(24.dp),
+//                            contentDescription = null
+//                        )
+//
+//                        Spacer(modifier = Modifier.weight(2f))
+//                    }
+//
+//                }
+//
+//                MaterialDialog(
+//                    dialogState = dateDialogState,
+//                    buttons = {
+//                        positiveButton(text = "Ok")
+//                        negativeButton(text = "Cancel")
+//                    }
+//                ) {
+//                    datepicker(
+//                        initialDate = LocalDate.now(),
+//                        title = "Select your DOB",
+////                        yearRange = IntRange(1900, 2010),
+//                        allowedDateValidator = {
+//                            it.isBefore(LocalDate.now().plusYears(18))
+//                        }
+//                    ) {
+//                        currentDate = it
+//                    }
+//                }
+//                val context = LocalContext.current
+//
+//                Spacer(modifier = Modifier.height(60.dp))
+//
+////                Text(text = R.color.splash.toString())
+////                if (uriImg != null) {
+////                    uriImg.let { uri ->
+////                        uploadImageToFirebase(uri, context)
+////                    }
+////                }
+//                var createUserState = registrationViewModel.createUserState.collectAsState()
+//
+//
+//
+//
+//                when(createUserState.value){
+//                    APIResponse.Empty -> {
+//
+//                    }
+//                    is APIResponse.Error -> {
+//                        Text(text = "Error", color = Color.Red, fontFamily = helveticaFontFamily, fontWeight = FontWeight.Normal)
+//                    }
+//                    APIResponse.Loading -> {
+//                        Row (horizontalArrangement = Arrangement.Center, modifier = Modifier.padding(bottom = 15.dp)){
+//                            LoadingIndicator()
+//                        }
+//
+//                    }
+//                    is APIResponse.Success -> {
+//                        LaunchedEffect(key1 = Unit) {
+//                            navController.navigate(ScreenRoutes.SelectSpeciality.route){
+//                                popUpTo(ScreenRoutes.RegistrationScreen.route) {
+//                                    inclusive = true
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//
+//
+//                Button(
+//                    shape = RoundedCornerShape(10.dp),
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .height(60.dp),
+//                    colors = ButtonDefaults.buttonColors(MainColor),
+////                    enabled = imageUploadCounter,
+//                    onClick = {
+//                        registrationViewModel.createUser(
+//                           username = userId,
+//                        phone = phoneNumber,
+//                         fullName = capitalizeAfterSpace(name),
+//                         firstName = firstName,
+//                         lastName= lastName,
+//                         photo= imageUrl,
+//                         profession= "Astrologer" ,// constant value
+//                         themeSelected = "#50A65C", // constant value
+//                         videoRate= "25", // constant value
+//                         audioRate= "25", // constant value
+//                         chatRate= "25", // constant value
+//                         gender= selectedGender,
+//                         dob = formattedDate,
+//                         bio = "This is the bio of my profile", // constant value
+//                         kyc_status = "Incomplete" // constant value
+//                        )
+//                        authenticationViewModel.saveToken(userToken)
+//                    }
+//                ) {
+//                    Text(
+//                        text = "NEXT",
+//                        textAlign = TextAlign.Center,
+//                        style = TextStyle(
+//                            fontFamily = helveticaFontFamily,
+//                            fontWeight = FontWeight.Bold,
+//                            fontSize = 16.sp
+//                        ), color = Color.White
+//                    )
+//                }
+//            }
+//        }
+//    }
+
+
+//    Surface(
+//        modifier = Modifier
+//            .fillMaxSize()
+//            .background(color = PrimaryBackGround)
+//    ) {
+//        Scaffold(
+//            modifier = Modifier,
+//            topBar = {
+//                TopAppBar(
+//                    colors = TopAppBarDefaults.topAppBarColors(),
+//                    title = { },
+//                    navigationIcon = {
+//                        IconButton(onClick = { navController.popBackStack() }) {
+//                            Icon(Icons.Default.KeyboardArrowLeft, contentDescription = "Back")
+//                        }
+//                    }
+//                )
+//            }
+//        ) {
+//            LazyColumn(
+//                modifier = Modifier
+//                    .fillMaxSize()
+//                    .padding(it)
+//                    .padding(8.dp)
+//            ) {
+//                item {
+//                    Text(
+//                        text = "Enter your details",
+//                        style = TextStyle(
+//                            color = colorResource(id = R.color.black),
+//                            fontSize = 24.sp,
+//                            fontWeight = FontWeight.Bold
+//                        )
+//                    )
+//                    Spacer(modifier = Modifier.height(8.dp))
+//                }
+//
+//                item {
+//                    val imageUri = rememberSaveable { mutableStateOf("") }
+//                    val painter = rememberAsyncImagePainter(imageUri.value.ifEmpty { R.drawable.profile_picture_holder })
+//                    val launcher = rememberLauncherForActivityResult(
+//                        contract = ActivityResultContracts.GetContent()
+//                    ) { uri: Uri? ->
+//                        uri?.let { imageUri.value = it.toString() }
+//                    }
+//
+//                    Box(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .height(90.dp)
+//                    ) {
+//                        Column(
+//                            modifier = Modifier.fillMaxSize(),
+//                            verticalArrangement = Arrangement.Center,
+//                            horizontalAlignment = Alignment.CenterHorizontally
+//                        ) {
+//                            Image(
+//                                painter = painter,
+//                                contentDescription = null,
+//                                contentScale = ContentScale.Crop,
+//                                modifier = Modifier
+//                                    .clip(CircleShape)
+//                                    .size(90.dp)
+//                            )
+//                        }
+//
+//                        Box(modifier = Modifier.padding(start = 200.dp, top = 70.dp)) {
+//                            Image(
+//                                painter = painterResource(id = R.drawable.edit_icon),
+//                                contentDescription = null,
+//                                modifier = Modifier
+//                                    .clip(CircleShape)
+//                                    .clickable { launcher.launch("image/*") }
+//                            )
+//                        }
+//                    }
+//                    Spacer(modifier = Modifier.height(25.dp))
+//                }
+//
+//                item {
+//                    Text(
+//                        text = "Name*",
+//                        textAlign = TextAlign.Start,
+//                        style = TextStyle(
+//                            fontFamily = helveticaFontFamily,
+//                            fontWeight = FontWeight.Normal,
+//                            fontSize = 16.sp
+//                        ),
+//                        color = SecondaryText,
+//                        modifier = Modifier.padding(start = 10.dp)
+//                    )
+//                    Spacer(modifier = Modifier.height(8.dp))
+//                }
+//
+//                item {
+//                    OutlinedTextField(
+//                        shape = RoundedCornerShape(10.dp),
+//                        value = name,
+//                        onValueChange = { name = it },
+//                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+//                        maxLines = 1,
+//                        trailingIcon = {
+//                            Icon(
+//                                painter = painterResource(id = R.drawable.profile_icon_register),
+//                                contentDescription = null
+//                            )
+//                        },
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .background(color = Color.White, shape = RoundedCornerShape(10.dp))
+//                            .border(1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp)),
+//                        placeholder = {
+//                            Text(
+//                                text = "Your Name",
+//                                color = SecondaryText,
+//                                style = TextStyle(
+//                                    fontFamily = helveticaFontFamily,
+//                                    fontWeight = FontWeight.Bold,
+//                                )
+//                            )
+//                        },
+//                        colors = TextFieldDefaults.outlinedTextFieldColors(
+//                            focusedBorderColor = Color.Transparent,
+//                            unfocusedBorderColor = Color.Transparent,
+//                            cursorColor = MainColor
+//                        )
+//                    )
+//                    Spacer(modifier = Modifier.height(15.dp))
+//                }
+//
+//                // You can keep adding components in a similar way using 'item {}' for each block.
+//
+//                // Example of another item:
+//                item {
+//                    Text(
+//                        text = "Create your ID*",
+//                        textAlign = TextAlign.Start,
+//                        style = TextStyle(
+//                            fontFamily = helveticaFontFamily,
+//                            fontWeight = FontWeight.Normal,
+//                            fontSize = 16.sp
+//                        ),
+//                        color = SecondaryText,
+//                        modifier = Modifier.padding(start = 10.dp)
+//                    )
+//                    Spacer(modifier = Modifier.height(8.dp))
+//                }
+//
+//                //enter user id
+//                item {
+//                    OutlinedTextField(
+//                        shape = RoundedCornerShape(10.dp),
+//                        value = userId,
+//                        onValueChange = { userId = it },
+//                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+//                        maxLines = 1,
+//                        trailingIcon = {
+//                            Icon(
+//                                painter = painterResource(id = R.drawable.id_icon_register),
+//                                contentDescription = null
+//                            )
+//                        },
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .background(color = Color.White, shape = RoundedCornerShape(10.dp))
+//                            .border(1.dp, color = BorderColor2, shape = RoundedCornerShape(10.dp)),
+//                        placeholder = {
+//                            Text(
+//                                text = "Your UserId",
+//                                color = SecondaryText,
+//                                style = TextStyle(
+//                                    fontFamily = helveticaFontFamily,
+//                                    fontWeight = FontWeight.Bold,
+//                                )
+//                            )
+//                        },
+//                        colors = TextFieldDefaults.outlinedTextFieldColors(
+//                            focusedBorderColor = Color.Transparent,
+//                            unfocusedBorderColor = Color.Transparent,
+//                            cursorColor = MainColor
+//                        )
+//                    )
+//                }
+//
+//
+//
+//                item {
+//
+//                }
+//
+//                // Add more items as needed for other components like gender selection, DOB, etc.
+//
+//                item {
+//                    val formattedDate by remember {
+//                        derivedStateOf {
+//                            DateTimeFormatter
+//                                .ofPattern("dd-MM-yyyy")
+//                                .format(currentDate)
+//                        }
+//                    }
+//                    Spacer(modifier = Modifier.height(60.dp))
+//
+//                    Button(
+//                        shape = RoundedCornerShape(10.dp),
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .height(60.dp),
+//                        colors = ButtonDefaults.buttonColors(MainColor),
+//                        onClick = {
+//                            registrationViewModel.createUser(
+//                                username = userId,
+//                                phone = phoneNumber,
+//                                fullName = capitalizeAfterSpace(name),
+//                                firstName = firstName,
+//                                lastName = lastName,
+//                                photo = imageUrl,
+//                                profession = "Astrologer", // constant value
+//                                themeSelected = "#50A65C", // constant value
+//                                videoRate = "25", // constant value
+//                                audioRate = "25", // constant value
+//                                chatRate = "25", // constant value
+//                                gender = selectedGender,
+//                                dob = formattedDate,
+//                                bio = "This is the bio of my profile", // constant value
+//                                kyc_status = "Incomplete" // constant value
+//                            )
+//                            authenticationViewModel.saveToken(userToken)
+//                        }
+//                    ) {
+//                        Text(
+//                            text = "NEXT",
+//                            textAlign = TextAlign.Center,
+//                            style = TextStyle(
+//                                fontFamily = helveticaFontFamily,
+//                                fontWeight = FontWeight.Bold,
+//                                fontSize = 16.sp
+//                            ), color = Color.White
+//                        )
+//                    }
+//                }
+//            }
+//        }
+//    }
+
 }
 
 @Composable
