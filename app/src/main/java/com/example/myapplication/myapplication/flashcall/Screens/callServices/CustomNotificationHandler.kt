@@ -35,7 +35,7 @@ class CustomNotificationHandler(
 
     init {
         Log.v("CustomNotificationHandler", "CustomNotificationHandler initialized")
-        //setupNotificationChannel()
+        setupNotificationChannel()
     }
 
     override fun getChannelId(): String {

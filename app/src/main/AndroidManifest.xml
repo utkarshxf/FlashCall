@@ -33,6 +33,13 @@
         tools:targetApi="31">
         <receiver android:name=".Screens.callServices.AnswerCallReceiver" />
         <receiver android:name=".Screens.callServices.DeclineCallReceiver" />
+        <!-- Start custom default icon. this is used when no icon is set for incoming notification msg. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/logo"/>
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/progress_green" />
         <activity
             android:name=".kyc_package.KycActivity"
             android:exported="false"
@@ -63,7 +70,13 @@
                 <action android:name="io.getstream.video.android.action.INCOMING_CALL" />
             </intent-filter>
         </activity>
-
+        <service android:name=".PushNotificationService"
+            android:exported="false">
+            <intent-filter
+                android:priority="1">
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
         <activity
             android:name=".Screens.AcceptCallActivity"
             android:exported="false">
