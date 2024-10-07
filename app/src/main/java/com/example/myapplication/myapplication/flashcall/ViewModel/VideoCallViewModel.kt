@@ -26,74 +26,74 @@ import javax.inject.Inject
 
 @HiltViewModel
 class VideoCallViewModel @Inject constructor(private val firestore: FirebaseFirestore) : ViewModel() {
-    private val streamVideo = StreamVideo.instance()
+//    private val streamVideo = StreamVideo.instance()
     var timeLeft by mutableStateOf(0.0)
         private set
     var state by mutableStateOf(VideoCallScreenState())
         private set
 
     init {
-        viewModelScope.launch {
-            launch { collectRingingCalls() }
-            launch { collectActiveCalls() }
-            launch { collectConnectionState() }
-        }
+//        viewModelScope.launch {
+//            launch { collectRingingCalls() }
+//            launch { collectActiveCalls() }
+//            launch { collectConnectionState() }
+//        }
     }
-    private suspend fun collectRingingCalls() {
-        streamVideo.state.ringingCall.collectLatest { call ->
-            state = state.copy( incomingCall = call,
-                callType = if (call?.type == "default") "Video" else "Audio"
-            )
-        }
-    }
-    private suspend fun collectActiveCalls() {
-        streamVideo.state.activeCall.collectLatest { call ->
-            state = state.copy(
-                activeCall = call,
-                callAccepted = call != null
-            )
-            if (call == null) {
-                state = state.copy(incomingCall = null)
-            }
-        }
-    }
+//    private suspend fun collectRingingCalls() {
+//        streamVideo.state.ringingCall.collectLatest { call ->
+//            state = state.copy( incomingCall = call,
+//                callType = if (call?.type == "default") "Video" else "Audio"
+//            )
+//        }
+//    }
+//    private suspend fun collectActiveCalls() {
+//        streamVideo.state.activeCall.collectLatest { call ->
+//            state = state.copy(
+//                activeCall = call,
+//                callAccepted = call != null
+//            )
+//            if (call == null) {
+//                state = state.copy(incomingCall = null)
+//            }
+//        }
+//    }
 
-    private suspend fun collectConnectionState() {
-        streamVideo.state.connection.collectLatest { connectionState ->
-            state = state.copy(connectionState = connectionState)
-            when (connectionState) {
-                ConnectionState.Loading -> Log.d("VideoCall", "Loading: {ConnectionState.Loading}")
-                ConnectionState.Connected -> Log.d("VideoCall", "Connected: {ConnectionState.Connected}")
-                ConnectionState.Disconnected -> Log.d("VideoCall", "Disconnected: {ConnectionState.Disconnected}")
-                is ConnectionState.Failed -> Log.d("VideoCall", "Failed: {ConnectionState.Failed}")
-                ConnectionState.PreConnect -> Log.d("VideoCall", "PreConnect: {ConnectionState.PreConnect}")
-                ConnectionState.Reconnecting -> Log.d("VideoCall", "Reconnecting: {ConnectionState.Reconnecting}")
-            }
-        }
-    }
+//    private suspend fun collectConnectionState() {
+//        streamVideo.state.connection.collectLatest { connectionState ->
+//            state = state.copy(connectionState = connectionState)
+//            when (connectionState) {
+//                ConnectionState.Loading -> Log.d("VideoCall", "Loading: {ConnectionState.Loading}")
+//                ConnectionState.Connected -> Log.d("VideoCall", "Connected: {ConnectionState.Connected}")
+//                ConnectionState.Disconnected -> Log.d("VideoCall", "Disconnected: {ConnectionState.Disconnected}")
+//                is ConnectionState.Failed -> Log.d("VideoCall", "Failed: {ConnectionState.Failed}")
+//                ConnectionState.PreConnect -> Log.d("VideoCall", "PreConnect: {ConnectionState.PreConnect}")
+//                ConnectionState.Reconnecting -> Log.d("VideoCall", "Reconnecting: {ConnectionState.Reconnecting}")
+//            }
+//        }
+//    }
 
-    fun joinCall() {
-        viewModelScope.launch {
-            val call = streamVideo.state.ringingCall.value
-            if (call != null) {
-                state = state.copy(isLoading = true)
-                val result = call.accept().flatMap { call.join() }
-                result.onSuccess {
-                    state = state.copy(
-                        sdkResponseState = SDKResponseState.Success(call),
-                        callAccepted = true,
-                        isLoading = false
-                    )
-                }.onError {
-                    state = state.copy(
-                        sdkResponseState = SDKResponseState.Error,
-                        callAccepted = false,
-                        isLoading = false
-                    )
-                }
-            }
-        }
-    }
+//    fun joinCall() {
+//        viewModelScope.launch {
+//            val call = streamVideo.state.ringingCall.value
+//            if (call != null) {
+//                state = state.copy(isLoading = true)
+//                val result = call.accept().flatMap { call.join() }
+//                result.onSuccess {
+//                    state = state.copy(
+//                        sdkResponseState = SDKResponseState.Success(call),
+//                        callAccepted = true,
+//                        isLoading = false
+//                    )
+//                }.onError {
+//                    state = state.copy(
+//                        sdkResponseState = SDKResponseState.Error,
+//                        callAccepted = false,
+//                        isLoading = false
+//                    )
+//                }
+//            }
+//        }
+//    }
     fun observeTimeLeft(callId: String) {
         viewModelScope.launch {
             val documentRef = FirebaseFirestore.getInstance()

@@ -27,6 +27,7 @@ import com.example.myapplication.myapplication.flashcall.repository.UserPreferen
 import com.example.myapplication.myapplication.flashcall.utils.PreferencesKey
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.toObject
 import com.google.firebase.messaging.messaging
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -134,13 +135,12 @@ class RegistrationViewModel @Inject constructor(
                         val fcmData = hashMapOf(
                             "token" to fcmToken
                         )
-                        firestore.collection("FCMtoken").document(response.phone).set(fcmData)
+                        firestore.collection("FCMtoken").document(phone?:"unknown")
+                            .set(fcmData, SetOptions.merge())
                             .addOnSuccessListener {
-                                Log.d("Firestore", "FCMtoken document created successfully")
+                                Log.d("Firestore", "FCMtoken document updated successfully")
                             }.addOnFailureListener { e ->
-                                Log.e(
-                                    "FirestoreError", "Failed to create FCM document: ${e.message}"
-                                )
+                                Log.e("FirestoreError", "Failed to update FCM document: ${e.message}")
                             }
 //                        storeResponseInPreferences(response)
                         userPreferencesRepository.storeResponseInPreferences(response)
@@ -296,7 +296,6 @@ class RegistrationViewModel @Inject constructor(
         dob: String?=null,
         bio: String?=null,
         link: LinkData?=null,
-        navController: NavController,
         loading: (Boolean) -> Unit
     ) {
         viewModelScope.launch {
@@ -318,11 +317,9 @@ class RegistrationViewModel @Inject constructor(
                     phone = phone,
                     username = username
                 ).collect { response ->
-
                     _updateUserState.value = APIResponse.Success(response)
                     loading(false)
                     userPreferencesRepository.storeUpdateUserResponseInPreferences(response)
-                    navController.popBackStack()
                 }
             } catch (e: Exception) {
                 Log.e("error", "User update failed: ${e.message}")

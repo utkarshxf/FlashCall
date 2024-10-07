@@ -7,18 +7,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
-import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.ValidateResponse
-//import com.example.myapplication.myapplication.flashcall.Data.model.feedback.Feedback
-//import com.example.myapplication.myapplication.flashcall.Data.model.feedback.FeedbackResponse
-import com.example.myapplication.myapplication.flashcall.Data.model.feedback.UpdateFeedback
-import com.example.myapplication.myapplication.flashcall.Data.model.feedback.UpdateFeedbackResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.feedback.UpdateFeedbackCallRequest
+import com.example.myapplication.myapplication.flashcall.Data.model.feedback.UpdateFeedbackCreatorRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.userFeedbacks.FeedbackResponseItem
 import com.example.myapplication.myapplication.flashcall.repository.FeedbackRepo
 import com.example.myapplication.myapplication.flashcall.repository.UserPreferencesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -71,18 +65,55 @@ class FeedbackViewModel @Inject constructor(
         Log.d("originalListSize","size: ${originalFeedbackList.size}")
     }
 
-     fun updateFeedback(updateFeedback: UpdateFeedback){
-         Log.d("updateFeedback", "requestBody: ${updateFeedback}")
+     fun updateFeedback(
+         callId: String?,
+         clientId: String?,
+         createdAt: String?,
+         creatorId: String?,
+         feedbackText: String?,
+         rating: Int?,
+         showFeedback: Boolean?,
+         position: Int?){
+
+         val creatorRequestBody = UpdateFeedbackCreatorRequest(
+             clientId = clientId,
+             createdAt = createdAt,
+             creatorId = creatorId,
+             feedbackText = feedbackText,
+             rating = rating,
+             showFeedback = showFeedback,
+             position = position
+         )
+         val callRequestBody = UpdateFeedbackCallRequest(
+             callId = callId,
+             clientId = clientId,
+             createdAt = createdAt,
+             creatorId = creatorId,
+             feedbackText = feedbackText,
+             rating = rating,
+             showFeedback = showFeedback,
+             position = position
+         )
+
+         Log.d("updateFeedback", "requestBodyCall: ${callRequestBody}")
+         Log.d("updateFeedback", "requestBodyCreator: ${creatorRequestBody}")
         viewModelScope.launch {
             try {
-                feedbackRepo.updateFeedback(
+                feedbackRepo.updateFeedbackCreator(
                     "https://backend.flashcall.me/api/v1/feedback/creator/setFeedback",
-                    updateFeedback
+                    creatorRequestBody
                 ).collect {
-                    Log.d("updateFeedback", "getFeedbacks: ${it}")
+                    Log.d("updateFeedback", "creatorResponse: ${it}")
+                }
+
+                feedbackRepo.updateFeedbackCall(
+                    "https://backend.flashcall.me/api/v1/feedback/call/create",
+                    callRequestBody
+                ).collect {
+                    Log.d("updateFeedback", "callResponse: ${it}")
                 }
             } catch (e: Exception) {
-                Log.d("updateFeedbackError", "getFeedbacks: ${e.message}")
+                Log.d("updateFeedbackError", "getException: ${e.message}")
             }
         }
     }

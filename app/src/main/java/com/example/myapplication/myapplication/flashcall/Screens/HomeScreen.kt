@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -262,7 +263,7 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    if (profilePic == "") {
+                    if (profilePic == "" || profilePic == "photo") {
                         val imageUri = rememberSaveable {
                             mutableStateOf("")
                         }
@@ -298,16 +299,16 @@ fun HomeScreen(
                                 )
                             }
 
-                            Box(modifier = Modifier.padding(start = 200.dp, top = 70.dp)) {
-                                Image(painter = painterResource(id = R.drawable.edit_icon),
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .clip(CircleShape)
-                                        .clickable {
-                                            launcher.launch("image/*")
-
-                                        })
-                            }
+//                            Box(modifier = Modifier.padding(start = 200.dp, top = 70.dp)) {
+//                                Image(painter = painterResource(id = R.drawable.edit_icon),
+//                                    contentDescription = null,
+//                                    modifier = Modifier
+//                                        .clip(CircleShape)
+//                                        .clickable {
+//                                            launcher.launch("image/*")
+//
+//                                        })
+//                            }
 
                         }
 

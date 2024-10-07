@@ -28,7 +28,8 @@ import com.example.myapplication.myapplication.flashcall.Data.model.chatDataMode
 import com.example.myapplication.myapplication.flashcall.Data.model.deleteAdditionalLink.DeleteAdditionalLinks
 import com.example.myapplication.myapplication.flashcall.Data.model.deleteAdditionalLink.DeletedAdditionalLinksResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.editAdditionalLink.EditAdditionalLinkRequest
-import com.example.myapplication.myapplication.flashcall.Data.model.feedback.UpdateFeedback
+import com.example.myapplication.myapplication.flashcall.Data.model.feedback.UpdateFeedbackCallRequest
+import com.example.myapplication.myapplication.flashcall.Data.model.feedback.UpdateFeedbackCreatorRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.feedback.UpdateFeedbackResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.kycStatus.KycStatusResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.livelinessResponse.KycResponse
@@ -95,9 +96,15 @@ interface APIService {
     ) :Response <ArrayList<FeedbackResponseItem>>
 
     @POST
-    suspend fun updateFeedback(
+    suspend fun updateFeedbackCreator(
         @Url url:String,
-        @Body updateFeedback: UpdateFeedback
+        @Body updateFeedback: UpdateFeedbackCreatorRequest
+    ) :Response <UpdateFeedbackResponse>
+
+    @POST
+    suspend fun updateFeedbackCall(
+        @Url url:String,
+        @Body updateFeedback: UpdateFeedbackCallRequest
     ) :Response <UpdateFeedbackResponse>
 
     @GET

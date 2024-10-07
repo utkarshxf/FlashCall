@@ -68,8 +68,8 @@ import com.example.myapplication.myapplication.flashcall.utils.LoadingIndicator
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun PaymentSettings(
-    navController : NavController, viewModel: PaymentSettingViewModel = hiltViewModel()
-){
+    navController: NavController, viewModel: PaymentSettingViewModel = hiltViewModel()
+) {
     var paymentData = viewModel.paymentSettingState.paymentDetails
     LaunchedEffect(key1 = Unit) {
         viewModel.getPaymentSettings()
@@ -96,21 +96,16 @@ fun PaymentSettings(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(12.dp)
-        ){
+        ) {
 
-            Box(
-                modifier = Modifier
-                    .wrapContentSize()
-                    .height(30.dp)
-            ){
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                ){
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.KeyboardArrowLeft, contentDescription = "Back", tint = Color.Black, modifier = Modifier.size(28.dp))
-                    }
-                }
+            Spacer(modifier = Modifier.height(30.dp))
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(
+                    Icons.Default.KeyboardArrowLeft,
+                    contentDescription = "Back",
+                    tint = Color.Black,
+                    modifier = Modifier.size(28.dp)
+                )
             }
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -119,7 +114,7 @@ fun PaymentSettings(
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
-            ){
+            ) {
                 Text(
                     modifier = Modifier.padding(start = 12.dp),
                     text = "Payment Settings",
@@ -134,13 +129,14 @@ fun PaymentSettings(
 
             Spacer(modifier = Modifier.height(50.dp))
 
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .height(60.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(Color.White)
-                .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
-            ){
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Color.White)
+                    .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
+            ) {
                 Row(
                     modifier = Modifier.padding(8.dp)
                 ) {
@@ -152,28 +148,31 @@ fun PaymentSettings(
                             selectedPaymentMethod = "UPI"
                         },
                         colors = RadioButtonDefaults.colors(
-                            selectedColor= Color.Black,
+                            selectedColor = Color.Black,
                             unselectedColor = Color.Unspecified,
                             disabledSelectedColor = Color.Unspecified,
-                            disabledUnselectedColor= Color.Unspecified
+                            disabledUnselectedColor = Color.Unspecified
                         )
                     )
 
-                    Text(modifier = Modifier.align(Alignment.CenterVertically),
-                        text = "UPI")
+                    Text(
+                        modifier = Modifier.align(Alignment.CenterVertically),
+                        text = "UPI"
+                    )
                 }
 
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .height(60.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(Color.White)
-                .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
-            ){
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Color.White)
+                    .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
+            ) {
                 Row(
                     modifier = Modifier.padding(8.dp)
                 ) {
@@ -185,25 +184,31 @@ fun PaymentSettings(
                             selectedPaymentMethod = "BANK_TRANSFER"
                         },
                         colors = RadioButtonDefaults.colors(
-                            selectedColor= Color.Black,
-                        unselectedColor = Color.Unspecified,
-                    disabledSelectedColor = Color.Unspecified,
-                    disabledUnselectedColor= Color.Unspecified
+                            selectedColor = Color.Black,
+                            unselectedColor = Color.Unspecified,
+                            disabledSelectedColor = Color.Unspecified,
+                            disabledUnselectedColor = Color.Unspecified
                         )
                     )
 
-                    Text(modifier = Modifier.align(Alignment.CenterVertically),
-                        text = "Bank Transfer / NEFT")
+                    Text(
+                        modifier = Modifier.align(Alignment.CenterVertically),
+                        text = "Bank Transfer / NEFT"
+                    )
                 }
 
             }
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            if(selectedPaymentMethod.equals("UPI")){
-                UpiPaymentBlock(viewModel = viewModel, upiId = paymentData.vpa+"")
-            }else if(selectedPaymentMethod.equals("BANK_TRANSFER")){
-                BankPaymentBlock(viewModel = viewModel, acc_num = paymentData.accountNumber, ifsc = paymentData.ifsc)
+            if (selectedPaymentMethod.equals("UPI")) {
+                UpiPaymentBlock(viewModel = viewModel, upiId = paymentData.vpa + "")
+            } else if (selectedPaymentMethod.equals("BANK_TRANSFER")) {
+                BankPaymentBlock(
+                    viewModel = viewModel,
+                    acc_num = paymentData.accountNumber,
+                    ifsc = paymentData.ifsc
+                )
             }
 
         }
@@ -235,7 +240,7 @@ fun UpiPaymentBlock(viewModel: PaymentSettingViewModel, upiId: String) {
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
                     color = Color.Black
-                    )
+                )
             )
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -271,18 +276,24 @@ fun UpiPaymentBlock(viewModel: PaymentSettingViewModel, upiId: String) {
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            if(addUPIIDState.isLoading){
+            if (addUPIIDState.isLoading) {
                 LoadingIndicator()
             }
 
-            if(addUPIIDState.error != null){
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+            if (addUPIIDState.error != null) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
                     Text(text = "error: ${addUPIIDState.error}", color = Color.Red)
                 }
             }
 
-            if(addUPIIDState.varified){
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+            if (addUPIIDState.varified) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
                     Text(text = "UPI Verified Successfully", color = MainColor)
                 }
             }
@@ -295,9 +306,9 @@ fun UpiPaymentBlock(viewModel: PaymentSettingViewModel, upiId: String) {
             ) {
                 Button(
                     onClick = {
-                        if(upiId.isNotEmpty()){
+                        if (upiId.isNotEmpty()) {
                             viewModel.addUpiId(upiId)
-                        }else{
+                        } else {
                             Toast.makeText(context, "Enter UPI ID", Toast.LENGTH_SHORT).show()
                         }
 
@@ -463,7 +474,6 @@ fun BankPaymentBlock(viewModel: PaymentSettingViewModel, acc_num: String, ifsc: 
     }
 
 
-
 //    Box(
 //        modifier = Modifier
 //            .fillMaxWidth()
@@ -555,17 +565,17 @@ fun BankPaymentBlock(viewModel: PaymentSettingViewModel, acc_num: String, ifsc: 
 //        }
 //    }
 
-    if(addBankDetailsState.isLoading){
+    if (addBankDetailsState.isLoading) {
         LoadingIndicator()
     }
 
-    if(addBankDetailsState.error != null){
+    if (addBankDetailsState.error != null) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
             Text(text = "error: ${addBankDetailsState.error}", color = Color.Red)
         }
     }
 
-    if(addBankDetailsState.varified){
+    if (addBankDetailsState.varified) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
             Text(text = "Bank Details Verified Successfully", color = MainColor)
         }
@@ -577,10 +587,10 @@ fun BankPaymentBlock(viewModel: PaymentSettingViewModel, acc_num: String, ifsc: 
     ) {
         Button(
             onClick = {
-                if(accountNumber.isNotEmpty() && ifscNumber.isNotEmpty()){
+                if (accountNumber.isNotEmpty() && ifscNumber.isNotEmpty()) {
                     viewModel.addBankDetails(accountNumber, ifscNumber)
-                }else{
-                    Toast.makeText(context, "Enter Details Please",Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, "Enter Details Please", Toast.LENGTH_SHORT).show()
                 }
             },
             modifier = Modifier

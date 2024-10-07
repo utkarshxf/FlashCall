@@ -14,6 +14,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -203,6 +207,8 @@ fun CallActionButton(
     onClick: () -> Unit,
     label: String
 ) {
+    var isClicked by remember { mutableStateOf(false) }
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -225,18 +231,28 @@ fun CallActionButton(
                 }
         ) {
             IconButton(
-                onClick = onClick,
-                modifier = Modifier.matchParentSize()
+                onClick = {
+                    if (!isClicked) {
+                        isClicked = true
+                        onClick()
+                    }
+                },
+                modifier = Modifier.matchParentSize(),
+                enabled = !isClicked
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = label,
-                    tint = Color.White,
+                    tint = if (isClicked) Color.Gray else Color.White,
                     modifier = Modifier.size(32.dp)
                 )
             }
         }
         Spacer(modifier = Modifier.height(8.dp))
-        Text(text = label, color = Color.White, fontSize = 14.sp)
+        Text(
+            text = label,
+            color = Color.White,
+            fontSize = 14.sp
+        )
     }
 }
