@@ -69,90 +69,82 @@ class CustomNotificationHandler(
     }
 
     override fun onRingingCall(callId: StreamCallId, callDisplayName: String) {
-        Log.d("CustomNotificationHandler", "onRingingCall triggered for $callId")
-
-        val fullScreenIntent = Intent(application, IncomingCallActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            putExtra(NotificationHandler.INTENT_EXTRA_CALL_CID, callId)
-            putExtra(NotificationHandler.INTENT_EXTRA_CALL_DISPLAY_NAME, callDisplayName)
-        }
-
-
-        val acceptCallIntent = Intent(application, IncomingCallActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            putExtra(NotificationHandler.INTENT_EXTRA_CALL_CID, callId)
-            putExtra("call_accepted", true)
-            putExtra(NotificationHandler.INTENT_EXTRA_CALL_DISPLAY_NAME, callDisplayName)
-        }
-
-        val rejectCallIntent = Intent(application, DeclineCallReceiver::class.java).apply {
-            val call = StreamVideo.instance().call(callId.type, callId.id)
-            NotificationManagerCompat.from(application).cancelAll()
-            CoroutineScope(Dispatchers.IO).launch {
-                call.reject()
-            }
-        }
-
-        val fullScreenPendingIntent = PendingIntent.getActivity(
-            application,
-            0,
-            fullScreenIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        val acceptPendingIntent = PendingIntent.getActivity(
-            application,
-            0,
-            acceptCallIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        val rejectPendingIntent = PendingIntent.getActivity(
-            application,
-            0,
-            rejectCallIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        val builder = NotificationCompat.Builder(application, channelId)
-            .setSmallIcon(R.drawable.voice1)
-            .setContentTitle("Incoming call")
-            .setContentText("${maskIfPhoneNumber(callDisplayName)} is calling")
-            .setCategory(NotificationCompat.CATEGORY_CALL)
-            .setPriority(NotificationCompat.PRIORITY_MAX)
-            .setFullScreenIntent(fullScreenPendingIntent, true)
-            .setOngoing(true)
-            .setAutoCancel(true)
-            .setSound(RingtoneManager.getDefaultUri(R.raw.call_incoming_sound))
-            .setVibrate(longArrayOf(0, 500, 1000))
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .addAction(
-                R.drawable.logo,  // Your custom icon for Accept button
-                "Reject",                    // Text for the Accept button
-                rejectPendingIntent          // PendingIntent triggered when Accept is pressed
-            )
-            .addAction(
-                R.drawable.logo,  // Your custom icon for Accept button
-                "Answer",                    // Text for the Accept button
-                acceptPendingIntent          // PendingIntent triggered when Accept is pressed
-            )
+        Log.d("CallActivity", "onRingingCall triggered for $callId")
+        super.onRingingCall(callId, callDisplayName)
+//        val fullScreenIntent = Intent(application, IncomingCallActivity::class.java).apply {
+//            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+//            putExtra(NotificationHandler.INTENT_EXTRA_CALL_CID, callId)
+//            putExtra(NotificationHandler.INTENT_EXTRA_CALL_DISPLAY_NAME, callDisplayName)
+//        }
 
 
-        val notification = builder.build()
+//        val acceptCallIntent = Intent(application, IncomingCallActivity::class.java).apply {
+//            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+//            putExtra(NotificationHandler.INTENT_EXTRA_CALL_CID, callId)
+//            putExtra("call_accepted", true)
+//            putExtra(NotificationHandler.INTENT_EXTRA_CALL_DISPLAY_NAME, callDisplayName)
+//        }
 
-        if (ActivityCompat.checkSelfPermission(
-                application,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            Log.v("qwerty00" , callId.hashCode().toString())
-            notificationManager.notify( callId.hashCode(), notification)
-        } else {
-            Log.w("CustomNotificationHandler", "POST_NOTIFICATIONS permission not granted")
-        }
+//        val rejectCallIntent = Intent(application, DeclineCallReceiver::class.java).apply {
+//            putExtra(NotificationHandler.INTENT_EXTRA_CALL_CID, callId.id)  // Passing callId to the receiver
+//        }
+//        val rejectCallPendingIntent: PendingIntent = PendingIntent.getBroadcast(
+//            application, 0, rejectCallIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+//        )
 
-        fullScreenIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        application.startActivity(fullScreenIntent)
+//        val fullScreenPendingIntent = PendingIntent.getActivity(
+//            application,
+//            0,
+//            fullScreenIntent,
+//            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+//        )
+//
+//        val acceptPendingIntent = PendingIntent.getActivity(
+//            application,
+//            0,
+//            acceptCallIntent,
+//            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+//        )
+
+//        val builder = NotificationCompat.Builder(application, channelId)
+//            .setSmallIcon(R.drawable.voice1)
+//            .setContentTitle("Incoming call")
+//            .setContentText("${maskIfPhoneNumber(callDisplayName)} is calling")
+//            .setCategory(NotificationCompat.CATEGORY_CALL)
+//            .setPriority(NotificationCompat.PRIORITY_MAX)
+//            .setFullScreenIntent(fullScreenPendingIntent, true)
+//            .setOngoing(true)
+//            .setAutoCancel(true)
+//            .setSound(RingtoneManager.getDefaultUri(R.raw.call_incoming_sound))
+//            .setVibrate(longArrayOf(0, 500, 1000))
+//            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+//            .addAction(
+//                R.drawable.logo,  // Your custom icon for Accept button
+//                "Reject",                    // Text for the Accept button
+//                rejectCallPendingIntent          // PendingIntent triggered when Accept is pressed
+//            )
+//            .addAction(
+//                R.drawable.logo,  // Your custom icon for Accept button
+//                "Answer",                    // Text for the Accept button
+//                acceptPendingIntent          // PendingIntent triggered when Accept is pressed
+//            )
+
+
+//        val notification = builder.build()
+//
+//        if (ActivityCompat.checkSelfPermission(
+//                application,
+//                Manifest.permission.POST_NOTIFICATIONS
+//            ) == PackageManager.PERMISSION_GRANTED
+//        ) {
+//            Log.v("qwerty00" , callId.hashCode().toString())
+//            notificationManager.notify( callId.hashCode(), notification)
+//        } else {
+//            Log.w("CustomNotificationHandler", "POST_NOTIFICATIONS permission not granted")
+//        }
+//
+//        fullScreenIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+//        application.startActivity(fullScreenIntent)
     }
 
 

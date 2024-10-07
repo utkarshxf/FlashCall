@@ -70,7 +70,7 @@
             </intent-filter>
         </service>
         <activity
-            android:name=".Screens.AcceptCallActivity"
+            android:name=".Screens.callServices.AcceptCallActivity"
             android:exported="false">
             <intent-filter android:priority="1">
                 <action android:name="io.getstream.video.android.action.ACCEPT_CALL" />
@@ -80,6 +80,14 @@
         <activity
             android:name=".Screens.callServices.OngoingCallActivity"
             android:exported="false"
+            android:launchMode="singleTask">
+            <intent-filter android:priority="1">
+                <action android:name="io.getstream.video.android.action.ONGOING_CALL" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".Screens.callServices.CallActivity"
+            android:exported="true"
             android:launchMode="singleTask">
             <intent-filter android:priority="1">
                 <action android:name="io.getstream.video.android.action.ONGOING_CALL" />

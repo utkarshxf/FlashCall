@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import androidx.core.app.NotificationManagerCompat
 import io.getstream.video.android.core.StreamVideo
 import io.getstream.video.android.core.notifications.NotificationHandler
 import io.getstream.video.android.model.streamCallId
@@ -33,26 +34,16 @@ class AnswerCallReceiver : BroadcastReceiver() {
         notificationManager.cancel(callId.hashCode())
     }
 }
-// DeclineCallReceiver.kt
-class DeclineCallReceiver : BroadcastReceiver() {
-    private val scope = CoroutineScope(Dispatchers.IO)
-    override fun onReceive(context: Context, intent: Intent) {
-        val callId = intent.streamCallId(NotificationHandler.INTENT_EXTRA_CALL_CID)!!
-        val call = StreamVideo.instance().call(callId.type, callId.id)
-
-
-        Log.d("DeclineCallReceiver", "is this method called from notification1")
-        scope.launch {
-            call.reject()
-        }
-//         Finish the IncomingCallActivity if it's open
-        val closeIntent = Intent(context, IncomingCallActivity::class.java).apply {
-            action = "FINISH_ACTIVITY"
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        }
-        context.startActivity(closeIntent)
-        // Dismiss the notification
-        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.cancel(callId.hashCode())
-    }
-}
+//class DeclineCallReceiver : BroadcastReceiver() {
+//    override fun onReceive(context: Context, intent: Intent) {
+//        val callId = intent.getStringExtra("CALL_ID") ?: return
+//
+//        val call = StreamVideo.instance().call(callId.type, callId.id)
+//        NotificationManagerCompat.from(context).cancelAll()
+//
+//        // Reject the call asynchronously
+//        CoroutineScope(Dispatchers.IO).launch {
+//            call.reject()
+//        }
+//    }
+//}
