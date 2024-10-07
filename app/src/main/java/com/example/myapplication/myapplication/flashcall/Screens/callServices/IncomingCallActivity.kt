@@ -52,8 +52,6 @@ class IncomingCallActivity : ComponentActivity() {
         showWhenLockedAndTurnScreenOn()
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-
-
         val callId = intent.streamCallId(NotificationHandler.INTENT_EXTRA_CALL_CID)
         val isAccepted = intent.getBooleanExtra("call_accepted", false)
 
@@ -61,6 +59,7 @@ class IncomingCallActivity : ComponentActivity() {
             finishAndRemoveTask()
             return
         }
+
         lifecycleScope.launch {
             registerReceiver(callStateReceiver, IntentFilter("ACTION_CALL_ENDED"))
             val call = StreamVideo.instance().call(callId.type, callId.id)
