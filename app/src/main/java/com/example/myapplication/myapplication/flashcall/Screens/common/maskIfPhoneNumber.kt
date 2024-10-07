@@ -1,11 +1,12 @@
 package com.example.myapplication.myapplication.flashcall.Screens.common
 
 fun maskIfPhoneNumber(input: String?): String {
-    return when {
-        input == null -> "Unknown"
-        input.all { it.isDigit() } -> maskPhoneNumber(input)
-        else -> input
+    return if (input != null && input.startsWith("+91")) {
+        input.dropLast(5) + "XXXXX"
+    }else{
+        input?:"UNKNOWN"
     }
+
 }
 
 private fun maskPhoneNumber(phoneNumber: String): String {

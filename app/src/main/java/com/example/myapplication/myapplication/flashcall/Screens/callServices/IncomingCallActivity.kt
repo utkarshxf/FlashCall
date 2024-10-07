@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -36,7 +37,9 @@ class IncomingCallActivity : ComponentActivity() {
     private val callStateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             when (intent.action) {
-                "ACTION_CALL_ENDED" -> {
+
+                "FINISH_ACTIVITY" -> {
+                    Log.d("DeclineCallReceiver", "is this method called from notification")
                     finishAndRemoveTask()
                 }
             }
@@ -49,7 +52,11 @@ class IncomingCallActivity : ComponentActivity() {
         showWhenLockedAndTurnScreenOn()
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
+
+
         val callId = intent.streamCallId(NotificationHandler.INTENT_EXTRA_CALL_CID)
+        val isAccepted = intent.getBooleanExtra("call_accepted", false)
+
         if (callId == null) {
             finishAndRemoveTask()
             return
@@ -63,10 +70,18 @@ class IncomingCallActivity : ComponentActivity() {
                 ) {
                     VideoTheme {
                         var showOngoingCall by remember { mutableStateOf(false) }
+
                         var permissionsGranted by remember { mutableStateOf(false) }
 
                         EnsureVideoCallPermissions {
                             permissionsGranted = true
+                        }
+
+                        if(isAccepted && permissionsGranted){
+                            LaunchedEffect(key1 = Unit) {
+                                showOngoingCall = true
+                                call.join()
+                            }
                         }
 
                         if (permissionsGranted) {
