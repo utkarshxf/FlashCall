@@ -20,6 +20,7 @@ import androidx.core.content.ContextCompat.getSystemService
 import com.example.myapplication.myapplication.flashcall.BaseClass
 import com.example.myapplication.myapplication.flashcall.MainActivity
 import com.example.myapplication.myapplication.flashcall.R
+import com.example.myapplication.myapplication.flashcall.Screens.common.maskIfPhoneNumber
 import io.getstream.video.android.core.notifications.DefaultNotificationHandler
 import io.getstream.video.android.core.notifications.NotificationHandler
 import io.getstream.video.android.model.StreamCallId
@@ -35,7 +36,7 @@ class CustomNotificationHandler(
 
     init {
         Log.v("CustomNotificationHandler", "CustomNotificationHandler initialized")
-        //setupNotificationChannel()
+        setupNotificationChannel()
     }
 
     override fun getChannelId(): String {
@@ -80,7 +81,7 @@ class CustomNotificationHandler(
         val builder = NotificationCompat.Builder(application, channelId)
             .setSmallIcon(R.drawable.voice1)
             .setContentTitle("Incoming call")
-            .setContentText("$callDisplayName is calling")
+            .setContentText("${maskIfPhoneNumber(callDisplayName)} is calling")
             .setCategory(NotificationCompat.CATEGORY_CALL)
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setFullScreenIntent(fullScreenPendingIntent, true)
@@ -153,7 +154,7 @@ class CustomNotificationHandler(
             .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setOnlyAlertOnce(true)
             .setWhen(System.currentTimeMillis())
-            .setContentTitle("Missed Call from $callDisplayName")
+            .setContentTitle("Missed Call from ${maskIfPhoneNumber(callDisplayName)}")
             .setAutoCancel(true)
             .build()
         notificationManager.notify(callId.hashCode(), notification)

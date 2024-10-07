@@ -522,6 +522,7 @@ fun ProfileScreen(
                     }
                     isLogout = !isLogout
                     authenticationViewModel.logoutUser()
+
                 })
             }
 

@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
@@ -158,7 +159,7 @@ fun ChatRoomScreen(
         showChatCallConfirmation = true
     }
 
-    Scaffold(topBar = {
+    Scaffold(modifier = Modifier.imePadding(), topBar = {
         TopAppBar(title = {
             Row(
                 verticalAlignment = Alignment.CenterVertically
@@ -174,7 +175,8 @@ fun ChatRoomScreen(
                     modifier = Modifier.padding(start = 10.dp)
                 ) {
                     Text(
-                        text = maskIfPhoneNumber(chatData?.clientName ?: "Naina Talwar"), style = TextStyle(
+                        text = maskIfPhoneNumber(chatData?.clientName ?: "Naina Talwar"),
+                        style = TextStyle(
                             color = Color.White,
                             fontSize = 18.sp,
                             fontFamily = helveticaFontFamily,
@@ -271,7 +273,7 @@ fun ChatRoomScreen(
                 }
 
                 // Message Input Section
-                Column {
+                Column(Modifier.imePadding()) {
                     if (imageUri != null) {
                         Box(
                             modifier = Modifier
@@ -539,7 +541,7 @@ fun MessageItem(
                     )
                 }
                 if (message.img != null && message.text != null) {
-                    Card() {
+                    Card {
                         Box(
                             modifier = Modifier
                                 .size(300.dp, 400.dp)
@@ -646,8 +648,8 @@ fun AudioRecorderButton(
                             chatViewModel.stopRecording()
                         }
                     }, modifier = Modifier.background(
-                            if (isRecording) Color.Red else Color(0xFF25D366), CircleShape
-                        )
+                        if (isRecording) Color.Red else Color(0xFF25D366), CircleShape
+                    )
                 ) {
                     Icon(
                         imageVector = if (isRecording) Icons.Default.MicOff else Icons.Default.Mic,
@@ -744,8 +746,7 @@ fun AudioPlayerComponent(audioUrl: String, isOwnMessage: Boolean) {
                                 startTime = System.currentTimeMillis()
                             }
                             Log.d(
-                                "AudioPlayerComponent",
-                                "Play/Pause clicked. isPlaying: $isPlaying"
+                                "AudioPlayerComponent", "Play/Pause clicked. isPlaying: $isPlaying"
                             )
                         }
                     }) {

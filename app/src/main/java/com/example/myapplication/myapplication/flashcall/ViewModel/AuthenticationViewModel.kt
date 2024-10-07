@@ -14,6 +14,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import com.example.myapplication.myapplication.flashcall.BaseClass
 import com.example.myapplication.myapplication.flashcall.Data.Events
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
 import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
@@ -270,6 +271,7 @@ class AuthenticationViewModel @Inject constructor(
 
     fun logoutUser(){
         sharedPreferences.edit().clear().apply()
+        (this.context as? BaseClass)?.streamRemoveClient()
     }
 
 }
