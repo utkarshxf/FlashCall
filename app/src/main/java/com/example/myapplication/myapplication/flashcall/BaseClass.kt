@@ -82,7 +82,7 @@ class BaseClass : Application() {
                 ),
                 loggingLevel = LoggingLevel(Priority.VERBOSE, HttpLoggingLevel.BODY),
                 notificationConfig = NotificationConfig(
-                    hideRingingNotificationInForeground = true,
+                    hideRingingNotificationInForeground = false,
                     // Make sure that the provider name is equal to the "Name" of the configuration in Stream Dashboard.
                     pushDeviceGenerators = listOf(
                         FirebasePushDeviceGenerator(providerName = "Test"),

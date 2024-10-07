@@ -55,15 +55,11 @@ class PushNotificationService : FirebaseMessagingService() {
                 // RemoteMessage was from Stream and it is already processed
                 Log.d("FCM", "Stream message processed")
             } else {
-                // Handle custom notification
-
-
-                super.onMessageReceived(message)
+//                super.onMessageReceived(message)
                 message.notification?.let { sendNotification(it) }
                     ?: run {
 //                        handleDataMessage(message.data)
                     }
-
                 Log.d("FCM", "message processed")
             }
         } catch (exception: IllegalStateException) {

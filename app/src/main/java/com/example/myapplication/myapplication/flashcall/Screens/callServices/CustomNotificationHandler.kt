@@ -35,7 +35,7 @@ class CustomNotificationHandler(
     private val application: Application,
 ) : DefaultNotificationHandler(
     application = application,
-    hideRingingNotificationInForeground = true,
+    hideRingingNotificationInForeground = false,
 ) {
     private val channelId = "incoming_calls"
     private val channelName = "Incoming Calls"
@@ -64,7 +64,10 @@ class CustomNotificationHandler(
             notificationManager.createNotificationChannel(channel)
             Log.d("CustomNotificationHandler", "Notification channel created")
         } else {
-            Log.d("CustomNotificationHandler", "Notification channel not created (Android version < Oreo)")
+            Log.d(
+                "CustomNotificationHandler",
+                "Notification channel not created (Android version < Oreo)"
+            )
         }
     }
 
@@ -177,33 +180,34 @@ class CustomNotificationHandler(
     @SuppressLint("MissingPermission")
     override fun onMissedCall(callId: StreamCallId, callDisplayName: String) {
         Log.d("CustomNotificationHandler", "onMissedCall triggered for $callId")
-
+        super.onMissedCall(callId, callDisplayName)
         // Cancel the ringing notification
-        notificationManager.cancel(callId.hashCode())
-
-        // Send broadcast to finish IncomingCallActivity
-        val intent = Intent("ACTION_CALL_ENDED")
-        application.sendBroadcast(intent)
-
-        val notification = NotificationCompat.Builder(application, getChannelId())
-            .setSmallIcon(R.drawable.vector)
-            .setContentIntent(buildContentIntent())
-            .setCategory(NotificationCompat.CATEGORY_CALL)
-            .setDefaults(NotificationCompat.DEFAULT_ALL)
-            .setOnlyAlertOnce(true)
-            .setWhen(System.currentTimeMillis())
-            .setContentTitle("Missed Call from ${maskIfPhoneNumber(callDisplayName)}")
-            .setAutoCancel(true)
-            .build()
-        notificationManager.notify(callId.hashCode(), notification)
+//        notificationManager.cancel(callId.hashCode())
+//
+//        // Send broadcast to finish IncomingCallActivity
+//        val intent = Intent("ACTION_CALL_ENDED")
+//        application.sendBroadcast(intent)
+//
+//        val notification = NotificationCompat.Builder(application, getChannelId())
+//            .setSmallIcon(R.drawable.vector)
+//            .setContentIntent(buildContentIntent())
+//            .setCategory(NotificationCompat.CATEGORY_CALL)
+//            .setDefaults(NotificationCompat.DEFAULT_ALL)
+//            .setOnlyAlertOnce(true)
+//            .setWhen(System.currentTimeMillis())
+//            .setContentTitle("Missed Call from ${maskIfPhoneNumber(callDisplayName)}")
+//            .setAutoCancel(true)
+//            .build()
+//        notificationManager.notify(callId.hashCode(), notification)
+//    }
+//
+//    private fun buildContentIntent() = PendingIntent.getActivity(
+//        application,
+//        0,
+//        Intent(application, MainActivity::class.java).apply {
+//            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+//        },
+//        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+//    )
     }
-
-    private fun buildContentIntent() = PendingIntent.getActivity(
-        application,
-        0,
-        Intent(application, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
-        },
-        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-    )
 }
