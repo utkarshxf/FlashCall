@@ -50,6 +50,7 @@ class AcceptCallActivity : ComponentActivity() {
                     if(isPermissionGiven)
                     {
                         lifecycleScope.launch {
+                            call.accept()
                             call.join()
                         }
                         CallScreen(call = call, showDebugOptions = true, onCallDisconnected = {

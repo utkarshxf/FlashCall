@@ -1,12 +1,6 @@
 package com.example.myapplication.myapplication.flashcall.repository
 
-import android.util.Log
-import android.util.Patterns
-import com.example.myapplication.myapplication.flashcall.Data.SendOTP
-import com.example.myapplication.myapplication.flashcall.Data.VerifyOTP
-import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
-import com.example.myapplication.myapplication.flashcall.Data.model.CreateUser
-import com.example.myapplication.myapplication.flashcall.Data.model.CreateUserResponse
+import androidx.media3.common.util.Log
 import com.example.myapplication.myapplication.flashcall.Data.model.IsUserCreatedResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.Request
 import com.example.myapplication.myapplication.flashcall.Data.model.ResendOTPResponse
@@ -22,7 +16,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import retrofit2.Response
 import javax.inject.Inject
 
 class AuthRepository @Inject constructor(private val apiService: APIService) : IAuthRepo , SafeApiRequest() {
@@ -52,10 +45,10 @@ class AuthRepository @Inject constructor(private val apiService: APIService) : I
 
     }
 
-    override suspend fun verifyOtp(url:String,number: String, otp: String): Flow<VerifyOTPResponse>{
+    override suspend fun verifyOtp(url: String, number: String, otp: String, fcmToken: String): Flow<VerifyOTPResponse>{
         return flow{
             val response = safeApiRequest {
-                apiService.verifyOTP(url, VerifyRequest(number,otp)) }
+                apiService.verifyOTP(url, VerifyRequest(number,otp,fcmToken)) }
             emit(response)
         }.flowOn(Dispatchers.IO)
     }

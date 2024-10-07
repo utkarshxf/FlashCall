@@ -52,47 +52,47 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".Screens.callServices.IncomingCallActivity"
-            android:exported="false"
-            android:showOnLockScreen="true"
-            android:showWhenLocked="true"
-            android:turnScreenOn="true"
-            android:theme="@style/Theme.AppCompat.NoActionBar">
-            <intent-filter android:priority="1">
-                <action android:name="io.getstream.video.android.action.INCOMING_CALL" />
-            </intent-filter>
-        </activity>
+<!--        <activity-->
+<!--            android:name=".Screens.callServices.IncomingCallActivity"-->
+<!--            android:exported="false"-->
+<!--            android:showOnLockScreen="true"-->
+<!--            android:showWhenLocked="true"-->
+<!--            android:turnScreenOn="true"-->
+<!--            android:theme="@style/Theme.AppCompat.NoActionBar">-->
+<!--            <intent-filter android:priority="1">-->
+<!--                <action android:name="io.getstream.video.android.action.INCOMING_CALL" />-->
+<!--            </intent-filter>-->
+<!--        </activity>-->
         <service android:name=".PushNotificationService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT"/>
             </intent-filter>
         </service>
-        <activity
-            android:name=".Screens.callServices.AcceptCallActivity"
-            android:exported="false">
-            <intent-filter android:priority="1">
-                <action android:name="io.getstream.video.android.action.ACCEPT_CALL" />
-            </intent-filter>
-        </activity>
+<!--        <activity-->
+<!--            android:name=".Screens.callServices.AcceptCallActivity"-->
+<!--            android:exported="false">-->
+<!--            <intent-filter android:priority="1">-->
+<!--                <action android:name="io.getstream.video.android.action.ACCEPT_CALL" />-->
+<!--            </intent-filter>-->
+<!--        </activity>-->
 
-        <activity
-            android:name=".Screens.callServices.OngoingCallActivity"
-            android:exported="false"
-            android:launchMode="singleTask">
-            <intent-filter android:priority="1">
-                <action android:name="io.getstream.video.android.action.ONGOING_CALL" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".Screens.callServices.CallActivity"
-            android:exported="true"
-            android:launchMode="singleTask">
-            <intent-filter android:priority="1">
-                <action android:name="io.getstream.video.android.action.ONGOING_CALL" />
-            </intent-filter>
-        </activity>
+<!--        <activity-->
+<!--            android:name=".Screens.callServices.OngoingCallActivity"-->
+<!--            android:exported="false"-->
+<!--            android:launchMode="singleTask">-->
+<!--            <intent-filter android:priority="1">-->
+<!--                <action android:name="io.getstream.video.android.action.ONGOING_CALL" />-->
+<!--            </intent-filter>-->
+<!--        </activity>-->
+<!--        <activity-->
+<!--            android:name=".Screens.callServices.CallActivity"-->
+<!--            android:exported="true"-->
+<!--            android:launchMode="singleTask">-->
+<!--            <intent-filter android:priority="1">-->
+<!--                <action android:name="io.getstream.video.android.action.ONGOING_CALL" />-->
+<!--            </intent-filter>-->
+<!--        </activity>-->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"

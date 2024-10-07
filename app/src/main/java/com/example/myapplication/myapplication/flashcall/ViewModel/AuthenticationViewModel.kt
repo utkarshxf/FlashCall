@@ -7,13 +7,10 @@ import android.util.Log.d
 import android.widget.Toast
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
 import com.example.myapplication.myapplication.flashcall.BaseClass
 import com.example.myapplication.myapplication.flashcall.Data.Events
 import com.example.myapplication.myapplication.flashcall.Data.ScreenRoutes
@@ -25,18 +22,20 @@ import com.example.myapplication.myapplication.flashcall.Data.model.VerifyOTPRes
 import com.example.myapplication.myapplication.flashcall.preferenceStore.userPref
 import com.example.myapplication.myapplication.flashcall.repository.AuthRepository
 import com.example.myapplication.myapplication.flashcall.repository.UserPreferencesRepository
-import com.google.gson.Gson
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
+import com.google.firebase.messaging.messaging
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.fold
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import retrofit2.HttpException
 import javax.inject.Inject
 
@@ -45,6 +44,7 @@ class AuthenticationViewModel @Inject constructor(
     private val authenticationRepository: AuthRepository,
     private val userPref: userPref,
     private val userPreferencesRepository:UserPreferencesRepository,
+    private val firestore: FirebaseFirestore,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
     var inProcess = mutableStateOf(false)
@@ -114,6 +114,24 @@ class AuthenticationViewModel @Inject constructor(
         }
     }
 
+    private fun sendFcmToken(phone: String?) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val fcmToken = Firebase.messaging.token.await()
+            // Create FCM document in Firestore
+            val fcmData = hashMapOf(
+                "token" to fcmToken
+            )
+            firestore.collection("FCMtoken").document(phone?:"unknown")
+                .set(fcmData, SetOptions.merge())
+                .addOnSuccessListener {
+                    Log.d("Firestore", "FCMtoken document updated successfully")
+                }.addOnFailureListener { e ->
+                    Log.e("FirestoreError", "Failed to update FCM document: ${e.message}")
+                }
+        }
+    }
+
+
     fun verifyOTP(
         phone: String,
         otp: String,
@@ -125,15 +143,19 @@ class AuthenticationViewModel @Inject constructor(
         loading(true)
         try {
             viewModelScope.launch {
-
+                val fcmToken = Firebase.messaging.token.await()
+                Log.e("qwertyfcmToken" , "$fcmToken ")
                 try {
                     authenticationRepository.verifyOtp(
-                        "api/v1/verify-otp", phone, otp
+                        "api/v1/verify-otp", phone, otp , fcmToken
                     ).collect {
                         if (it.token != null) {
+                            sendFcmToken("+91$phone")
                             _verifyOTPState.value = APIResponse.Success(it)
+
                             loading(false)
                             if (isCreatedUserState.value != null) {
+
                                 saveTokenToPreferences(context, it.token)
                                 loading(false)
                                 navController.navigate(ScreenRoutes.LoginDoneScreen.route) {

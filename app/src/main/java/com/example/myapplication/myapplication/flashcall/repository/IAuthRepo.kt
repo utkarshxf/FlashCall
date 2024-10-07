@@ -1,7 +1,5 @@
 package com.example.myapplication.myapplication.flashcall.repository
 
-import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
-import com.example.myapplication.myapplication.flashcall.Data.model.CreateUserResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.IsUserCreatedResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.ResendOTPResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.SendOTPResponseX
@@ -15,7 +13,7 @@ interface IAuthRepo {
 
     suspend fun resendOtp(url: String, number: String): Flow<ResendOTPResponse>
 
-    suspend fun verifyOtp(url: String, number: String, otp: String): Flow<VerifyOTPResponse>
+    suspend fun verifyOtp(url: String, number: String, otp: String, fcmToken: String): Flow<VerifyOTPResponse>
 
     suspend fun validateUser(url : String, token : String) : Flow<ValidateResponse>
 

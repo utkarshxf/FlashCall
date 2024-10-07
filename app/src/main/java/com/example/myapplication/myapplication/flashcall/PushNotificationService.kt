@@ -21,7 +21,10 @@ import io.getstream.android.push.firebase.FirebaseMessagingDelegate
 
 
 class PushNotificationService : FirebaseMessagingService() {
+init {
 
+    Log.v("PushNotificationService", "PushNotificationService initialized")
+}
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
@@ -56,7 +59,9 @@ class PushNotificationService : FirebaseMessagingService() {
                 Log.d("FCM", "Stream message processed")
             } else {
 //                super.onMessageReceived(message)
+                Log.v("PushNotificationService", "message received")
                 message.notification?.let { sendNotification(it) }
+                Log.v("message.data" , message.data.toString())
                     ?: run {
 //                        handleDataMessage(message.data)
                     }
@@ -69,6 +74,7 @@ class PushNotificationService : FirebaseMessagingService() {
             message.notification?.let { sendNotification(it) }
 
                 ?: run {
+                    Log.v("message.data" , message.data.toString())
 //                    handleDataMessage(message.data)
                 }
         }
@@ -112,6 +118,13 @@ class PushNotificationService : FirebaseMessagingService() {
             .setContentText(notification.body)
             .setAutoCancel(true)
             .setSound(defaultSoundUri)
+            .setCategory(NotificationCompat.CATEGORY_CALL)
+            .setPriority(NotificationCompat.PRIORITY_MAX)
+            .setOngoing(true)
+            .setAutoCancel(true)
+            .setSound(RingtoneManager.getDefaultUri(R.raw.call_incoming_sound))
+            .setVibrate(longArrayOf(0, 500, 1000))
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setContentIntent(pendingIntent)
 
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

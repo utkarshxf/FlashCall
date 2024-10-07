@@ -16,7 +16,9 @@ data class VerifyRequest(
     @SerializedName("phone")
     val phone : String,
     @SerializedName("otp")
-    val otp : String
+    val otp : String,
+    @SerializedName("fcmToken")
+    val token : String? = null
 )
 
 data class CreateUser(
