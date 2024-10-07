@@ -296,7 +296,6 @@ class RegistrationViewModel @Inject constructor(
         dob: String?=null,
         bio: String?=null,
         link: LinkData?=null,
-        navController: NavController,
         loading: (Boolean) -> Unit
     ) {
         viewModelScope.launch {
@@ -318,11 +317,9 @@ class RegistrationViewModel @Inject constructor(
                     phone = phone,
                     username = username
                 ).collect { response ->
-
                     _updateUserState.value = APIResponse.Success(response)
                     loading(false)
                     userPreferencesRepository.storeUpdateUserResponseInPreferences(response)
-                    navController.popBackStack()
                 }
             } catch (e: Exception) {
                 Log.e("error", "User update failed: ${e.message}")

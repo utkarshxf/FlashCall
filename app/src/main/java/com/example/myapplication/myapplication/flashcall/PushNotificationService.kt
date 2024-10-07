@@ -18,8 +18,7 @@ import com.example.myapplication.myapplication.flashcall.Screens.callServices.In
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import io.getstream.android.push.firebase.FirebaseMessagingDelegate
-import io.getstream.video.android.core.notifications.NotificationHandler
-import io.getstream.video.android.model.StreamCallId
+
 
 class PushNotificationService : FirebaseMessagingService() {
 
@@ -57,8 +56,14 @@ class PushNotificationService : FirebaseMessagingService() {
                 Log.d("FCM", "Stream message processed")
             } else {
                 // Handle custom notification
+
+
+                super.onMessageReceived(message)
                 message.notification?.let { sendNotification(it) }
-                    ?: run { handleDataMessage(message.data) }
+                    ?: run {
+//                        handleDataMessage(message.data)
+                    }
+
                 Log.d("FCM", "message processed")
             }
         } catch (exception: IllegalStateException) {
@@ -66,9 +71,23 @@ class PushNotificationService : FirebaseMessagingService() {
             Log.e("PushNotificationService", "StreamVideo was not initialized", exception)
             // Still try to show the notification
             message.notification?.let { sendNotification(it) }
-                ?: run { handleDataMessage(message.data) }
+
+                ?: run {
+//                    handleDataMessage(message.data)
+                }
         }
     }
+
+
+//    override fun onMessageReceived(message: RemoteMessage) {
+//        super.onMessageReceived(message)
+//        message.notification?.let {
+//            // Handle the message
+//            Log.d("FCM", "Message Notification Body: ${it.body}")
+//            sendNotification(it)
+//        }
+//    }
+
 
     private fun handleDataMessage(data: Map<String, String>) {
         // Create a notification from data payload

@@ -96,6 +96,7 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.ThemeColorOran
 import com.example.myapplication.myapplication.flashcall.ui.theme.ThemeColorPurple
 import com.example.myapplication.myapplication.flashcall.ui.theme.ThemeColorYellow
 import com.example.myapplication.myapplication.flashcall.ui.theme.helveticaFontFamily
+import com.example.myapplication.myapplication.flashcall.utils.LoadingIndicator
 import com.example.myapplication.myapplication.flashcall.utils.capitalizeAfterSpace
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -137,6 +138,9 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
     var bio by remember {
         mutableStateOf("")
     }
+    var isUploadingProfile by remember {
+        mutableStateOf(false)
+    }
     val (firstName, lastName) = name.trim().split(" ", limit = 2).let {
         when {
             it.isEmpty() -> "" to ""
@@ -162,8 +166,7 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                     themeSelected = themeSelected,
                     gender = gender,
                     dob = dob,
-                    bio = bio,
-                    navController = navController
+                    bio = bio
                 ){}
             }
         }
@@ -217,21 +220,18 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
     val imageUri = rememberSaveable {
         mutableStateOf("")
     }
-    val painter = rememberAsyncImagePainter(
-        imageUri.value.ifEmpty { R.drawable.profile_picture_holder }
-    )
 
 
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-
         uri?.let {
             uriImg = it
             imageUri.value = it.toString()
-
+            profilePic = imageUri.value
             if (uriImg != null) {
+                isUploadingProfile = !isUploadingProfile
                 uriImg.let { uri ->
                     uploadImageToFirebase(uri, context) { url ->
                         imageUrl = url
@@ -247,9 +247,10 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                             themeSelected = themeSelected,
                             gender = gender,
                             dob = dob,
-                            bio = bio,
-                            navController = navController
-                        ){}
+                            bio = bio
+                        ){
+                            isUploadingProfile = it
+                        }
                     }
                 }
             }
@@ -266,9 +267,6 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
         mutableStateOf(userData?.bio+"")
     }
 
-    var colorSelected by remember {
-        mutableStateOf(false)
-    }
 
 
     var blackTheme by remember { mutableStateOf(false) }
@@ -346,12 +344,11 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                         ), color = Color.White
                     )
                     Spacer(modifier = Modifier.height(10.dp))
-                    if (profilePic=="") {
+                    if (profilePic == "" || profilePic == "photo") {
                         Box(modifier = Modifier.padding(start = 8.dp))
                         {
-
                             Image(
-                                painter = painter,
+                                painter = painterResource(id = R.drawable.profile_picture_holder),
                                 contentDescription = null,
                                 modifier = Modifier
                                     .padding(8.dp)
@@ -366,15 +363,21 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                                     .clip(CircleShape)
                                     .clickable {
                                         launcher.launch("image/*")
-
                                     }
                             )
                         }
                     }else{
                         Box(modifier = Modifier.padding(start = 8.dp))
                         {
-                        ImageFromUrl(imageUrl = profilePic!!)
 
+                            Box(contentAlignment = Alignment.Center){
+
+                                ImageFromUrl(imageUrl = profilePic)
+
+                                if(isUploadingProfile){
+                                    LoadingIndicator()
+                                }
+                            }
                             Image(
                                 painter = painterResource(id = R.drawable.edit_icon),
                                 contentDescription = null,
@@ -383,73 +386,72 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                                     .align(Alignment.BottomEnd)
                                     .clickable {
                                         launcher.launch("image/*")
-
                                     }
                             )
                         }
                     }
                 }
 
-                Box(modifier = Modifier.padding(start = 110.dp,top = 190.dp))
-                {
-                    if (profilePic==""){
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(90.dp)
-                        )
-                        {
-                            Column(
-                                modifier = Modifier.fillMaxSize(),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-
+//                Box(modifier = Modifier.padding(start = 110.dp,top = 190.dp))
+//                {
+//                    if (profilePic==""){
+//                        Box(
+//                            modifier = Modifier
+//                                .fillMaxWidth()
+//                                .height(90.dp)
+//                        )
+//                        {
+//                            Column(
+//                                modifier = Modifier.fillMaxSize(),
+//                                verticalArrangement = Arrangement.Center,
+//                                horizontalAlignment = Alignment.CenterHorizontally
+//                            ) {
+//
+////                                Image(
+////                                    painter = painter,
+////                                    contentDescription = null,
+////                                    contentScale = ContentScale.Crop,
+////                                    modifier = Modifier
+////                                        .clip(CircleShape)
+////                                        .size(96.dp)
+////                                )
+//                            }
+//
+//                            Box(modifier = Modifier.padding(start = 200.dp, top = 70.dp))
+//                            {
 //                                Image(
-//                                    painter = painter,
+//                                    painter = painterResource(id = R.drawable.edit_icon),
 //                                    contentDescription = null,
-//                                    contentScale = ContentScale.Crop,
 //                                    modifier = Modifier
 //                                        .clip(CircleShape)
-//                                        .size(96.dp)
+//                                        .clickable {
+//                                            launcher.launch("image/*")
+//
+//                                        }
 //                                )
-                            }
-
-                            Box(modifier = Modifier.padding(start = 200.dp, top = 70.dp))
-                            {
-                                Image(
-                                    painter = painterResource(id = R.drawable.edit_icon),
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .clip(CircleShape)
-                                        .clickable {
-                                            launcher.launch("image/*")
-
-                                        }
-                                )
-                            }
-
-                        }
-
-
-                    }
-
-                    else {
-                        Box(modifier = Modifier.padding(start = 200.dp, top = 70.dp))
-                        {
-                            Image(
-                                painter = painterResource(id = R.drawable.edit_icon),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .clickable {
-                                        launcher.launch("image/*")
-
-                                    }
-                            )
-                        }
-                    }
-                }
+//                            }
+//
+//                        }
+//
+//
+//                    }
+//
+//                    else {
+//                        Box(modifier = Modifier.padding(start = 200.dp, top = 70.dp))
+//                        {
+//                            Image(
+//                                painter = painterResource(id = R.drawable.edit_icon),
+//                                contentDescription = null,
+//                                modifier = Modifier
+//                                    .clip(CircleShape)
+//                                    .clickable {
+//                                        launcher.launch("image/*")
+//
+//                                    }
+//                            )
+//                        }
+//                    }
+//                }
 
                 }
 
@@ -1101,8 +1103,7 @@ fun EditProfileScreen(navController: NavController,registrationViewModel: Regist
                                         themeSelected = themeSelected,
                                         gender = gender,
                                         dob = dob,
-                                        bio = edit_profile_bio,
-                                        navController = navController,
+                                        bio = edit_profile_bio
                                     ){ loading = it }
                                 }else{
                                     if(edit_profile_name.isEmpty()){

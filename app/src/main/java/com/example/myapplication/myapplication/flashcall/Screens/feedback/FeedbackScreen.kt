@@ -1,6 +1,5 @@
 package com.example.myapplication.myapplication.flashcall.Screens.feedback
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -16,8 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -34,7 +31,6 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,7 +39,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -52,24 +47,24 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.myapplication.myapplication.flashcall.Data.model.feedback.UpdateFeedback
 import com.example.myapplication.myapplication.flashcall.Data.model.userFeedbacks.FeedbackItem
-import com.example.myapplication.myapplication.flashcall.Data.model.userFeedbacks.FeedbackResponseItem
 import com.example.myapplication.myapplication.flashcall.R
 import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.feedback.FeedbackViewModel
+import com.example.myapplication.myapplication.flashcall.ui.theme.BorderColor
 import com.example.myapplication.myapplication.flashcall.ui.theme.MainColor
+import com.example.myapplication.myapplication.flashcall.ui.theme.PrimaryText
 import com.example.myapplication.myapplication.flashcall.ui.theme.ProfileBackground
 import com.example.myapplication.myapplication.flashcall.ui.theme.RatingColor
+import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryText
 import com.example.myapplication.myapplication.flashcall.ui.theme.helveticaFontFamily
 import com.example.myapplication.myapplication.flashcall.utils.LoadingIndicator
 import com.example.myapplication.myapplication.flashcall.utils.dragAndDrop.FeedbackDragDropList
 import com.jetpack.draganddroplist.move
 //import com.jetpack.draganddroplist.move
 import java.time.ZonedDateTime
-import java.util.Date
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun FeedbackScreen(
@@ -124,7 +119,9 @@ fun FeedbackScreen(
             ) {
                 Text(
                     text = "User's Feedbacks", style = TextStyle(
-                        fontFamily = helveticaFontFamily, fontSize = 24.sp, fontWeight = FontWeight.Bold
+                        fontFamily = helveticaFontFamily,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold
                     )
                 )
             }
@@ -137,7 +134,7 @@ fun FeedbackScreen(
 //            Log.d("maxHeightAndWidth","height: $screenHeight, width: $screenWidth")
 
 
-            if(feedbackViewModel.userFeedbackState.isLoading){
+            if (feedbackViewModel.userFeedbackState.isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     LoadingIndicator()
                 }
@@ -157,13 +154,19 @@ fun FeedbackScreen(
 //                    items = feedbackViewModel.originalFeedbackList,
 //                    onMove = { fromIndex, toIndex -> feedbackViewModel.originalFeedbackList.move(fromIndex, toIndex)},
 //                    viewModel = feedbackViewModel)
-                
+
 //                if(feedbacks.isNotEmpty()){
 
-                    FeedbackDragDropList(
-                        items = feedbackViewModel.originalFeedbackList,
-                        onMove = { fromIndex, toIndex -> feedbackViewModel.originalFeedbackList.move(fromIndex, toIndex)},
-                        viewModel = feedbackViewModel)
+                FeedbackDragDropList(
+                    items = feedbackViewModel.originalFeedbackList,
+                    onMove = { fromIndex, toIndex ->
+                        feedbackViewModel.originalFeedbackList.move(
+                            fromIndex,
+                            toIndex
+                        )
+                    },
+                    viewModel = feedbackViewModel
+                )
 
 //                    LazyColumn(
 //                        modifier = Modifier.fillMaxWidth(),
@@ -203,7 +206,7 @@ fun FeedbackListUtil(feedback: FeedbackItem, toggle: (Boolean) -> Unit = {}) {
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .border(1.dp, Color.Black, shape = RoundedCornerShape(12.dp))
+            .border(1.dp, BorderColor, shape = RoundedCornerShape(12.dp))
             .background(Color.White, shape = RoundedCornerShape(12.dp))
             .clip(RoundedCornerShape(12.dp)),
         colors = CardDefaults.cardColors(containerColor = Color.White)
@@ -213,19 +216,26 @@ fun FeedbackListUtil(feedback: FeedbackItem, toggle: (Boolean) -> Unit = {}) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                    .padding(10.dp),
+                verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.Center
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.reorder_icon),
-                    contentDescription = "reorder"
+                    contentDescription = "reorder",
+                    modifier = Modifier.padding(top = 8.dp, end = 7.dp)
                 )
 
-                Column(modifier = Modifier.padding(8.dp)) {
+                Column(modifier = Modifier
+                    .weight(1f)
+                    .padding(top = 8.dp)) {
                     // Display client's phone or username
+                    var phone: String? = null
+                    if (feedback.clientId?.phone != null) {
+                        phone = feedback.clientId.phone.dropLast(5) + "XXXXX"
+                    }
                     Text(
-                        text = feedback.clientId?.phone ?: feedback.clientId?.username
+                        text = phone ?: feedback.clientId?.username
                         ?: "Unknown User", style = TextStyle(
                             fontFamily = helveticaFontFamily,
                             fontSize = 16.sp,
@@ -236,34 +246,30 @@ fun FeedbackListUtil(feedback: FeedbackItem, toggle: (Boolean) -> Unit = {}) {
                     // Display rating
                     RatingBar(rating = feedback.rating ?: 0)
                 }
-
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Switch(
-                        checked = isChecked, onCheckedChange = {
-                            isChecked = it
-                            toggle(it)
-                        }, modifier = Modifier.align(Alignment.End), colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = MainColor,
-                            uncheckedThumbColor = Color.White,
-                            uncheckedTrackColor = Color.Gray,
-                        )
+                Switch(
+                    checked = isChecked, onCheckedChange = {
+                        isChecked = it
+                        toggle(it)
+                    }, colors = SwitchDefaults.colors(
+                        checkedThumbColor = Color.White,
+                        checkedTrackColor = MainColor,
+                        uncheckedThumbColor = Color.White,
+                        uncheckedTrackColor = Color.Gray,
                     )
-                }
+                )
             }
 
             HorizontalDivider(
+                color = BorderColor,
                 thickness = 1.dp,
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp)
+                modifier = Modifier.padding(start = 40.dp, end = 16.dp)
             )
             Spacer(modifier = Modifier.size(10.dp))
 
             Row(modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
-                .padding(start = 16.dp, end = 16.dp)
+                .padding(start = 40.dp, end = 16.dp, bottom = 10.dp)
                 .clickable {
                     isExpanded = !isExpanded
                 }) {
@@ -277,17 +283,23 @@ fun FeedbackListUtil(feedback: FeedbackItem, toggle: (Boolean) -> Unit = {}) {
                             maxLines = 1,
                         )
                     }
-                    Text("View More")
+                    Text(
+                        "View More",
+                        color = Color.Black,
+                        fontFamily = helveticaFontFamily,
+                        fontWeight = FontWeight.Bold
+                    )
                 } else {
                     Column(modifier = Modifier.wrapContentHeight()) {
                         Text(
                             text = feedback.feedback ?: "No feedback provided",
+                            color = PrimaryText
                         )
 
-                        Spacer(modifier = Modifier.height(20.dp))
+//                        Spacer(modifier = Modifier.height(20.dp))
 
                         // Display call type (e.g., "Video Call")
-                        Text(text = "Call Type: Video Call")
+                        //Text(text = "Video Call", color = Color.Black, fontFamily = helveticaFontFamily, fontWeight = FontWeight.Bold, fontSize = )
 
                         Spacer(modifier = Modifier.height(10.dp))
 
@@ -295,22 +307,48 @@ fun FeedbackListUtil(feedback: FeedbackItem, toggle: (Boolean) -> Unit = {}) {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .wrapContentHeight(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
+                            horizontalArrangement = Arrangement.End,
                         ) {
                             // Display client's phone or username
-                            Text(
-                                text = feedback.clientId?.phone ?: feedback.clientId?.username
-                                ?: "Unknown User"
-                            )
+//                            var phone:String? = null
+//                            if(feedback.clientId?.phone != null){
+//                                phone = feedback.clientId.phone.dropLast(5)+"XXXXX"
+//                            }
+//                            Text(
+//                                text = phone ?: feedback.clientId?.username
+//                                ?: "Unknown User"
+//                            )
 
                             // Display created date
-                            Text(text = feedback.createdAt ?: "Unknown Date")
+                            Text(
+                                text = convertDateFormate(feedback.createdAt),
+                                color = SecondaryText,
+                                fontSize = 12.sp,
+                                fontFamily = helveticaFontFamily
+                            )
                         }
                     }
                 }
             }
         }
     }
+}
+
+fun convertDateFormate(dateTime: String?): String {
+    if (!dateTime.isNullOrEmpty()) {
+        // Parse the original date-time string
+        val parsedDateTime = ZonedDateTime.parse(dateTime)
+
+        // Define the desired output format
+        val formatter = DateTimeFormatter.ofPattern("dd/MM/yy, hh:mma")
+
+        // Format the date-time into the desired format
+        val formattedDateTime = parsedDateTime.format(formatter)
+        return formattedDateTime
+    } else {
+        return "Unknown Date"
+    }
+
 }
 
 

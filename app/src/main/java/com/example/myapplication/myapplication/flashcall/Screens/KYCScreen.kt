@@ -118,6 +118,7 @@ fun KYCScreen(
                 .verticalScroll(rememberScrollState()),
 
             ) {
+            Spacer(modifier = Modifier.height(40.dp))
             IconButton(onClick = { navController.popBackStack() }) {
                 Icon(
                     Icons.Default.KeyboardArrowLeft,
@@ -135,6 +136,7 @@ fun KYCScreen(
                     fontSize = 24.sp,
                     color = Color.Black
                 ),
+                modifier = Modifier.padding(start = 16.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
 

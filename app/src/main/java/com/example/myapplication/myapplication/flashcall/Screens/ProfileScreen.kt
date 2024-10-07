@@ -168,6 +168,50 @@ fun ProfileScreen(
 
             Box(modifier = Modifier
                 .fillMaxWidth()
+                .height(60.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(Color.White)
+                .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
+                .clickable {
+//                    navController.navigate(ScreenRoutes.FeedbackScreen.route)
+                }) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(20.dp)
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.baseline_restore_24),
+                        contentDescription = null
+                    )
+
+                    Text(
+                        text = "Order History",
+                        color = Color.Black,
+                        modifier = Modifier.padding(start = 10.dp),
+                        style = TextStyle(
+                            fontFamily = helveticaFontFamily,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 18.sp
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    Icon(
+                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = "Next",
+                        tint = Color.Black,
+                        modifier = Modifier.size(36.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(15.dp))
+
+
+            Box(modifier = Modifier
+                .fillMaxWidth()
                 .height(if (isKyc) 75.dp else 60.dp)
                 .clip(RoundedCornerShape(10.dp))
                 .background(Color.White)
