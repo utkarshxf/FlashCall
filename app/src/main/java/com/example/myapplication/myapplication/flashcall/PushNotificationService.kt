@@ -23,6 +23,11 @@ import io.getstream.video.android.model.StreamCallId
 
 class PushNotificationService : FirebaseMessagingService() {
 
+    override fun onCreate() {
+        super.onCreate()
+        createNotificationChannel()
+    }
+
     // [START on_new_token]
     /**
      * Called if the FCM registration token is updated. This may occur if the security of
@@ -52,8 +57,6 @@ class PushNotificationService : FirebaseMessagingService() {
                 Log.d("FCM", "Stream message processed")
             } else {
                 // Handle custom notification
-
-                super.onMessageReceived(message)
                 message.notification?.let { sendNotification(it) }
                     ?: run { handleDataMessage(message.data) }
                 Log.d("FCM", "message processed")
