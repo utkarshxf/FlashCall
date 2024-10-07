@@ -86,7 +86,7 @@ class CustomNotificationHandler(
             .setFullScreenIntent(fullScreenPendingIntent, true)
             .setOngoing(true)
             .setAutoCancel(true)
-            .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE))
+            .setSound(RingtoneManager.getDefaultUri(R.raw.call_incoming_sound))
             .setVibrate(longArrayOf(0, 500, 1000))
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
 
@@ -98,7 +98,8 @@ class CustomNotificationHandler(
                 Manifest.permission.POST_NOTIFICATIONS
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            notificationManager.notify(callId.hashCode(), notification)
+            Log.v("qwerty00" , callId.hashCode().toString())
+            notificationManager.notify( callId.hashCode(), notification)
         } else {
             Log.w("CustomNotificationHandler", "POST_NOTIFICATIONS permission not granted")
         }

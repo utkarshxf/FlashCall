@@ -156,7 +156,7 @@ fun VideoCallContent(
                                 )
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
                         ) {
-                            Text(text = timeLeft.toString())
+                            Text(text = formatTimeLeft(timeLeft))
                         }
                     },
                     call = call,
@@ -268,6 +268,11 @@ fun VideoCallContent(
             }
         )
     }
+}
+fun formatTimeLeft(timeLeftInSeconds: Double): String {
+    val minutes = (timeLeftInSeconds / 60).toInt()
+    val seconds = (timeLeftInSeconds % 60).toInt().toString().padStart(2, '0')
+    return "time left: $minutes:$seconds"
 }
 
 
