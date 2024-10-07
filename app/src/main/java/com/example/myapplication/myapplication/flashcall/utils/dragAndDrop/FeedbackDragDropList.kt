@@ -25,8 +25,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.consumeAllChanges
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-import com.example.myapplication.myapplication.flashcall.Data.model.LinkData
-import com.example.myapplication.myapplication.flashcall.Data.model.feedback.UpdateFeedback
 import com.example.myapplication.myapplication.flashcall.Data.model.userFeedbacks.FeedbackResponseItem
 import com.example.myapplication.myapplication.flashcall.Screens.AddedLinkLayout
 import com.example.myapplication.myapplication.flashcall.Screens.feedback.FeedbackListUtil
@@ -90,16 +88,17 @@ fun FeedbackDragDropList(
             ) {
 
                 feedbackResponse.feedback?.let {
-                    FeedbackListUtil(it) {
+                    FeedbackListUtil(it) { isActive ->
                         viewModel.updateFeedback(
-                            UpdateFeedback(
-                                clientId = feedbackResponse.feedback.clientId?._id,
-                                createdAt = feedbackResponse.feedback.createdAt,
-                                creatorId = feedbackResponse.creatorId,
-                                feedbackText = feedbackResponse.feedback.feedback,
-                                rating = feedbackResponse.feedback.rating,
-                                showFeedback = it
-                            )
+                            callId = feedbackResponse.callId,
+                            clientId = feedbackResponse.feedback.clientId?._id,
+                            createdAt = feedbackResponse.feedback.createdAt,
+                            creatorId =  feedbackResponse.creatorId,
+                            feedbackText = feedbackResponse.feedback.feedback,
+                            rating = feedbackResponse.feedback.rating,
+                            showFeedback = isActive,
+                            position = feedbackResponse.feedback.position
+
                         )
                     }
                 }
