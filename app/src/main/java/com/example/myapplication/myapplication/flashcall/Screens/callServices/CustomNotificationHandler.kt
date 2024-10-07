@@ -14,16 +14,22 @@ import android.graphics.Color
 import android.media.RingtoneManager
 import android.os.Build
 import android.util.Log
+import androidx.compose.runtime.LaunchedEffect
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat.getSystemService
 import com.example.myapplication.myapplication.flashcall.BaseClass
 import com.example.myapplication.myapplication.flashcall.MainActivity
 import com.example.myapplication.myapplication.flashcall.R
 import com.example.myapplication.myapplication.flashcall.Screens.common.maskIfPhoneNumber
+import io.getstream.video.android.core.StreamVideo
 import io.getstream.video.android.core.notifications.DefaultNotificationHandler
 import io.getstream.video.android.core.notifications.NotificationHandler
 import io.getstream.video.android.model.StreamCallId
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class CustomNotificationHandler(
     private val application: Application,
@@ -71,10 +77,40 @@ class CustomNotificationHandler(
             putExtra(NotificationHandler.INTENT_EXTRA_CALL_DISPLAY_NAME, callDisplayName)
         }
 
+
+        val acceptCallIntent = Intent(application, IncomingCallActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra(NotificationHandler.INTENT_EXTRA_CALL_CID, callId)
+            putExtra("call_accepted", true)
+            putExtra(NotificationHandler.INTENT_EXTRA_CALL_DISPLAY_NAME, callDisplayName)
+        }
+
+        val rejectCallIntent = Intent(application, DeclineCallReceiver::class.java).apply {
+            val call = StreamVideo.instance().call(callId.type, callId.id)
+            NotificationManagerCompat.from(application).cancelAll()
+            CoroutineScope(Dispatchers.IO).launch {
+                call.reject()
+            }
+        }
+
         val fullScreenPendingIntent = PendingIntent.getActivity(
             application,
             0,
             fullScreenIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val acceptPendingIntent = PendingIntent.getActivity(
+            application,
+            0,
+            acceptCallIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val rejectPendingIntent = PendingIntent.getActivity(
+            application,
+            0,
+            rejectCallIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -90,6 +126,16 @@ class CustomNotificationHandler(
             .setSound(RingtoneManager.getDefaultUri(R.raw.call_incoming_sound))
             .setVibrate(longArrayOf(0, 500, 1000))
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .addAction(
+                R.drawable.logo,  // Your custom icon for Accept button
+                "Reject",                    // Text for the Accept button
+                rejectPendingIntent          // PendingIntent triggered when Accept is pressed
+            )
+            .addAction(
+                R.drawable.logo,  // Your custom icon for Accept button
+                "Answer",                    // Text for the Accept button
+                acceptPendingIntent          // PendingIntent triggered when Accept is pressed
+            )
 
 
         val notification = builder.build()
@@ -110,31 +156,31 @@ class CustomNotificationHandler(
     }
 
 
-    private fun createAnswerIntent(callId: StreamCallId): PendingIntent {
-        val intent = Intent(application, AnswerCallReceiver::class.java).apply {
-            action = "ANSWER_CALL"
-            putExtra(NotificationHandler.INTENT_EXTRA_CALL_CID, callId)
-        }
-        return PendingIntent.getBroadcast(
-            application,
-            1,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-    }
+//    private fun createAnswerIntent(callId: StreamCallId): PendingIntent {
+//        val intent = Intent(application, AnswerCallReceiver::class.java).apply {
+//            action = "ANSWER_CALL"
+//            putExtra(NotificationHandler.INTENT_EXTRA_CALL_CID, callId)
+//        }
+//        return PendingIntent.getBroadcast(
+//            application,
+//            1,
+//            intent,
+//            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+//        )
+//    }
 
-    private fun createDeclineIntent(callId: StreamCallId): PendingIntent {
-        val intent = Intent(application, DeclineCallReceiver::class.java).apply {
-            action = "DECLINE_CALL"
-            putExtra(NotificationHandler.INTENT_EXTRA_CALL_CID, callId)
-        }
-        return PendingIntent.getBroadcast(
-            application,
-            2,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-    }
+//    private fun createDeclineIntent(callId: StreamCallId): PendingIntent {
+//        val intent = Intent(application, DeclineCallReceiver::class.java).apply {
+//            action = "DECLINE_CALL"
+//            putExtra(NotificationHandler.INTENT_EXTRA_CALL_CID, callId)
+//        }
+//        return PendingIntent.getBroadcast(
+//            application,
+//            2,
+//            intent,
+//            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+//        )
+//    }
 
     @SuppressLint("MissingPermission")
     override fun onMissedCall(callId: StreamCallId, callDisplayName: String) {
