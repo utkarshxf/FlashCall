@@ -116,8 +116,10 @@ import kotlinx.coroutines.launch
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import com.example.myapplication.myapplication.flashcall.ui.theme.helveticaFontFamily
 import kotlinx.coroutines.launch
 
@@ -148,33 +150,21 @@ fun SignUpScreen(navController: NavController, viewModel: AuthenticationViewMode
         Box(
             modifier = Modifier
                 .fillMaxSize(),
+            contentAlignment = Alignment.TopCenter
+        ) {
+            ImageSlider()
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize(),
             contentAlignment = Alignment.BottomCenter
         ) {
-//            if (!isKeyboardOpen) {
-            // Only show image slider and texts when the keyboard is closed
-            ImageSlider()
-//                Spacer(modifier = Modifier.height(20.dp))
-            //TitleText()
-//                Spacer(modifier = Modifier.height(15.dp))
-//                SubTitleText()
-//                Spacer(modifier = Modifier.height(30.dp))
-//            }
-//            if(isKeyboardOpen){
-//                Spacer(modifier = Modifier.height(50.dp))
-//                TitleText()
-//                Spacer(modifier = Modifier.height(15.dp))
-//                SubTitleText()
-//                Spacer(modifier = Modifier.height(30.dp))
-//            }
-
-
-
             BottomSignUpBar(navController, viewModel)
-
         }
+
     }
 }
-
 
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -182,9 +172,9 @@ fun SignUpScreen(navController: NavController, viewModel: AuthenticationViewMode
 fun ImageSlider(modifier: Modifier = Modifier) {
 
     val images = listOf(
-        R.drawable.home_slider_image1,
-        R.drawable.home_slider_image2,
-        R.drawable.home_slider_image3,
+        R.drawable.login_slider_1,
+        R.drawable.login_slider_2,
+        R.drawable.login_slider_3,
     )
 
     val pagerState = rememberPagerState(pageCount = { images.size })
@@ -199,14 +189,15 @@ fun ImageSlider(modifier: Modifier = Modifier) {
 
     }
 
-    Column(modifier = modifier.fillMaxWidth()) {
+    Column() {
         Box(
             modifier = modifier
-//            .padding(top = 70.dp)
-//            .wrapContentSize()
-//            .align(Alignment.CenterHorizontally)
-//            .width(200.dp)
-//            .height(200.dp)
+                .padding(top = 70.dp)
+                .wrapContentSize()
+                .align(Alignment.CenterHorizontally)
+                .width(230.dp)
+                .height(300.dp)
+
         ) {
 
             HorizontalPager(
@@ -220,15 +211,60 @@ fun ImageSlider(modifier: Modifier = Modifier) {
                         .wrapContentSize(),
                     elevation = CardDefaults.cardElevation(5.dp)
                 ) {
+
                     Image(
                         painter = painterResource(id = images[currentPage]),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
+                            .background(Background),
                     )
+
                 }
             }
         }
+
+        if (pagerState.currentPage == 0) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                Text(
+                    text = "Build your own app for free and offer Pay-Per-Min Chats",
+                    textAlign = TextAlign.Center,
+                    color = Color.White,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = helveticaFontFamily,
+                    modifier = Modifier.padding(horizontal = 30.dp, vertical = 10.dp)
+                )
+            }
+        } else if (pagerState.currentPage == 1) {
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                Text(
+                    text = "Share your app link to your social media bio and start earning",
+                    textAlign = TextAlign.Center,
+                    color = Color.White,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = helveticaFontFamily,
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
+                )
+            }
+        } else if (pagerState.currentPage == 2) {
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                Text(
+                    text = "Withdraw your earnings instantly to your bank account",
+                    textAlign = TextAlign.Center,
+                    color = Color.White,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = helveticaFontFamily,
+                    modifier = Modifier.padding(horizontal = 30.dp, vertical = 10.dp)
+                )
+            }
+        }
+
+
 
         PageIndicator(
             pageCount = images.size,
@@ -500,7 +536,8 @@ fun BottomSignUpBar(
                             )
                         )
                         Row(
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
                                 .padding(top = 5.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center
@@ -546,7 +583,6 @@ fun BottomSignUpBar(
         }
     }
 }
-
 
 
 @Preview(showBackground = true)

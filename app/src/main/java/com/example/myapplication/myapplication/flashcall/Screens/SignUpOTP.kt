@@ -1,4 +1,4 @@
-    package com.example.myapplication.myapplication.flashcall.Screens
+package com.example.myapplication.myapplication.flashcall.Screens
 
 import android.util.Log
 import android.widget.Toast
@@ -33,6 +33,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.BottomCenter
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
+import androidx.compose.ui.Alignment.Companion.Top
+import androidx.compose.ui.Alignment.Companion.TopCenter
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -66,7 +68,7 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.PrimaryText
 import com.example.myapplication.myapplication.flashcall.ui.theme.SecondaryText
 import com.example.myapplication.myapplication.flashcall.ui.theme.helveticaFontFamily
 
-    var resendToken : String? = null
+var resendToken : String? = null
 var verificationToken : String? = null
 @Composable
 fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) {
@@ -75,127 +77,137 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
         modifier = Modifier.fillMaxSize(),
         color = Background
     ) {
+
         Box(
             modifier = Modifier
                 .fillMaxSize(),
-           contentAlignment = BottomCenter
+            contentAlignment = TopCenter
 
         ){
-                ImageSlider()
+            ImageSlider()
+        }
+
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize(),
+            contentAlignment = Alignment.BottomCenter
+        ) {
             BottomOTPBar(navController,viewModel)
         }
+
     }
 
 }
 
-    @Composable
-    fun BottomOTPBar(navController: NavController, viewModel: AuthenticationViewModel) {
-        var otpValue by remember { mutableStateOf("") }
-        var phone = viewModel.phoneNumber.value
-        var loading by remember {
-            mutableStateOf(false)
-        }
+@Composable
+fun BottomOTPBar(navController: NavController, viewModel: AuthenticationViewModel) {
+    var otpValue by remember { mutableStateOf("") }
+    var phone = viewModel.phoneNumber.value
+    var loading by remember {
+        mutableStateOf(false)
+    }
 
-        var loadingResend by remember { mutableStateOf(false) }
-        val resendOTPState by viewModel.resendOTPState.collectAsState()
-        val sendOTPState by viewModel.sendOTPState.collectAsState()
-        val verifyOTPState by viewModel.verifyOTPState.collectAsState()
+    var loadingResend by remember { mutableStateOf(false) }
+    val resendOTPState by viewModel.resendOTPState.collectAsState()
+    val sendOTPState by viewModel.sendOTPState.collectAsState()
+    val verifyOTPState by viewModel.verifyOTPState.collectAsState()
 
-        val context = LocalContext.current
-        val keyboardController = LocalSoftwareKeyboardController.current
-        val focusRequester = remember { FocusRequester() }
-        val focusManager = LocalFocusManager.current
-        Surface(
+    val context = LocalContext.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()
+            .imePadding()
+            .wrapContentHeight(),
+        shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
+    ) {
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .navigationBarsPadding()
-                .imePadding()
-                .wrapContentHeight(),
-            shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
+                .background(
+                    Color.White,
+                    shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
+                ),
+            contentAlignment = Alignment.BottomCenter,
         ) {
-            Box(
+            Column(
+
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(
-                        Color.White,
-                        shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
-                    ),
-                contentAlignment = Alignment.BottomCenter,
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState()),
             ) {
-                Column(
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = "Enter verification code",
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    color = Color.Black,
+                    style = TextStyle(
+                        fontFamily = helveticaFontFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
+                    )
+                )
 
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                        .verticalScroll(rememberScrollState()),
-                ) {
-                    Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(15.dp))
+
+                Row(modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center) {
                     Text(
-                        text = "Enter verification code",
-                        modifier = Modifier.align(Alignment.CenterHorizontally),
-                        color = Color.Black,
+                        text = "We sent a 6-digit code to $phone ",
+                        color = PrimaryText,
+                        style = TextStyle(
+                            fontFamily = helveticaFontFamily,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 14.sp
+                        )
+                    )
+                    Text(
+                        text = "edit number",
+                        modifier = Modifier.clickable {
+                            navController.navigate(ScreenRoutes.SignUpScreen.route)
+                        },
+                        color = MainColor,
                         style = TextStyle(
                             fontFamily = helveticaFontFamily,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp
+                            fontSize = 14.sp,
+                            textDecoration = TextDecoration.Underline
                         )
                     )
+                }
 
-                    Spacer(modifier = Modifier.height(15.dp))
-
-                    Row(modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center) {
-                        Text(
-                            text = "We sent a 6-digit code to $phone ",
-                            color = PrimaryText,
-                            style = TextStyle(
-                                fontFamily = helveticaFontFamily,
-                                fontWeight = FontWeight.Normal,
-                                fontSize = 14.sp
-                            )
-                        )
-                        Text(
-                            text = "edit number",
-                            modifier = Modifier.clickable {
-                                navController.navigate(ScreenRoutes.SignUpScreen.route)
-                            },
-                            color = MainColor,
-                            style = TextStyle(
-                                fontFamily = helveticaFontFamily,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 14.sp,
-                                textDecoration = TextDecoration.Underline
-                            )
-                        )
+                when (resendOTPState) {
+                    is APIResponse.Success -> {
+                        val response = (resendOTPState as APIResponse.Success).data
+                        resendToken = response.token
                     }
-
-                    when (resendOTPState) {
-                        is APIResponse.Success -> {
-                            val response = (resendOTPState as APIResponse.Success).data
-                            resendToken = response.token
-                        }
-                        APIResponse.Empty -> Log.e("ERROR", "ERROR CODE")
-                        is APIResponse.Error -> {
-                            Toast.makeText(context, "Something Went Wrong", Toast.LENGTH_SHORT).show()
-                        }
-                        APIResponse.Loading -> Log.e("ERROR", "ERROR CODE")
+                    APIResponse.Empty -> Log.e("ERROR", "ERROR CODE")
+                    is APIResponse.Error -> {
+                        Toast.makeText(context, "Something Went Wrong", Toast.LENGTH_SHORT).show()
                     }
+                    APIResponse.Loading -> Log.e("ERROR", "ERROR CODE")
+                }
 
-                    when (sendOTPState) {
-                        is APIResponse.Success -> {
-                            val sendData = (sendOTPState as APIResponse.Success).data
-                            verificationToken = sendData.token
-                        }
-                        APIResponse.Empty -> Log.e("ERROR", "ERROR CODE")
-                        is APIResponse.Error -> {
-                            Toast.makeText(context, "Something Went Wrong", Toast.LENGTH_SHORT).show()
-                        }
-                        APIResponse.Loading -> Log.e("ERROR", "ERROR CODE")
+                when (sendOTPState) {
+                    is APIResponse.Success -> {
+                        val sendData = (sendOTPState as APIResponse.Success).data
+                        verificationToken = sendData.token
                     }
+                    APIResponse.Empty -> Log.e("ERROR", "ERROR CODE")
+                    is APIResponse.Error -> {
+                        Toast.makeText(context, "Something Went Wrong", Toast.LENGTH_SHORT).show()
+                    }
+                    APIResponse.Loading -> Log.e("ERROR", "ERROR CODE")
+                }
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-                    // Conditional UI based on OTP verification state
+                // Conditional UI based on OTP verification state
 //                    when (verifyOTPState) {
 //                        is APIResponse.Success -> {
 //
@@ -231,79 +243,19 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
 //                        }
 //                    }
 
-                    if (verifyOTPState is APIResponse.Error) {
-                        Log.e("verifyOtp state", "is showing error")
-                        Column(verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally) {
+                if (verifyOTPState is APIResponse.Error) {
+                    Log.e("verifyOtp state", "is showing error")
+                    Column(verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally) {
 
 
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                val otpCellConfig = OhTeePeeCellConfiguration.withDefaults(
-                                    borderColor = Color.Red,
-                                    borderWidth = 1.dp,
-                                    shape = RoundedCornerShape(16.dp),
-                                    backgroundColor = OTPBackground,
-                                    textStyle = TextStyle(
-                                        color = Color.Black,
-                                        fontSize = 16.sp,
-                                        fontFamily = helveticaFontFamily,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                )
-                                OhTeePeeInput(
-                                    value = otpValue,
-                                    onValueChange = { newValue, isValid ->
-                                        otpValue = newValue
-                                        if (otpValue.length == 6 && isValid) {
-                                            // Avoid multiple calls by checking that the length is exactly 6
-                                            if (otpValue.length == 6) {
-                                                // Automatically call verifyOTP when otpValue is exactly 6 digits
-                                                keyboardController?.hide()
-                                                if (resendToken != null) {
-                                                    viewModel.verifyOTP(phone, otpValue, resendToken, navController){loading = it}
-                                                } else {
-                                                    viewModel.verifyOTP(phone, otpValue, verificationToken, navController){ loading = it}
-                                                }
-                                                viewModel.iCreatedUser(phone){loading = it}
-                                            }
-                                        }
-                                    },
-                                    configurations = OhTeePeeConfigurations.withDefaults(
-                                        cellsCount = 6,
-                                        activeCellConfig = otpCellConfig.copy(
-                                            borderColor = Color.Red,
-                                            borderWidth = 3.dp
-                                        ),
-                                        emptyCellConfig = otpCellConfig,
-                                        cellModifier = Modifier
-                                            .padding(horizontal = 4.dp)
-                                            .width(46.dp)
-                                            .height(50.dp)
-                                            .focusRequester(focusRequester),
-                                        elevation = 4.dp
-                                    ),
-
-
-
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(10.dp))
-                            Text(text = "This Code is invalid. Please check the code & try again", color = Color.Red, fontSize = 12.sp)
-                        }
-                        Spacer(modifier = Modifier.height(20.dp))
-                    }
-                    else{
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center
                         ) {
                             val otpCellConfig = OhTeePeeCellConfiguration.withDefaults(
-                                borderColor = OTPBorder,
+                                borderColor = Color.Red,
                                 borderWidth = 1.dp,
                                 shape = RoundedCornerShape(16.dp),
                                 backgroundColor = OTPBackground,
@@ -320,23 +272,22 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
                                     otpValue = newValue
                                     if (otpValue.length == 6 && isValid) {
                                         // Avoid multiple calls by checking that the length is exactly 6
-                                        keyboardController?.hide()
                                         if (otpValue.length == 6) {
                                             // Automatically call verifyOTP when otpValue is exactly 6 digits
+                                            keyboardController?.hide()
                                             if (resendToken != null) {
-                                                //mvp
                                                 viewModel.verifyOTP(phone, otpValue, resendToken, navController){loading = it}
                                             } else {
-                                                viewModel.verifyOTP(phone, otpValue, verificationToken, navController){loading = it}
+                                                viewModel.verifyOTP(phone, otpValue, verificationToken, navController){ loading = it}
                                             }
-                                            viewModel.iCreatedUser(phone){}
+                                            viewModel.iCreatedUser(phone){loading = it}
                                         }
                                     }
                                 },
                                 configurations = OhTeePeeConfigurations.withDefaults(
                                     cellsCount = 6,
                                     activeCellConfig = otpCellConfig.copy(
-                                        borderColor =  OTPBorder ,
+                                        borderColor = Color.Red,
                                         borderWidth = 3.dp
                                     ),
                                     emptyCellConfig = otpCellConfig,
@@ -346,67 +297,155 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
                                         .height(50.dp)
                                         .focusRequester(focusRequester),
                                     elevation = 4.dp
+                                ),
+
+
+
                                 )
-                            )
                         }
-                        Spacer(modifier = Modifier.height(20.dp))
-
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(text = "This Code is invalid. Please check the code & try again", color = Color.Red, fontSize = 12.sp)
                     }
-
-                    Text(
-                        text = "Resend OTP",
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                            .clickable {
-                                viewModel.resendOTP(phone) { loadingResend = it}
-                            },
-                        color = PrimaryText,
-                        style = TextStyle(
-                            fontFamily = helveticaFontFamily,
-                            fontWeight = FontWeight.Normal,
-                            fontSize = 14.sp
+                    Spacer(modifier = Modifier.height(20.dp))
+                }
+                else{
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        val otpCellConfig = OhTeePeeCellConfiguration.withDefaults(
+                            borderColor = OTPBorder,
+                            borderWidth = 1.dp,
+                            shape = RoundedCornerShape(16.dp),
+                            backgroundColor = OTPBackground,
+                            textStyle = TextStyle(
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                fontFamily = helveticaFontFamily,
+                                fontWeight = FontWeight.Bold
+                            )
                         )
-                    )
-
-                    CircularLoaderButton(
-                        onClick = {
-                            if (resendToken != null)
-                                viewModel.verifyOTP(phone, otpValue, resendToken, navController){loading = it}
-                            else
-                                viewModel.verifyOTP(phone, otpValue, verificationToken, navController){loading = it}
-                                viewModel.iCreatedUser(phone){loading = it}
-                        },
-                        modifier = Modifier
-                            .align(CenterHorizontally)
-                            .padding(top = 15.dp),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MainColor,
-                            contentColor = Color.White
-                        ),
-                        text = "Verify",
-                        textStyle = TextStyle(
-                            fontFamily = helveticaFontFamily,
-                            fontWeight = FontWeight.Normal,
-                            fontSize = 14.sp
-                        ),
-                        loading = loading,
-                        enabled = !loadingResend
-                    )
-
+                        OhTeePeeInput(
+                            value = otpValue,
+                            onValueChange = { newValue, isValid ->
+                                otpValue = newValue
+                                if (otpValue.length == 6 && isValid) {
+                                    // Avoid multiple calls by checking that the length is exactly 6
+                                    keyboardController?.hide()
+                                    if (otpValue.length == 6) {
+                                        // Automatically call verifyOTP when otpValue is exactly 6 digits
+                                        if (resendToken != null) {
+                                            //mvp
+                                            viewModel.verifyOTP(phone, otpValue, resendToken, navController){loading = it}
+                                        } else {
+                                            viewModel.verifyOTP(phone, otpValue, verificationToken, navController){loading = it}
+                                        }
+                                        viewModel.iCreatedUser(phone){}
+                                    }
+                                }
+                            },
+                            configurations = OhTeePeeConfigurations.withDefaults(
+                                cellsCount = 6,
+                                activeCellConfig = otpCellConfig.copy(
+                                    borderColor =  OTPBorder ,
+                                    borderWidth = 3.dp
+                                ),
+                                emptyCellConfig = otpCellConfig,
+                                cellModifier = Modifier
+                                    .padding(horizontal = 4.dp)
+                                    .width(46.dp)
+                                    .height(50.dp)
+                                    .focusRequester(focusRequester),
+                                elevation = 4.dp
+                            )
+                        )
+                    }
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    Box(
+                }
+
+                Text(
+                    text = "Resend OTP",
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .clickable {
+                            viewModel.resendOTP(phone) { loadingResend = it}
+                        },
+                    color = PrimaryText,
+                    style = TextStyle(
+                        fontFamily = helveticaFontFamily,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 14.sp
+                    )
+                )
+
+                CircularLoaderButton(
+                    onClick = {
+                        if (resendToken != null)
+                            viewModel.verifyOTP(phone, otpValue, resendToken, navController){loading = it}
+                        else
+                            viewModel.verifyOTP(phone, otpValue, verificationToken, navController){loading = it}
+                        viewModel.iCreatedUser(phone){loading = it}
+                    },
+                    modifier = Modifier
+                        .align(CenterHorizontally)
+                        .padding(top = 15.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MainColor,
+                        contentColor = Color.White
+                    ),
+                    text = "Verify",
+                    textStyle = TextStyle(
+                        fontFamily = helveticaFontFamily,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 14.sp
+                    ),
+                    loading = loading,
+                    enabled = !loadingResend
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
                         modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
+                        Text(
+                            text = "By signing up, you agree to our",
+                            style = TextStyle(
+                                fontFamily = helveticaFontFamily,
+                                fontWeight = FontWeight.Normal,
+                                fontSize = 14.sp,
+                                color = SecondaryText
+                            )
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
                         ) {
                             Text(
-                                text = "By signing up, you agree to our",
+                                text = "Terms of Service",
+                                modifier = Modifier.clickable { },
+                                style = TextStyle(
+                                    fontFamily = helveticaFontFamily,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp,
+                                    color = Color.Black
+                                )
+                            )
+
+                            Text(
+                                text = " and ",
+                                modifier = Modifier.clickable { },
                                 style = TextStyle(
                                     fontFamily = helveticaFontFamily,
                                     fontWeight = FontWeight.Normal,
@@ -415,48 +454,21 @@ fun SignUpOTP(navController: NavController, viewModel: AuthenticationViewModel) 
                                 )
                             )
 
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                Text(
-                                    text = "Terms of Service",
-                                    modifier = Modifier.clickable { },
-                                    style = TextStyle(
-                                        fontFamily = helveticaFontFamily,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 14.sp,
-                                        color = Color.Black
-                                    )
+                            Text(
+                                text = "Privacy Policy",
+                                modifier = Modifier.clickable { },
+                                style = TextStyle(
+                                    fontFamily = helveticaFontFamily,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp,
+                                    color = Color.Black
                                 )
-
-                                Text(
-                                    text = " and ",
-                                    modifier = Modifier.clickable { },
-                                    style = TextStyle(
-                                        fontFamily = helveticaFontFamily,
-                                        fontWeight = FontWeight.Normal,
-                                        fontSize = 14.sp,
-                                        color = SecondaryText
-                                    )
-                                )
-
-                                Text(
-                                    text = "Privacy Policy",
-                                    modifier = Modifier.clickable { },
-                                    style = TextStyle(
-                                        fontFamily = helveticaFontFamily,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 14.sp,
-                                        color = Color.Black
-                                    )
-                                )
-                            }
+                            )
                         }
                     }
-                    Spacer(modifier = Modifier.height(20.dp))
                 }
+                Spacer(modifier = Modifier.height(20.dp))
             }
         }
     }
+}
