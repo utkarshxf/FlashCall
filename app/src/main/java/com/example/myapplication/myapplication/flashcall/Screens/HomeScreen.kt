@@ -255,24 +255,6 @@ fun HomeScreen(
                                 )
                             )
                         }
-
-                        val context = LocalContext.current
-                        Button(colors = ButtonDefaults.buttonColors(Color.White), onClick = {
-                            val serviceIntent = Intent(context, ChatForegroundService::class.java).apply {
-                                // Optionally put extras here to pass data to the service
-                                putExtra("some_key", "some_value")
-                            }
-                            startForegroundService(context,serviceIntent)
-                        }) {
-                            Text(
-                                text = "service", style = TextStyle(
-                                    fontFamily = helveticaFontFamily,
-                                    fontWeight = FontWeight.Black,
-                                    fontSize = 13.sp,
-                                    color = Color.Black
-                                )
-                            )
-                        }
                     }
 
                 }
@@ -323,17 +305,6 @@ fun HomeScreen(
                                         .size(96.dp)
                                 )
                             }
-
-//                            Box(modifier = Modifier.padding(start = 200.dp, top = 70.dp)) {
-//                                Image(painter = painterResource(id = R.drawable.edit_icon),
-//                                    contentDescription = null,
-//                                    modifier = Modifier
-//                                        .clip(CircleShape)
-//                                        .clickable {
-//                                            launcher.launch("image/*")
-//
-//                                        })
-//                            }
 
                         }
 

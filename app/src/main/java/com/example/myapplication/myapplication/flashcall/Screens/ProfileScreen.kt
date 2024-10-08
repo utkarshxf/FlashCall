@@ -173,7 +173,7 @@ fun ProfileScreen(
                 .background(Color.White)
                 .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
                 .clickable {
-//                    navController.navigate(ScreenRoutes.FeedbackScreen.route)
+                    navController.navigate(ScreenRoutes.OrderHistory.route)
                 }) {
                 Row(
                     modifier = Modifier

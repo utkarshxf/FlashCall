@@ -33,6 +33,11 @@ import com.example.myapplication.myapplication.flashcall.Data.model.feedback.Upd
 import com.example.myapplication.myapplication.flashcall.Data.model.feedback.UpdateFeedbackResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.kycStatus.KycStatusResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.livelinessResponse.KycResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.orderHistory.OrderHistoryResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.orderHistory.block.request.BlockUnblockRequestBody
+import com.example.myapplication.myapplication.flashcall.Data.model.orderHistory.block.response.BlockUnblockResponse
+import com.example.myapplication.myapplication.flashcall.Data.model.orderHistory.report.reportRequest.ReportRequestBody
+import com.example.myapplication.myapplication.flashcall.Data.model.orderHistory.report.responseBody.ReportResponseBody
 import com.example.myapplication.myapplication.flashcall.Data.model.paymentSetting.AddBankDetailsRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.paymentSetting.AddUpiRequest
 import com.example.myapplication.myapplication.flashcall.Data.model.paymentSetting.PaymentSettingResponse
@@ -232,5 +237,24 @@ interface APIService {
     suspend fun getSpacializations(
         @Url url: String
     ): Response<SpacializationResponse>
+
+    @GET
+    suspend fun getOrderHistory(
+        @Url url: String
+    ): Response<OrderHistoryResponse>
+
+
+    @POST
+    suspend fun reportUser(
+        @Url url: String,
+        @Body body: ReportRequestBody
+    ): Response<ReportResponseBody>
+
+
+    @POST
+    suspend fun blockUser(
+        @Url url: String,
+        @Body body: BlockUnblockRequestBody
+    ): Response<BlockUnblockResponse>
 
 }

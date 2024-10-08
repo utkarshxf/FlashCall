@@ -30,12 +30,10 @@ class ChatRepository @Inject constructor(
 
     fun getPendingChatRequest(userId: String):
             Flow<Resource<ChatRequestDataClass>> = callbackFlow {
-
                 val listener = firestore.collection("chatRequests")
                     .whereEqualTo("creatorId", userId)
                     .whereEqualTo("status", "pending")
                     .addSnapshotListener{ snapshot, error ->
-
                         if(error != null) {
                             trySend(Resource.Error(error.localizedMessage ?: "Failed to get pending chat requests"))
                             return@addSnapshotListener
@@ -99,7 +97,6 @@ class ChatRepository @Inject constructor(
         awaitClose { listenerRegistration.remove() }
     }
     fun createChat(chatId : String, clientId : String) {
-
         val chatData = hashMapOf(
             "clientId" to clientId,
             "createdAt" to FieldValue.serverTimestamp(),

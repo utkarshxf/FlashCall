@@ -12,6 +12,7 @@ sealed class ScreenRoutes(val route: String) {
     data object IncomingCallScreen: ScreenRoutes("IncomingCallScreen")
 
     data object ProfileScreen : ScreenRoutes("ProfileScreen")
+    data object OrderHistory : ScreenRoutes("OrderHistory")
     data object WalletScreen : ScreenRoutes("WalletScreen")
     data object MainScreen : ScreenRoutes("MainScreen")
     data object ChatRequestNotification : ScreenRoutes("ChatRequestNotificationScreen")

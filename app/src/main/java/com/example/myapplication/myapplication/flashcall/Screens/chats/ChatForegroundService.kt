@@ -40,14 +40,6 @@ class ChatForegroundService: Service() {
         return START_NOT_STICKY
     }
 
-//    private fun createNotification(): Notification {
-//        return NotificationCompat.Builder(this, "your_channel_id")
-//            .setContentTitle("Service Running")
-//            .setContentText("Foreground service is active")
-//            .setPriority(NotificationCompat.PRIORITY_MAX)
-//            .setSmallIcon(R.drawable.logo) // Your notification icon
-//            .build()
-//    }
     private fun buildForegroundNotification(): Notification {
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("Incoming Call")

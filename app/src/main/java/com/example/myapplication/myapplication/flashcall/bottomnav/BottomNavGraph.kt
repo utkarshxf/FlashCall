@@ -14,6 +14,7 @@ import com.example.myapplication.myapplication.flashcall.Data.VideoCallRoute
 import com.example.myapplication.myapplication.flashcall.Screens.EditProfileScreen
 import com.example.myapplication.myapplication.flashcall.Screens.HomeScreen
 import com.example.myapplication.myapplication.flashcall.Screens.InCallScreen
+import com.example.myapplication.myapplication.flashcall.Screens.OrderHistoryScreen
 import com.example.myapplication.myapplication.flashcall.Screens.ProfileScreen
 import com.example.myapplication.myapplication.flashcall.Screens.SelectSpecialityScreen
 import com.example.myapplication.myapplication.flashcall.Screens.SplashScreen
@@ -64,6 +65,9 @@ fun BottomNavGraph(
                 registrationViewModel,
                 authenticationViewModel
             )
+        }
+        composable(route = ScreenRoutes.OrderHistory.route) {
+            OrderHistoryScreen(navController = navController)
         }
         composable(route = ScreenRoutes.EditScreen.route) {
             EditProfileScreen(navController = homeNavController)

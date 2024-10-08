@@ -43,6 +43,7 @@ import com.example.myapplication.myapplication.flashcall.Screens.IncomingChatScr
 import com.example.myapplication.myapplication.flashcall.Screens.KYCScreen
 import com.example.myapplication.myapplication.flashcall.Screens.LoginDoneScreen
 import com.example.myapplication.myapplication.flashcall.Screens.MainScreen
+import com.example.myapplication.myapplication.flashcall.Screens.OrderHistoryScreen
 import com.example.myapplication.myapplication.flashcall.Screens.ProfileScreen
 import com.example.myapplication.myapplication.flashcall.Screens.RegistrationScreen
 import com.example.myapplication.myapplication.flashcall.Screens.SelectSpecialityScreen
@@ -193,6 +194,9 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
                 registrationViewModel,
                 authenticationViewModel
             )
+        }
+        composable(route = ScreenRoutes.OrderHistory.route) {
+            OrderHistoryScreen(navController = navController)
         }
         composable(route = ScreenRoutes.WalletScreen.route) {
             WalletScreen(navController, walletViewModel, authenticationViewModel)
