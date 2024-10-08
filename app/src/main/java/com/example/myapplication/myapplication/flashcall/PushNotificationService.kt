@@ -15,6 +15,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import com.example.myapplication.myapplication.flashcall.Screens.callServices.CustomNotificationHandler
 import com.example.myapplication.myapplication.flashcall.Screens.callServices.IncomingCallActivity
+import com.example.myapplication.myapplication.flashcall.Screens.chats.IncomingChatRequestActivity
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import io.getstream.android.push.firebase.FirebaseMessagingDelegate
@@ -60,7 +61,12 @@ init {
             } else {
 //                super.onMessageReceived(message)
                 Log.v("PushNotificationService", "message received")
-                message.notification?.let { sendNotification(it) }
+                message.notification?.let {
+                    Log.v("overlayScreenLaunch", "start incoming chat activity")
+                    val intent = Intent(this, IncomingChatRequestActivity::class.java)
+                    startActivity(intent)
+//                    sendNotification(it)
+                }
                 Log.v("message.data" , message.data.toString())
                     ?: run {
 //                        handleDataMessage(message.data)
@@ -71,7 +77,12 @@ init {
             // StreamVideo was not initialized
             Log.e("PushNotificationService", "StreamVideo was not initialized", exception)
             // Still try to show the notification
-            message.notification?.let { sendNotification(it) }
+            message.notification?.let {
+                Log.e("overlayScreenLaunch", "start over lay screen", exception)
+                val intent = Intent(this, IncomingChatRequestActivity::class.java)
+                startActivity(intent)
+//                sendNotification(it)
+            }
 
                 ?: run {
                     Log.v("message.data" , message.data.toString())

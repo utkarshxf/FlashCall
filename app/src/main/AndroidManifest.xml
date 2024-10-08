@@ -2,6 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
@@ -38,6 +43,12 @@
             android:exported="false"
             android:label="@string/title_activity_kyc"
             android:theme="@style/Theme.FlashCall" />
+
+        <activity
+            android:name=".Screens.chats.IncomingChatRequestActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FlashCall" />
+
         <activity
             android:name=".MainActivity"
             android:supportsPictureInPicture="true"

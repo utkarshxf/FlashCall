@@ -6,7 +6,10 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -91,6 +94,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -117,6 +121,7 @@ import com.example.myapplication.myapplication.flashcall.ui.theme.helveticaFontF
 import com.example.myapplication.myapplication.flashcall.utils.capitalizeAfterSpace
 import com.jetpack.draganddroplist.DragDropList
 import com.jetpack.draganddroplist.move
+import java.util.jar.Manifest
 
 //var uriImg: Uri? = null
 var creatorUid: String = ""
@@ -478,11 +483,47 @@ fun HomeScreenBottom(
 
                 DemoText(viewModel)
 
+                Spacer(modifier = Modifier.padding(top = 20.dp))
+                RequestPermissionScreen()
+                Spacer(modifier = Modifier.padding(top = 20.dp))
+
+                val context = LocalContext.current
+                OverlayPermissionRequestScreen(context = context)
+
                 Spacer(modifier = Modifier.height(60.dp))
 
 
             }
         }
+    }
+}
+@Composable
+fun OverlayPermissionRequestScreen(context: Context) {
+    Column {
+        Text(text = "This app requires overlay permission to function properly.")
+        Button(onClick = { requestOverlayPermission(context) }) {
+            Text(text = "Request Overlay Permission")
+        }
+    }
+}
+
+fun requestOverlayPermission(context: Context) {
+    // Check if the permission is already granted
+    if (!canDrawOverlays(context)) {
+        // If not granted, redirect to the settings
+        val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${context.packageName}"))
+        context.startActivity(intent)
+    } else {
+        // Permission is already granted
+        // You can proceed with your functionality that requires the permission
+    }
+}
+
+fun canDrawOverlays(context: Context): Boolean {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        Settings.canDrawOverlays(context)
+    } else {
+        true // For versions below Marshmallow
     }
 }
 
@@ -587,7 +628,9 @@ fun CopyBar(viewModel: RegistrationViewModel) {
                         .padding(end = 16.dp)
                         .clickable {
                             copyToClipboard(context = context, copyText)
-                            Toast.makeText(context,"Copied",Toast.LENGTH_SHORT).show()
+                            Toast
+                                .makeText(context, "Copied", Toast.LENGTH_SHORT)
+                                .show()
                         },
                     contentDescription = "Copy Icon"
                 )
@@ -1784,55 +1827,58 @@ fun EditLinkLayout(
     }
 }
 
+@Composable
+fun RequestPermissionScreen() {
+    val context = LocalContext.current
 
-//Static value
+    if (!hasUsageAccessPermission(context)) {
+        Button(onClick = {
+            requestUsageAccessPermission(context)
+        }) {
+            Text(text = "Request Usage Access Permission")
+        }
+    } else {
+        Text(text = "Usage Access Permission is already granted")
+    }
+}
+fun requestUsageAccessPermission(context: Context) {
+    val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    context.startActivity(intent)
+}
+fun hasUsageAccessPermission(context: Context): Boolean {
+    try {
+        val packageManager: PackageManager = context.packageManager
+        val appInfo = packageManager.getApplicationInfo(context.packageName, 0)
+        val appOpsManager = context.getSystemService(Context.APP_OPS_SERVICE) as android.app.AppOpsManager
+        val mode = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            appOpsManager.unsafeCheckOpNoThrow(
+                android.app.AppOpsManager.OPSTR_GET_USAGE_STATS,
+                appInfo.uid, appInfo.packageName
+            )
+        } else {
+            appOpsManager.checkOpNoThrow(
+                android.app.AppOpsManager.OPSTR_GET_USAGE_STATS,
+                appInfo.uid, appInfo.packageName
+            )
+        }
+        return mode == android.app.AppOpsManager.MODE_ALLOWED
+    } catch (e: Exception) {
+        e.printStackTrace()
+        return false
+    }
+}
 
+@Composable
+fun OverlayPermissionScreen(onRequestPermission: () -> Unit) {
+    Column {
+        Text(text = "This app requires overlay permission to function properly.")
+        Button(onClick = { onRequestPermission() }) {
+            Text(text = "Request Overlay Permission")
+        }
+    }
+}
 
-//data class links(
-//    val name: String = "",
-//    val title: String = ""
-//)
-
-//val ReorderItem = listOf(
-//    links("hello1","titel1"),
-//    links("hello2","titel2"),
-//    links("hello3","titel3"),
-//    links("hello4","titel4"),
-//    links("hello5","titel5"),
-//    links("hello6","titel6"),
-//    links("hello7","titel7"),
-//    links("hello8","titel8"),
-//    links("hello9","titel9"),
-//    links("hello10","titel10"),
-//    links("hello11","titel11"),
-//    links("hello12","titel12"),
-//    links("hello13","titel13"),
-//    links("hello14","titel14"),
-//    links("hello15","titel15")
-//).toMutableStateList()
-
-//val ReorderItem = listOf(
-//    "Item 1",
-//    "Item 2",
-//    "Item 3",
-//    "Item 4",
-//    "Item 5",
-//    "Item 6",
-//    "Item 7",
-//    "Item 8",
-//    "Item 9",
-//    "Item 10",
-//    "Item 11",
-//    "Item 12",
-//    "Item 13",
-//    "Item 14",
-//    "Item 15",
-//    "Item 16",
-//    "Item 17",
-//    "Item 18",
-//    "Item 19",
-//    "Item 20"
-//).toMutableStateList()
 
 
 @Preview(showBackground = false)
