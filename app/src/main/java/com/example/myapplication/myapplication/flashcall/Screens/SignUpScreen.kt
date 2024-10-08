@@ -138,6 +138,7 @@ fun SignUpScreen(navController: NavController, viewModel: AuthenticationViewMode
 //        Log.d("isKeyboard", "$isKeyboardOpen")
 //    }
 //    Log.d("isKeyboard", "$isKeyboardOpen")
+    //Hello
     Surface(
         modifier = Modifier
             .fillMaxSize()
