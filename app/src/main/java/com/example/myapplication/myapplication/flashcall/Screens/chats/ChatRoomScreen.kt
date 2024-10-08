@@ -118,9 +118,9 @@ import java.util.concurrent.TimeUnit
 @kotlin.OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ChatRoomScreen(
-    navController: NavController,
     chatViewModel: ChatViewModel = hiltViewModel(),
-    authenticationViewModel: AuthenticationViewModel = hiltViewModel()
+    authenticationViewModel: AuthenticationViewModel = hiltViewModel(),
+    callEnded: () -> Unit,
 ) {
     val context = LocalContext.current
     val userData = authenticationViewModel.getUserFromPreferences(context)
@@ -150,9 +150,7 @@ fun ChatRoomScreen(
     LaunchedEffect(callEnded) {
         delay(3000)
         if (callEnded) {
-            navController.navigate(ScreenRoutes.MainScreen.route) {
-                popUpTo(ScreenRoutes.ChatRoomScreen.route) { inclusive = true }
-            }
+            callEnded()
         }
     }
     BackHandler {
@@ -385,11 +383,7 @@ fun ChatRoomScreen(
                 Button(
                     onClick = {
                         showChatCallConfirmation = false
-                        chatViewModel.endChat {
-                            navController.navigate(ScreenRoutes.MainScreen.route) {
-                                popUpTo(ScreenRoutes.ChatRoomScreen.route) { inclusive = true }
-                            }
-                        }
+                        callEnded()
                     }, colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
                 ) {
                     Text("Proceed")

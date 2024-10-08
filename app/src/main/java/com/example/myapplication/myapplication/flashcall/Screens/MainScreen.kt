@@ -78,7 +78,7 @@ fun MainScreen(
             val uid = authenticationViewModel.getUserFromPreferences(context)
             chatRequestViewModel.listenForChatRequests(uid?._id.toString())
             if (chatRequestCreated) {
-                IncomingChatScreen(navController = navController)
+//                IncomingChatScreen(navController = navController)
             } else {
                 BottomNavGraph(
                     homeNavController = homeNavController,

@@ -106,12 +106,3 @@ fun NotificationUI() {
         }
     }
 }
-
-
-@Preview
-@Composable
-private fun myPreview() {
-    FlashCallTheme() {
-        IncomingChat()
-    }
-}

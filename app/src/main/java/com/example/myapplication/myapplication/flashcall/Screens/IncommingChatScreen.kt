@@ -26,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -57,160 +58,160 @@ import com.example.myapplication.myapplication.flashcall.ViewModel.chats.ChatReq
 
 @Composable
 fun IncomingChatScreen(
-    chatRequestViewModel: ChatRequestViewModel = hiltViewModel(),
-    navController: NavController
+    clientName:String?=null,
+    onAccept: () -> Unit,
+    onDecline: () -> Unit,
 ) {
-    val chatRequestData by chatRequestViewModel.incomingChatRequest.collectAsState()
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF1E1E1E),  // Top color
-                        Color(0xFF444444),  // Middle color
-                        Color(0xFF121212)   // Bottom color
-                    ),
-                    startY = 0f,
-                    endY = 3000f
-                )
-            )
+    CompositionLocalProvider(
+        androidx.lifecycle.compose.LocalLifecycleOwner provides androidx.compose.ui.platform.LocalLifecycleOwner.current,
     ) {
-        // Close button
-        IconButton(
-            onClick = { navController.navigate(ScreenRoutes.MainScreen.route) },
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(16.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = "Close",
-                tint = Color.White
-            )
-        }
-
-        // Main content
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.SpaceBetween,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFF1E1E1E),  // Top color
+                            Color(0xFF444444),  // Middle color
+                            Color(0xFF121212)   // Bottom color
+                        ),
+                        startY = 0f,
+                        endY = 3000f
+                    )
+                )
         ) {
-            // Chat request type
-            Text(
-                text = "Incoming Chat Request",
-                color = Color.White,
-                style = TextStyle(fontWeight = FontWeight.Normal, fontSize = 18.sp),
-                modifier = Modifier.padding(top = 56.dp)
-            )
-
-            // Profile picture with glow effect
-            Column(
-                modifier = Modifier,
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+            // Close button
+            IconButton(
+                onClick = { onDecline() },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
             ) {
-                Box(modifier = Modifier.size(300.dp), contentAlignment = Alignment.Center) {
-                    Canvas(modifier = Modifier.fillMaxSize()) {
-                        drawCircle(
-                            brush = Brush.radialGradient(
-                                colors = listOf(
-                                    Color(0xff595a59),
-                                    Color.Transparent
-                                ),
-                                center = center,
-                                radius = size.minDimension / 2.5f
-                            )
-                        )
-                        drawCircle(
-                            brush = Brush.radialGradient(
-                                colors = listOf(
-                                    Color(0xff474847),
-                                    Color.Transparent
-                                ),
-                                center = center,
-                                radius = size.minDimension / 3f
-                            )
-                        )
-                        drawCircle(
-                            brush = Brush.radialGradient(
-                                colors = listOf(
-                                    Color(0xff4b4b4b),
-                                    Color.Transparent
-                                ),
-                                center = center,
-                                radius = size.minDimension / 6f
-                            )
-                        )
-                    }
-                    Box(
-                        modifier = Modifier
-                            .size(92.dp)
-                            .background(Color(0xFFf8f8f8), CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.vector_1),
-                            contentDescription = "Profile Picture",
-                            modifier = Modifier
-                                .size(82.dp)
-                                .align(Alignment.Center)
-                        )
-                    }
-                }
-
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Text(
-                        text = "Chat from",
-                        color = Color.White.copy(alpha = 0.7f),
-                        style = TextStyle(fontSize = 16.sp)
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = maskIfPhoneNumber( chatRequestData?.clientName ?: "Unknown"),
-                        color = Color.White,
-                        style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 24.sp)
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Close",
+                    tint = Color.White
+                )
             }
 
-            Spacer(modifier = Modifier.size(120.dp))
-
-            // Chat actions
-            Row(
+            // Main content
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 32.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.SpaceBetween,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                ChatActionButton(
-                    icon = Icons.Default.Close,
-                    color = Color.Red,
-                    onClick = {
-                        chatRequestViewModel.rejectChatRequest(chatRequestViewModel.pendingChatRequestDocId.toString())
-                        navController.navigate(ScreenRoutes.MainScreen.route)
-                    },
-                    label = "Decline"
+                // Chat request type
+                Text(
+                    text = "Incoming Chat Request",
+                    color = Color.White,
+                    style = TextStyle(fontWeight = FontWeight.Normal, fontSize = 18.sp),
+                    modifier = Modifier.padding(top = 56.dp)
                 )
-                ChatActionButton(
-                    icon = Icons.Default.Check,
-                    color = Color(0xFF4CAF50),
-                    onClick = {
-                        chatRequestViewModel.acceptChatRequest(chatRequestViewModel.pendingChatRequestDocId.toString())
-                        navController.navigate(ScreenRoutes.ChatRoomScreen.route)
-                    },
-                    label = "Accept"
-                )
+
+                // Profile picture with glow effect
+                Column(
+                    modifier = Modifier,
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Box(modifier = Modifier.size(300.dp), contentAlignment = Alignment.Center) {
+                        Canvas(modifier = Modifier.fillMaxSize()) {
+                            drawCircle(
+                                brush = Brush.radialGradient(
+                                    colors = listOf(
+                                        Color(0xff595a59),
+                                        Color.Transparent
+                                    ),
+                                    center = center,
+                                    radius = size.minDimension / 2.5f
+                                )
+                            )
+                            drawCircle(
+                                brush = Brush.radialGradient(
+                                    colors = listOf(
+                                        Color(0xff474847),
+                                        Color.Transparent
+                                    ),
+                                    center = center,
+                                    radius = size.minDimension / 3f
+                                )
+                            )
+                            drawCircle(
+                                brush = Brush.radialGradient(
+                                    colors = listOf(
+                                        Color(0xff4b4b4b),
+                                        Color.Transparent
+                                    ),
+                                    center = center,
+                                    radius = size.minDimension / 6f
+                                )
+                            )
+                        }
+                        Box(
+                            modifier = Modifier
+                                .size(92.dp)
+                                .background(Color(0xFFf8f8f8), CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.vector_1),
+                                contentDescription = "Profile Picture",
+                                modifier = Modifier
+                                    .size(82.dp)
+                                    .align(Alignment.Center)
+                            )
+                        }
+                    }
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Text(
+                            text = "Chat from",
+                            color = Color.White.copy(alpha = 0.7f),
+                            style = TextStyle(fontSize = 16.sp)
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = maskIfPhoneNumber(clientName ?: "Unknown"),
+                            color = Color.White,
+                            style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 24.sp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.size(120.dp))
+
+                // Chat actions
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 32.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    ChatActionButton(
+                        icon = Icons.Default.Close,
+                        color = Color.Red,
+                        onClick = {
+                            onDecline()
+                        },
+                        label = "Decline"
+                    )
+                    ChatActionButton(
+                        icon = Icons.Default.Check,
+                        color = Color(0xFF4CAF50),
+                        onClick = {
+                            onAccept()
+                        },
+                        label = "Accept"
+                    )
+                }
             }
         }
     }
 }
-
 
 @Composable
 fun ChatActionButton(

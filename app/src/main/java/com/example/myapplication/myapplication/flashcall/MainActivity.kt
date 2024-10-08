@@ -52,7 +52,7 @@ import com.example.myapplication.myapplication.flashcall.Screens.SplashScreen
 import com.example.myapplication.myapplication.flashcall.Screens.Support
 import com.example.myapplication.myapplication.flashcall.Screens.TermAndCondition
 import com.example.myapplication.myapplication.flashcall.Screens.chats.ChatRequestScreen
-import com.example.myapplication.myapplication.flashcall.Screens.chats.ChatRoomScreen
+//import com.example.myapplication.myapplication.flashcall.Screens.chats.ChatRoomScreen
 import com.example.myapplication.myapplication.flashcall.Screens.feedback.FeedbackScreen
 import com.example.myapplication.myapplication.flashcall.Screens.profileOptions.PaymentSettings
 import com.example.myapplication.myapplication.flashcall.Screens.wallet.WalletScreen
@@ -213,9 +213,9 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
         composable(route = ScreenRoutes.PaymentSettings.route) {
             PaymentSettings(navController = navController)
         }
-        composable(route = ScreenRoutes.ChatRoomScreen.route) {
-            ChatRoomScreen(navController)
-        }
+//        composable(route = ScreenRoutes.ChatRoomScreen.route) {
+//            ChatRoomScreen(navController)
+//        }
 
         composable(route = ScreenRoutes.FeedbackScreen.route) {
             FeedbackScreen(navController = navController)
@@ -226,9 +226,9 @@ fun AppNavigation(hyperKycLauncher: ActivityResultLauncher<HyperKycConfig>) {
         composable(route = ScreenRoutes.LoginDoneScreen.route) {
             LoginDoneScreen(navController = navController)
         }
-        composable(route = ScreenRoutes.InComingChatScreen.route) {
-            IncomingChatScreen(navController = navController)
-        }
+//        composable(route = ScreenRoutes.InComingChatScreen.route) {
+//            IncomingChatScreen(navController = navController)
+//        }
         composable(route = ScreenRoutes.KycScreen.route) {
             KYCScreen(navController = navController, hyperKycLauncher)
         }

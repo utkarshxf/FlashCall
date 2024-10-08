@@ -56,17 +56,23 @@ init {
         // and data payloads are treated as notification messages. The Firebase console always sends notification
         // messages. For more see: https://firebase.google.com/docs/cloud-messaging/concept-options
         // [END_EXCLUDE]
+        try {
+            if (FirebaseMessagingDelegate.handleRemoteMessage(message)) {
+                // RemoteMessage was from Stream and it is already processed
+                Log.d("FCM", "Stream message processed")
+            } else {
+                Log.d("IsForeground", "OnReceiveMessage")
 
-
-        Log.d("IsForeground","OnReceiveMessage")
-
-        // Start the foreground service
-        val serviceIntent = Intent(this, ChatForegroundService::class.java).apply {
-            // Optionally put extras here to pass data to the service
-            putExtra("some_key", "some_value")
+                // Start the foreground service
+                val serviceIntent = Intent(this, ChatForegroundService::class.java).apply {
+                    // Optionally put extras here to pass data to the service
+                    putExtra("some_key", "some_value")
+                }
+                startForegroundService(serviceIntent)
+            }
+        }catch (e:Exception) {
+            Log.e("RemoteMessage" , e.toString())
         }
-        startForegroundService(serviceIntent)
-
 //        try {
 //            if (FirebaseMessagingDelegate.handleRemoteMessage(message)) {
 //                // RemoteMessage was from Stream and it is already processed

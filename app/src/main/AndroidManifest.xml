@@ -49,7 +49,7 @@
             android:enabled="true"
             android:exported="false"/>
         <activity
-            android:name=".Screens.chats.IncomingChatRequestActivity"
+            android:name=".Screens.chats.IncomingChatActivity"
             android:exported="false"
             android:theme="@style/Theme.FlashCall" />
 

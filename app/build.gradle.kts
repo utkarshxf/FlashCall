@@ -141,4 +141,6 @@ dependencies {
     implementation ("androidx.camera:camera-extensions:1.1.0")
     implementation("androidx.core:core-splashscreen:1.0.1")
 //    implementation("com.google.accompanist:accompanist-insets-ui.0.24.7-alpha")
+    //Paging 3.0
+    implementation("androidx.paging:paging-compose:3.3.2")
 }
