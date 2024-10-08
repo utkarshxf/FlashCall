@@ -17,7 +17,6 @@ import androidx.core.app.NotificationCompat
 import com.example.myapplication.myapplication.flashcall.Screens.callServices.CustomNotificationHandler
 import com.example.myapplication.myapplication.flashcall.Screens.callServices.IncomingCallActivity
 import com.example.myapplication.myapplication.flashcall.Screens.chats.ChatForegroundService
-import com.example.myapplication.myapplication.flashcall.Screens.chats.IncomingChatRequestActivity
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import io.getstream.android.push.firebase.FirebaseMessagingDelegate
