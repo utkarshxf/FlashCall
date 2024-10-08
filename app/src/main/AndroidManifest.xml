@@ -44,6 +44,10 @@
             android:label="@string/title_activity_kyc"
             android:theme="@style/Theme.FlashCall" />
 
+        <service
+            android:name=".Screens.chats.ChatForegroundService"
+            android:enabled="true"
+            android:exported="false"/>
         <activity
             android:name=".Screens.chats.IncomingChatRequestActivity"
             android:exported="false"

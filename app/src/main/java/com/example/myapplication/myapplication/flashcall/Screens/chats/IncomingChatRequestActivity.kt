@@ -20,6 +20,7 @@ import co.hyperverge.hyperkyc.data.models.HyperKycConfig
 import co.hyperverge.hyperkyc.data.models.result.HyperKycStatus
 import com.example.myapplication.myapplication.flashcall.AppNavigation
 import com.example.myapplication.myapplication.flashcall.BaseClass
+import com.example.myapplication.myapplication.flashcall.Screens.IncomingChatScreen
 import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
 import com.example.myapplication.myapplication.flashcall.ViewModel.SplashViewModel
 import com.example.myapplication.myapplication.flashcall.ui.theme.FlashCallTheme
@@ -27,12 +28,13 @@ import com.example.myapplication.myapplication.flashcall.utils.rememberImeState
 
 class IncomingChatRequestActivity : ComponentActivity() {
 
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             FlashCallTheme {
-                Text(text = "Good To Go", color = Color.Green, )
+                NotificationUI()
             }
         }
     }

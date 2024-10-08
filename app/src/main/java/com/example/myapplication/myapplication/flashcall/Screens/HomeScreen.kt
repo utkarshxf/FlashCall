@@ -95,6 +95,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.startForegroundService
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -105,6 +106,7 @@ import com.example.myapplication.myapplication.flashcall.Data.model.APIResponse
 import com.example.myapplication.myapplication.flashcall.Data.model.LinkData
 import com.example.myapplication.myapplication.flashcall.Data.model.firestore.UserServicesResponse
 import com.example.myapplication.myapplication.flashcall.R
+import com.example.myapplication.myapplication.flashcall.Screens.chats.ChatForegroundService
 import com.example.myapplication.myapplication.flashcall.Screens.common.CircularLoaderButton
 import com.example.myapplication.myapplication.flashcall.Screens.common.WideSwitch
 import com.example.myapplication.myapplication.flashcall.ViewModel.AuthenticationViewModel
@@ -246,6 +248,24 @@ fun HomeScreen(
                         }) {
                             Text(
                                 text = "edit profile", style = TextStyle(
+                                    fontFamily = helveticaFontFamily,
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 13.sp,
+                                    color = Color.Black
+                                )
+                            )
+                        }
+
+                        val context = LocalContext.current
+                        Button(colors = ButtonDefaults.buttonColors(Color.White), onClick = {
+                            val serviceIntent = Intent(context, ChatForegroundService::class.java).apply {
+                                // Optionally put extras here to pass data to the service
+                                putExtra("some_key", "some_value")
+                            }
+                            startForegroundService(context,serviceIntent)
+                        }) {
+                            Text(
+                                text = "service", style = TextStyle(
                                     fontFamily = helveticaFontFamily,
                                     fontWeight = FontWeight.Black,
                                     fontSize = 13.sp,

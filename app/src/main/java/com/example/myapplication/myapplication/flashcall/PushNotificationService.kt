@@ -11,10 +11,12 @@ import android.graphics.Color
 import android.media.RingtoneManager
 import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import com.example.myapplication.myapplication.flashcall.Screens.callServices.CustomNotificationHandler
 import com.example.myapplication.myapplication.flashcall.Screens.callServices.IncomingCallActivity
+import com.example.myapplication.myapplication.flashcall.Screens.chats.ChatForegroundService
 import com.example.myapplication.myapplication.flashcall.Screens.chats.IncomingChatRequestActivity
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
@@ -41,6 +43,7 @@ init {
         super.onNewToken(p0)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onMessageReceived(message: RemoteMessage) {
         Log.d("FCM", "Stream message processed")
 
@@ -54,41 +57,68 @@ init {
         // messages. For more see: https://firebase.google.com/docs/cloud-messaging/concept-options
         // [END_EXCLUDE]
 
-        try {
-            if (FirebaseMessagingDelegate.handleRemoteMessage(message)) {
-                // RemoteMessage was from Stream and it is already processed
-                Log.d("FCM", "Stream message processed")
-            } else {
-//                super.onMessageReceived(message)
-                Log.v("PushNotificationService", "message received")
-                message.notification?.let {
-                    Log.v("overlayScreenLaunch", "start incoming chat activity")
-                    val intent = Intent(this, IncomingChatRequestActivity::class.java)
-                    startActivity(intent)
-//                    sendNotification(it)
-                }
-                Log.v("message.data" , message.data.toString())
-                    ?: run {
-//                        handleDataMessage(message.data)
-                    }
-                Log.d("FCM", "message processed")
-            }
-        } catch (exception: IllegalStateException) {
-            // StreamVideo was not initialized
-            Log.e("PushNotificationService", "StreamVideo was not initialized", exception)
-            // Still try to show the notification
-            message.notification?.let {
-                Log.e("overlayScreenLaunch", "start over lay screen", exception)
-                val intent = Intent(this, IncomingChatRequestActivity::class.java)
-                startActivity(intent)
-//                sendNotification(it)
-            }
 
-                ?: run {
-                    Log.v("message.data" , message.data.toString())
-//                    handleDataMessage(message.data)
-                }
+        Log.d("IsForeground","OnReceiveMessage")
+
+        // Start the foreground service
+        val serviceIntent = Intent(this, ChatForegroundService::class.java).apply {
+            // Optionally put extras here to pass data to the service
+            putExtra("some_key", "some_value")
         }
+        startForegroundService(serviceIntent)
+
+//        try {
+//            if (FirebaseMessagingDelegate.handleRemoteMessage(message)) {
+//                // RemoteMessage was from Stream and it is already processed
+//                Log.d("FCM", "Stream message processed")
+//            } else {
+////                super.onMessageReceived(message)
+//                Log.v("PushNotificationService", "message received")
+//                message.notification?.let {
+//                    Log.v("overlayScreenLaunch", "start incoming chat activity")
+//
+//                    // Start the foreground service
+//                    val serviceIntent = Intent(this, ChatForegroundService::class.java).apply {
+//                        // Optionally put extras here to pass data to the service
+//                        putExtra("some_key", "some_value")
+//                    }
+//                    startForegroundService(serviceIntent)
+//
+////                    val intent = Intent(this, IncomingChatRequestActivity::class.java).apply {
+////                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) // Necessary to start an Activity from Service
+////                    }
+////                    startActivity(intent)
+////                    sendNotification(it)
+//                }
+//                Log.v("message.data" , message.data.toString())
+//                    ?: run {
+////                        handleDataMessage(message.data)
+//                    }
+//                Log.d("FCM", "message processed")
+//            }
+//        } catch (exception: IllegalStateException) {
+//            // StreamVideo was not initialized
+//            Log.e("PushNotificationService", "StreamVideo was not initialized", exception)
+//            // Still try to show the notification
+//            message.notification?.let {
+//                Log.e("overlayScreenLaunch", "start over lay screen", exception)
+//                val serviceIntent = Intent(this, ChatForegroundService::class.java).apply {
+//                    // Optionally put extras here to pass data to the service
+//                    putExtra("some_key", "some_value")
+//                }
+//                startForegroundService(serviceIntent)
+////                val intent = Intent(this, IncomingChatRequestActivity::class.java).apply {
+////                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) // Necessary to start an Activity from Service
+////                }
+////                startActivity(intent)
+////                sendNotification(it)
+//            }
+//
+//                ?: run {
+//                    Log.v("message.data" , message.data.toString())
+////                    handleDataMessage(message.data)
+//                }
+//        }
     }
 
 
