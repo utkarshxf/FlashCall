@@ -297,7 +297,7 @@ fun CallCardView(call: Call, viewModel: OrderHistoryViewModel = hiltViewModel())
                                     call.members.firstOrNull()?.custom?.name ?: "",
                                     "call me dekt",
                                     submittedBy = SubmittedBy(
-                                        userId = ,
+                                        userId = call.members.firstOrNull()?.user_id ?: "" ,
                                         userType = "creator",
                                     )
                                 )
