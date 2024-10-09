@@ -32,6 +32,7 @@ class ChatForegroundService: Service() {
         startForeground(111, notification)
 
         // Starting the activity even if the app is in the background
+
         val activityIntent = Intent(this, IncomingChatActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
         }

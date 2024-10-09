@@ -79,15 +79,15 @@ class CustomNotificationHandler(
 //            putExtra(NotificationHandler.INTENT_EXTRA_CALL_CID, callId)
 //            putExtra(NotificationHandler.INTENT_EXTRA_CALL_DISPLAY_NAME, callDisplayName)
 //        }
-
-
+//
+//
 //        val acceptCallIntent = Intent(application, IncomingCallActivity::class.java).apply {
 //            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
 //            putExtra(NotificationHandler.INTENT_EXTRA_CALL_CID, callId)
 //            putExtra("call_accepted", true)
 //            putExtra(NotificationHandler.INTENT_EXTRA_CALL_DISPLAY_NAME, callDisplayName)
 //        }
-
+//
 //        val rejectCallIntent = Intent(application, DeclineCallReceiver::class.java).apply {
 //            putExtra(NotificationHandler.INTENT_EXTRA_CALL_CID, callId.id)  // Passing callId to the receiver
 //        }

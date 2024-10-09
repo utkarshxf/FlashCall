@@ -5,14 +5,19 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.material3.Text
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.myapplication.myapplication.flashcall.Data.model.chatDataModel.ChatRequestDataClass
 import com.example.myapplication.myapplication.flashcall.Screens.IncomingChatScreen
 import com.example.myapplication.myapplication.flashcall.ViewModel.chats.ChatRequestViewModel
 import com.example.myapplication.myapplication.flashcall.repository.ChatRepository
+import com.example.myapplication.myapplication.flashcall.repository.UserPreferencesRepository
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
@@ -47,7 +52,8 @@ class IncomingChatActivity : ComponentActivity() {
         chatRepository = ChatRepository(firestore, storage)
 
 //        val userId = intent.getStringExtra("userId")!!
-        val userId = "67042546dd83ba8df5bc6e85"
+        val userPreferencesRepository = UserPreferencesRepository(this)
+        val userId = userPreferencesRepository.getUser()?._id!!
         listenForChatRequests(userId)
 
         setContent {
@@ -56,8 +62,8 @@ class IncomingChatActivity : ComponentActivity() {
             ) {
                 val chatRequestCreatedState by chatRequestCreated.collectAsState()
                 val chatRequestData by incomingChatRequest.collectAsState()
-
-                if (true) {
+                var accepted by remember { mutableStateOf(false) }
+                if (chatRequestCreatedState) {
                     IncomingChatScreen(
                         chatRequestData?.clientName,
                         onDecline = {
@@ -66,6 +72,7 @@ class IncomingChatActivity : ComponentActivity() {
                         },
                         onAccept = {
                             acceptChatRequest(pendingChatRequestDocId.toString())
+                            accepted = true
                         }
                     )
                 } else {
