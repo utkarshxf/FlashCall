@@ -150,7 +150,9 @@ fun ChatRoomScreen(
     LaunchedEffect(callEnded) {
         delay(3000)
         if (callEnded) {
-            callEnded()
+            chatViewModel.endChat(){
+                callEnded()
+            }
         }
     }
     BackHandler {
@@ -383,7 +385,9 @@ fun ChatRoomScreen(
                 Button(
                     onClick = {
                         showChatCallConfirmation = false
-                        callEnded()
+                        chatViewModel.endChat(){
+                            callEnded()
+                        }
                     }, colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
                 ) {
                     Text("Proceed")

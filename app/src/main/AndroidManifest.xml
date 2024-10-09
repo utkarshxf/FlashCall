@@ -51,6 +51,9 @@
         <activity
             android:name=".Screens.chats.IncomingChatActivity"
             android:exported="false"
+            android:showOnLockScreen="true"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
             android:theme="@style/Theme.FlashCall" />
 
         <activity

@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "789413051138",
-    "project_id": "flashcallchat",
-    "storage_bucket": "flashcallchat.appspot.com"
+    "project_number": "244115322004",
+    "project_id": "flashcall-e4f30",
+    "storage_bucket": "flashcall-e4f30.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:789413051138:android:177f71a355d55741d4e01b",
+        "mobilesdk_app_id": "1:244115322004:android:4a7de2393ceccc281d7081",
         "android_client_info": {
           "package_name": "com.example.myapplication.myapplication.flashcall"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCeP1UdFpuRrDcQG5OHnxmkpACz3-AjeJ4"
+          "current_key": "AIzaSyD5dOKVop56A4gPy0dPPV3yTPUohhAoPkU"
         }
       ],
       "services": {
