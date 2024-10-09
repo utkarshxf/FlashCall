@@ -106,8 +106,7 @@ class PushNotificationService : FirebaseMessagingService() {
             .setCategory(NotificationCompat.CATEGORY_CALL)
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setFullScreenIntent(pendingIntent, true)
-            .setContentIntent(pendingIntent)
+            .setFullScreenIntent(pendingIntent, true).setContentIntent(pendingIntent)
             .setVibrate(longArrayOf(0, 500, 1000, 500, 1000)).setLights(Color.RED, 3000, 3000)
             .addAction(
                 R.drawable.logo,  // Your custom icon for Accept button

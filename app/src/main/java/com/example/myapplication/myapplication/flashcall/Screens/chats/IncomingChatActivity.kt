@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.asStateFlow
 
 @AndroidEntryPoint
 class IncomingChatActivity : ComponentActivity() {
+
     private lateinit var firestore: FirebaseFirestore
     private lateinit var storage: FirebaseStorage
     private lateinit var chatRepository: ChatRepository
@@ -62,7 +63,6 @@ class IncomingChatActivity : ComponentActivity() {
                 val chatRequestCreatedState by chatRequestCreated.collectAsState()
                 val chatRequestData by incomingChatRequest.collectAsState()
                 var accepted by remember { mutableStateOf(false) }
-
                 if (chatRequestCreatedState) {
                     IncomingChatScreen(
                         chatRequestData?.clientName,
